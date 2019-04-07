@@ -1,0 +1,16 @@
+import sys
+import math
+import requests
+import openssl
+
+make
+sudo make install
+
+r = requests.get("https://github.com/timeline.json")
+
+print (r)
+
+ 
+r.status_code == requests.codes.ok
+
+
