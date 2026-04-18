@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { scoreComp, cellClass } from '../../lib/scoring'
+import { scoreComp, buildPoolContext, cellClass } from '../../lib/scoring'
 import { useSortable } from '../../hooks/useSortable.jsx'
 import styles from './HeatmapTab.module.css'
 
@@ -13,11 +13,13 @@ function fmt(val, type) {
 }
 
 export default function HeatmapTab({ comps, onEdit, onDelete, onSelect }) {
+  const ctx = useMemo(() => buildPoolContext(comps), [comps])
+
   const enriched = useMemo(() => comps.map(c => {
     const s = scoreComp({
       ...c,
       psf: c.psf ?? (c.last_list_price && c.sqft ? Math.round(c.last_list_price / c.sqft) : null) ?? 999,
-    })
+    }, ctx)
     const price = (c.is_closed ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
     return { ...c, _score: s.comp, _s: s, _price: price }
   }), [comps])

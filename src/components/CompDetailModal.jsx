@@ -1,13 +1,18 @@
 import { useMemo } from 'react'
-import { scoreComp, CEIL_PSF } from '../lib/scoring'
+import { scoreComp, buildPoolContext, CEIL_PSF } from '../lib/scoring'
 import styles from './CompDetailModal.module.css'
 
 const DIMS = [
-  { key: 'ps', label: '$/SF',   weight: 35, valKey: 'psf',        lower: true,  fmt: v => v ? `$${v}/SF`                          : '—' },
+  { key: 'ps', label: '$/SF',   weight: 32, valKey: 'psf',        lower: true,  fmt: v => v ? `$${v}/SF`                          : '—' },
   { key: 'ts', label: 'Taxes',  weight: 20, valKey: 'taxes',       lower: true,  fmt: v => v ? `$${Math.round(v / 1000)}K/yr`       : '—' },
-  { key: 'ss', label: 'Size',   weight: 15, valKey: 'sqft',        lower: false, fmt: v => v ? `${v.toLocaleString()} SF`           : '—' },
-  { key: 'ls', label: 'Lot',    weight: 15, valKey: 'lot_sqft',    lower: false, fmt: v => v ? `${Math.round(v / 1000)}K SF`        : '—' },
-  { key: 'as', label: 'Age',    weight: 15, valKey: 'year_built',  lower: false, fmt: v => v ? `Built ${v}`                        : '—' },
+  { key: 'ss', label: 'Size',   weight: 13, valKey: 'sqft',        lower: false, fmt: v => v ? `${v.toLocaleString()} SF`           : '—' },
+  { key: 'ls', label: 'Lot',    weight: 13, valKey: 'lot_sqft',    lower: false, fmt: v => v ? `${Math.round(v / 1000)}K SF`        : '—' },
+  { key: 'as', label: 'Age',    weight: 12, valKey: 'year_built',  lower: false, fmt: v => v ? `Built ${v}`                        : '—' },
+  { key: 'ms', label: 'Signal', weight: 10, valKey: null,          lower: false, fmt: (_, c) => {
+    if (!c) return '—'
+    const dom = c.days_on_market ?? 0
+    return c.over_ask ? '▲ over ask' : c.is_closed ? '✓ closed' : dom > 0 ? `${dom}d on market` : 'active'
+  }},
 ]
 
 function median(arr) {
@@ -63,6 +68,15 @@ function dimText(key, score, comp, allComps) {
     if (diff >= -2000) return `Near pool median lot size (${Math.round(med / 1000)}K SF).`
     return `${Math.round(Math.abs(diff) / 1000)}K SF less lot than pool median.`
   }
+  if (key === 'ms') {
+    const dom = comp.days_on_market ?? 0
+    if (comp.over_ask)    return 'Sold over asking price — validated strong demand at this price point.'
+    if (comp.is_closed)   return 'Closed at or below ask — normal market transaction.'
+    if (dom > 50)         return `${dom} days on market — market has not validated ask price. Strong buyer negotiating position.`
+    if (dom > 20)         return `${dom} days on market — moderate resistance. Some negotiating room likely.`
+    if (dom > 0)          return `${dom} days on market — active and relatively fresh.`
+    return 'Active listing with no DOM data.'
+  }
   if (key === 'as') {
     const yr = comp.year_built
     if (!yr) return 'No year built data.'
@@ -79,7 +93,8 @@ function generateFindings(comp, allComps, s, price) {
   const findings = []
   const psfs   = allComps.map(c => c.psf).filter(Boolean)
   const taxes  = allComps.map(c => c.taxes).filter(Boolean)
-  const scores = allComps.map(c => scoreComp({ ...c, psf: c.psf ?? 999 }).comp)
+  const ctx     = buildPoolContext(allComps)
+  const scores  = allComps.map(c => scoreComp({ ...c, psf: c.psf ?? 999 }, ctx).comp)
   const medPsf  = median(psfs)
   const medTax  = median(taxes)
   const scoreRank = rankOf(scores, s.comp, false)
@@ -150,10 +165,11 @@ function generateFindings(comp, allComps, s, price) {
 }
 
 export default function CompDetailModal({ comp, comps, onClose }) {
-  const s = useMemo(() => scoreComp({
+  const ctx = useMemo(() => buildPoolContext(comps), [comps])
+  const s   = useMemo(() => scoreComp({
     ...comp,
     psf: comp.psf ?? (comp.last_list_price && comp.sqft ? Math.round(comp.last_list_price / comp.sqft) : null) ?? 999,
-  }), [comp])
+  }, ctx), [comp, ctx])
 
   const price = (comp.is_closed ? comp.sold_price : null) ?? comp.last_list_price ?? comp.original_list_price
   const findings = useMemo(() => generateFindings(comp, comps, s, price), [comp, comps, s])
@@ -208,7 +224,7 @@ export default function CompDetailModal({ comp, comps, onClose }) {
               {DIMS.map(d => {
                 const rawScore = s[d.key]  // 1–3
                 const barPct   = ((rawScore - 1) / 2) * 100
-                const val      = comp[d.valKey]
+                const val      = d.valKey ? comp[d.valKey] : null
                 const text     = dimText(d.key, rawScore, comp, comps)
                 const good     = rawScore >= 2.2
                 const weak     = rawScore < 1.6
@@ -217,7 +233,7 @@ export default function CompDetailModal({ comp, comps, onClose }) {
                     <div className={styles.dimTop}>
                       <span className={styles.dimLabel}>{d.label}</span>
                       <span className={styles.dimWeight}>{d.weight}%</span>
-                      <span className={styles.dimVal}>{d.fmt(val)}</span>
+                      <span className={styles.dimVal}>{d.fmt(val, comp)}</span>
                     </div>
                     <div className={styles.dimBarTrack}>
                       <div
@@ -240,7 +256,7 @@ export default function CompDetailModal({ comp, comps, onClose }) {
             <section className={styles.section}>
               <div className={styles.sectionTitle}>Pool Position ({comps.length} comps)</div>
               <div className={styles.rankGrid}>
-                {DIMS.map(d => {
+                {DIMS.filter(d => d.valKey).map(d => {
                   const vals = comps.map(c => c[d.valKey]).filter(Boolean)
                   if (!vals.length || comp[d.valKey] == null) return null
                   const r = rankOf(vals, comp[d.valKey], d.lower)

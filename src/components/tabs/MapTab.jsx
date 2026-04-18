@@ -1,8 +1,8 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { scoreComp } from '../../lib/scoring'
+import { scoreComp, buildPoolContext } from '../../lib/scoring'
 import styles from './MapTab.module.css'
 
 // Leaflet's default icon resolution breaks in Vite — patch it
@@ -115,6 +115,7 @@ export default function MapTab({ comps }) {
     return () => { cancelled = true }
   }, [comps])
 
+  const ctx = useMemo(() => buildPoolContext(comps), [comps])
   const coords = points.map(p => [p.lat, p.lng])
   const center = coords.length
     ? [coords.reduce((s, c) => s + c[0], 0) / coords.length, coords.reduce((s, c) => s + c[1], 0) / coords.length]
@@ -150,7 +151,7 @@ export default function MapTab({ comps }) {
             const s = scoreComp({
               ...c,
               psf: c.psf ?? (c.last_list_price && c.sqft ? Math.round(c.last_list_price / c.sqft) : null) ?? 999,
-            })
+            }, ctx)
             const actual = (c.is_closed ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
             const dom = c.days_on_market ?? 0
             const signal = c.is_closed ? (c.over_ask ? '▲ over ask' : '✓ closed') : dom > 0 ? `${dom}d on market` : 'active'
