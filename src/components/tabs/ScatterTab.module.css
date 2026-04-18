@@ -8,10 +8,16 @@
   margin-bottom: 20px;
 }
 
+/* ── Chart card ── */
 .chartWrap {
   background: var(--panel);
   border: 1px solid var(--border);
-  padding: 18px;
+  overflow: hidden;
+}
+
+.chartHead {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
 }
 
 .chartTitle {
@@ -19,19 +25,108 @@
   font-size: 0.92rem;
   font-weight: 600;
   color: var(--text);
-  margin-bottom: 3px;
+  margin-bottom: 6px;
 }
 
-.chartSub {
+.chartStats {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.r2 {
+  font-family: var(--font-m);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+.formula {
+  font-family: var(--font-m);
+  font-size: 0.62rem;
+  color: var(--dim);
+  letter-spacing: .03em;
+}
+
+.noData {
+  font-family: var(--font-m);
+  font-size: 0.6rem;
+  color: var(--dim);
+  font-style: italic;
+}
+
+/* ── Canvas ── */
+.canvasWrap {
+  position: relative;
+  padding: 10px 0 0;
+}
+
+.canvas {
+  display: block;
+  width: 100% !important;
+  cursor: crosshair;
+}
+
+/* ── Tooltip ── */
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  padding: 8px 11px;
+  min-width: 160px;
+  max-width: 220px;
+  z-index: 10;
+}
+
+.tipAddr {
+  font-family: var(--font-b);
+  font-size: 0.78rem;
+  color: var(--text);
+  font-weight: 500;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tipTown {
   font-family: var(--font-m);
   font-size: 0.55rem;
   color: var(--dim);
   letter-spacing: .09em;
   text-transform: uppercase;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
-canvas { display: block; width: 100% !important; }
+.tipVals {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-m);
+  font-size: 0.68rem;
+  color: var(--dim);
+}
+.tipVals strong { color: var(--text); }
+
+/* ── Axis labels ── */
+.axisLabels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 16px 10px;
+}
+
+.axisX, .axisY {
+  font-family: var(--font-m);
+  font-size: 0.52rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  opacity: .7;
+}
 
 .note {
   font-family: var(--font-m);
