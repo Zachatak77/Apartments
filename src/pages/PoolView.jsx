@@ -11,6 +11,7 @@ import ScatterTab from '../components/tabs/ScatterTab'
 import ScenarioTab from '../components/tabs/ScenarioTab'
 import BreakevenTab from '../components/tabs/BreakevenTab'
 import FindingsTab from '../components/tabs/FindingsTab'
+import MapTab from '../components/tabs/MapTab'
 import styles from './PoolView.module.css'
 
 const TABS = [
@@ -21,6 +22,7 @@ const TABS = [
   { id: 'scenario',  label: 'Scenario'     },
   { id: 'breakeven', label: 'Breakeven'    },
   { id: 'findings',  label: 'Findings'     },
+  { id: 'map',       label: 'Map'          },
 ]
 
 export default function PoolView({ pool, theme, onToggleTheme, onBack, onAddComp, onEditComp }) {
@@ -98,6 +100,7 @@ export default function PoolView({ pool, theme, onToggleTheme, onBack, onAddComp
           {activeTab === 'scenario'  && <ScenarioTab  {...tabProps} />}
           {activeTab === 'breakeven' && <BreakevenTab {...tabProps} />}
           {activeTab === 'findings'  && <FindingsTab  {...tabProps} />}
+          {activeTab === 'map'       && <MapTab       comps={comps} />}
         </div>
       )}
 

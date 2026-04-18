@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { scoreComp, cellClass } from '../../lib/scoring'
-import { useSortable } from '../../hooks/useSortable'
+import { useSortable } from '../../hooks/useSortable.jsx'
 import styles from './HeatmapTab.module.css'
 
 function fmt(val, type) {

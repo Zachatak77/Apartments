@@ -28,7 +28,7 @@
 }
 .thSortable:hover { color: var(--accent) !important; }
 
-
+.table thead tr {
   background: var(--surface);
   border-bottom: 2px solid var(--border2);
 }

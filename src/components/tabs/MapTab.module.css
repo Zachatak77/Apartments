@@ -1,0 +1,96 @@
+.title { font-family: var(--font-d); font-size: 1.25rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.sub { font-size: 0.85rem; color: var(--dim); margin-bottom: 16px; font-style: italic; }
+
+.progress {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.progressBar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width .3s ease;
+}
+
+.mapWrap {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.map {
+  height: 420px;
+  width: 100%;
+}
+
+/* Override leaflet popup chrome to match app theme */
+:global(.leaflet-popup-content-wrapper) {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  padding: 0;
+}
+:global(.leaflet-popup-tip) { background: var(--surface); }
+:global(.leaflet-popup-content) { margin: 0; }
+
+.popupAddr {
+  font-family: var(--font-b);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text);
+  padding: 10px 14px 2px;
+}
+.popupTown {
+  font-family: var(--font-m);
+  font-size: 0.57rem;
+  color: var(--dim);
+  padding: 0 14px 8px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+.popupGrid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 14px;
+  padding: 6px 14px 12px;
+  font-family: var(--font-m);
+  font-size: 0.68rem;
+  border-top: 1px solid var(--border);
+}
+.popupGrid span:nth-child(odd) { color: var(--dim); }
+.popupGrid span:nth-child(even) { color: var(--text); text-align: right; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin-bottom: 28px;
+}
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-m);
+  font-size: 0.57rem;
+  color: var(--dim);
+}
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.3);
+  flex-shrink: 0;
+}
+
+.empty {
+  font-size: 0.85rem;
+  color: var(--dim);
+  font-style: italic;
+  text-align: center;
+  padding: 40px 0;
+}

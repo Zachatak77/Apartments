@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { scoreComp, CEIL_PSF } from '../../lib/scoring'
-import { useSortable } from '../../hooks/useSortable'
+import { useSortable } from '../../hooks/useSortable.jsx'
 import styles from './BreakevenTab.module.css'
 
 function fairPsf(comps) {
