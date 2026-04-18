@@ -1,19 +1,21 @@
 import { useState } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { useTheme } from './hooks/useTheme'
+import { supabase } from './lib/supabase'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
 import PoolView from './pages/PoolView'
-import CompForm from './pages/CompForm'
+import PropertyForm from './pages/PropertyForm'
+import PropertiesPage from './pages/PropertiesPage'
 import Profile from './pages/Profile'
 
 export default function App() {
   const { user, loading, signIn, signUp, signOut } = useAuth()
   const { theme, toggle } = useTheme()
 
-  const [view, setView] = useState('dashboard')
-  const [activePool, setActivePool] = useState(null)
-  const [editingComp, setEditingComp] = useState(null)
+  const [view,             setView]             = useState('dashboard')
+  const [activePool,       setActivePool]       = useState(null)
+  const [editingProperty,  setEditingProperty]  = useState(null)
 
   if (loading) return (
     <div style={{ padding: 40, textAlign: 'center', color: 'var(--dim)', fontFamily: 'var(--font-m)', fontSize: '0.75rem', letterSpacing: '.1em' }}>
@@ -34,15 +36,45 @@ export default function App() {
     )
   }
 
-  if ((view === 'addComp' || view === 'editComp') && activePool) {
+  if (view === 'properties') {
     return (
-      <CompForm
-        pool={activePool}
-        comp={editingComp}
+      <PropertiesPage
+        user={user}
         theme={theme}
         onToggleTheme={toggle}
-        onBack={() => { setView('pool'); setEditingComp(null) }}
-        onSaved={() => { setView('pool'); setEditingComp(null) }}
+        onBack={() => setView('dashboard')}
+        onAddProperty={() => { setActivePool(null); setEditingProperty(null); setView('addProperty') }}
+        onEditProperty={prop => { setActivePool(null); setEditingProperty(prop); setView('editProperty') }}
+      />
+    )
+  }
+
+  if (view === 'addProperty' || view === 'editProperty') {
+    const fromPool = !!activePool && view === 'addProperty'
+    return (
+      <PropertyForm
+        user={user}
+        property={editingProperty}
+        contextLabel={activePool?.name ?? 'Properties'}
+        theme={theme}
+        onToggleTheme={toggle}
+        onBack={() => {
+          setView(activePool ? 'pool' : 'properties')
+          setEditingProperty(null)
+        }}
+        onSaved={async (property) => {
+          if (fromPool) {
+            await supabase
+              .from('pool_properties')
+              .insert({ pool_id: activePool.id, property_id: property.id })
+            await supabase
+              .from('comp_pools')
+              .update({ updated_at: new Date().toISOString() })
+              .eq('id', activePool.id)
+          }
+          setView(activePool ? 'pool' : 'properties')
+          setEditingProperty(null)
+        }}
       />
     )
   }
@@ -51,11 +83,12 @@ export default function App() {
     return (
       <PoolView
         pool={activePool}
+        user={user}
         theme={theme}
         onToggleTheme={toggle}
         onBack={() => { setView('dashboard'); setActivePool(null) }}
-        onAddComp={() => { setEditingComp(null); setView('addComp') }}
-        onEditComp={comp => { setEditingComp(comp); setView('editComp') }}
+        onAddProperty={() => { setEditingProperty(null); setView('addProperty') }}
+        onEditProperty={prop => { setEditingProperty(prop); setView('editProperty') }}
       />
     )
   }
@@ -67,6 +100,7 @@ export default function App() {
       onToggleTheme={toggle}
       onOpenPool={pool => { setActivePool(pool); setView('pool') }}
       onOpenProfile={() => setView('profile')}
+      onOpenProperties={() => setView('properties')}
       onSignOut={signOut}
     />
   )

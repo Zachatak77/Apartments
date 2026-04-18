@@ -5,7 +5,7 @@ import styles from './ImportModal.module.css'
 
 const PREVIEW_COLS = ['address', 'town', 'last_list_price', 'sold_price', 'sqft', 'taxes', 'days_on_market', 'is_closed']
 
-export default function ImportModal({ pool, onClose, onImported }) {
+export default function ImportModal({ pool, user, onClose, onImported }) {
   const [tab, setTab]         = useState('upload')
   const [paste, setPaste]     = useState('')
   const [preview, setPreview] = useState(null)  // { comps, errors }
@@ -46,13 +46,24 @@ export default function ImportModal({ pool, onClose, onImported }) {
     if (!preview?.comps?.length) return
     setSaving(true)
 
-    const rows = preview.comps.map(c => ({ ...c, pool_id: pool.id }))
+    const rows = preview.comps.map(c => ({ ...c, user_id: user.id }))
 
-    // Insert in batches of 50
-    let count = 0
+    // Insert properties in batches, collect returned IDs
+    let insertedIds = []
     for (let i = 0; i < rows.length; i += 50) {
-      const { error } = await supabase.from('comps').insert(rows.slice(i, i + 50))
-      if (!error) count += Math.min(50, rows.length - i)
+      const { data, error } = await supabase
+        .from('properties')
+        .insert(rows.slice(i, i + 50))
+        .select('id')
+      if (!error && data) insertedIds = [...insertedIds, ...data.map(r => r.id)]
+    }
+
+    // Link each new property to this pool
+    if (insertedIds.length > 0) {
+      const links = insertedIds.map(id => ({ pool_id: pool.id, property_id: id }))
+      for (let i = 0; i < links.length; i += 50) {
+        await supabase.from('pool_properties').insert(links.slice(i, i + 50))
+      }
     }
 
     await supabase.from('comp_pools')
@@ -60,7 +71,7 @@ export default function ImportModal({ pool, onClose, onImported }) {
       .eq('id', pool.id)
 
     setSaving(false)
-    setSaved(count)
+    setSaved(insertedIds.length)
     setTimeout(() => { onImported(); onClose() }, 1200)
   }
 
@@ -77,7 +88,7 @@ export default function ImportModal({ pool, onClose, onImported }) {
         <div className={styles.modalHeader}>
           <div>
             <div className={styles.eyebrow}>Bulk Import</div>
-            <h2 className={styles.title}>Import Comps</h2>
+            <h2 className={styles.title}>Import Properties</h2>
           </div>
           <button className={styles.closeBtn} onClick={onClose}>✕</button>
         </div>
@@ -147,13 +158,13 @@ export default function ImportModal({ pool, onClose, onImported }) {
         ) : (
           <div className={styles.body}>
             {saved > 0 ? (
-              <div className={styles.successBanner}>✓ Imported {saved} comp{saved !== 1 ? 's' : ''} successfully</div>
+              <div className={styles.successBanner}>✓ Imported {saved} propert{saved !== 1 ? 'ies' : 'y'} successfully</div>
             ) : (
               <>
                 <div className={styles.previewHeader}>
                   <div>
                     <div className={styles.sectionLabel}>Preview</div>
-                    <p className={styles.hint}><strong>{preview.comps.length}</strong> comp{preview.comps.length !== 1 ? 's' : ''} ready to import</p>
+                    <p className={styles.hint}><strong>{preview.comps.length}</strong> propert{preview.comps.length !== 1 ? 'ies' : 'y'} ready to import</p>
                   </div>
                   <button className={styles.clearBtn} onClick={clearPreview}>← Back</button>
                 </div>
@@ -191,7 +202,7 @@ export default function ImportModal({ pool, onClose, onImported }) {
                     onClick={handleImport}
                     disabled={saving || !preview.comps.length}
                   >
-                    {saving ? 'Importing…' : `Import ${preview.comps.length} Comp${preview.comps.length !== 1 ? 's' : ''}`}
+                    {saving ? 'Importing…' : `Import ${preview.comps.length} Propert${preview.comps.length !== 1 ? 'ies' : 'y'}`}
                   </button>
                   <button className={styles.cancelBtn} onClick={clearPreview}>Back</button>
                 </div>

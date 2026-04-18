@@ -1,0 +1,288 @@
+.page {
+  padding: 28px 20px 64px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.pageTitle {
+  font-family: var(--font-d);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.topActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 14px;
+  font-size: 0.84rem;
+  outline: none;
+  transition: border-color .2s;
+  width: 200px;
+}
+.searchInput:focus { border-color: var(--accent); }
+.searchInput::placeholder { color: var(--dim); }
+
+.addBtn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  font-family: var(--font-m);
+  font-size: 0.62rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity .2s;
+  white-space: nowrap;
+}
+.addBtn:hover { opacity: .88; }
+
+/* ── Empty state ── */
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--dim);
+  font-size: 0.88rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.emptyTitle {
+  font-family: var(--font-d);
+  font-size: 1.2rem;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.emptySub {
+  font-size: 0.88rem;
+  color: var(--dim);
+  font-style: italic;
+  max-width: 460px;
+  margin: 0 auto 20px;
+  line-height: 1.6;
+}
+
+/* ── Table ── */
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+}
+
+.table thead tr {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border2);
+}
+
+.table th {
+  font-family: var(--font-m);
+  font-size: 0.54rem;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--dim);
+  padding: 10px 12px;
+  text-align: right;
+  font-weight: 400;
+  white-space: nowrap;
+}
+.thLeft { text-align: left !important; }
+
+.table td {
+  padding: 12px 12px;
+  font-size: 0.82rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.table tr:last-child td { border-bottom: none; }
+.table tr:hover td { background: var(--accent-glow); }
+
+.addrCell { text-align: left !important; }
+.numCell {
+  text-align: right;
+  font-family: var(--font-m);
+  font-size: 0.72rem;
+}
+
+.addr {
+  font-size: 0.84rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.town {
+  font-family: var(--font-m);
+  font-size: 0.55rem;
+  color: var(--dim);
+  margin-top: 2px;
+}
+
+/* ── Status badges ── */
+.badgeActive, .badgeClosed {
+  font-family: var(--font-m);
+  font-size: 0.5rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.badgeActive {
+  background: var(--blue-bg);
+  color: var(--accent);
+  border: 1px solid var(--accent-dim);
+}
+
+.badgeClosed {
+  background: var(--surface);
+  color: var(--dim);
+  border: 1px solid var(--border);
+}
+
+/* ── Pool membership ── */
+.poolsCell { text-align: left; }
+
+.poolBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.poolBadge {
+  font-family: var(--font-m);
+  font-size: 0.5rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--dim);
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
+.addPoolBtn {
+  font-family: var(--font-m);
+  font-size: 0.5rem;
+  letter-spacing: .08em;
+  color: var(--accent);
+  background: none;
+  border: 1px dashed var(--accent-dim);
+  padding: 2px 7px;
+  cursor: pointer;
+  transition: background .15s;
+  white-space: nowrap;
+}
+.addPoolBtn:hover { background: var(--blue-bg); }
+
+/* ── Inline pool picker ── */
+.poolPicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.poolPickBtn {
+  font-family: var(--font-m);
+  font-size: 0.5rem;
+  letter-spacing: .06em;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: opacity .15s;
+  white-space: nowrap;
+}
+.poolPickBtn:hover { opacity: .85; }
+
+.poolPickCancel {
+  font-size: 0.6rem;
+  background: none;
+  border: none;
+  color: var(--dim);
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: color .15s;
+}
+.poolPickCancel:hover { color: var(--red); }
+
+.allPoolsNote {
+  font-family: var(--font-m);
+  font-size: 0.55rem;
+  color: var(--dim);
+  font-style: italic;
+}
+
+/* ── Row actions ── */
+.actCell {
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+.editBtn, .deleteBtn {
+  font-family: var(--font-m);
+  font-size: 0.55rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: none;
+  border: 1px solid var(--border);
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all .15s;
+  margin-left: 4px;
+}
+
+.editBtn { color: var(--dim); }
+.editBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+.deleteBtn { color: var(--dim); }
+.deleteBtn:hover { border-color: var(--red); color: var(--red); }
+
+.noResults {
+  text-align: center;
+  padding: 24px;
+  font-size: 0.84rem;
+  color: var(--dim);
+  font-style: italic;
+}
+
+@media (min-width: 640px) {
+  .page { padding: 36px 32px 64px; }
+}
+
+@media (min-width: 900px) {
+  .page { padding: 48px 40px 80px; }
+}

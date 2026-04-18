@@ -4,6 +4,7 @@ import { poolStats } from '../lib/scoring'
 import Header from '../components/Header'
 import TabBar from '../components/TabBar'
 import ImportModal from '../components/ImportModal'
+import PropertyPicker from '../components/PropertyPicker'
 import HeatmapTab from '../components/tabs/HeatmapTab'
 import HistoryTab from '../components/tabs/HistoryTab'
 import TornadoTab from '../components/tabs/TornadoTab'
@@ -26,11 +27,12 @@ const TABS = [
   { id: 'map',       label: 'Map'          },
 ]
 
-export default function PoolView({ pool, theme, onToggleTheme, onBack, onAddComp, onEditComp }) {
-  const [comps, setComps]         = useState([])
-  const [loading, setLoading]     = useState(true)
-  const [activeTab, setActiveTab] = useState('heatmap')
-  const [showImport, setShowImport] = useState(false)
+export default function PoolView({ pool, user, theme, onToggleTheme, onBack, onAddProperty, onEditProperty }) {
+  const [comps,        setComps]        = useState([])
+  const [loading,      setLoading]      = useState(true)
+  const [activeTab,    setActiveTab]    = useState('heatmap')
+  const [showImport,   setShowImport]   = useState(false)
+  const [showPicker,   setShowPicker]   = useState(false)
   const [selectedComp, setSelectedComp] = useState(null)
 
   useEffect(() => { fetchComps() }, [pool.id])
@@ -38,30 +40,43 @@ export default function PoolView({ pool, theme, onToggleTheme, onBack, onAddComp
   async function fetchComps() {
     setLoading(true)
     const { data } = await supabase
-      .from('comps')
-      .select('*')
+      .from('pool_properties')
+      .select('properties(*)')
       .eq('pool_id', pool.id)
-      .order('created_at', { ascending: true })
-    setComps(data || [])
+      .order('added_at', { ascending: true })
+    setComps((data || []).map(r => r.properties).filter(Boolean))
     setLoading(false)
   }
 
-  async function deleteComp(id) {
-    if (!confirm('Remove this comp?')) return
-    await supabase.from('comps').delete().eq('id', id)
-    setComps(c => c.filter(x => x.id !== id))
+  async function removeFromPool(propertyId) {
+    if (!confirm('Remove this property from the pool? It stays in your property library.')) return
+    await supabase
+      .from('pool_properties')
+      .delete()
+      .match({ pool_id: pool.id, property_id: propertyId })
+    await supabase
+      .from('comp_pools')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', pool.id)
+    setComps(c => c.filter(x => x.id !== propertyId))
   }
 
   const stats = poolStats(comps)
 
   const headerStats = comps.length > 0 ? [
-    { value: stats.medianPsf ? `$<em>${stats.medianPsf}</em>` : '—', label: 'Median $/SF' },
-    { value: stats.psfRange  ? `$<em>${stats.psfRange}</em>`  : '—', label: '$/SF Range'  },
+    { value: stats.medianPsf ? `$<em>${stats.medianPsf}</em>` : '—', label: 'Median $/SF'  },
+    { value: stats.psfRange  ? `$<em>${stats.psfRange}</em>`  : '—', label: '$/SF Range'   },
     { value: `<em>${stats.closedCount}</em>/${stats.totalCount}`,     label: 'Closed Sales' },
     { value: stats.avgCut    ? `−$<em>${Math.round(stats.avgCut / 1000)}K</em>` : '—', label: 'Avg Price Cut' },
   ] : []
 
-  const tabProps = { comps, pool, onEdit: onEditComp, onDelete: deleteComp, onSelect: setSelectedComp, theme }
+  const tabProps = {
+    comps, pool,
+    onEdit:   onEditProperty,
+    onDelete: removeFromPool,
+    onSelect: setSelectedComp,
+    theme,
+  }
 
   return (
     <div>
@@ -77,20 +92,20 @@ export default function PoolView({ pool, theme, onToggleTheme, onBack, onAddComp
       <TabBar tabs={TABS} active={activeTab} onChange={setActiveTab} />
 
       <div className={styles.addBar}>
-        <button className={styles.addBtn} onClick={onAddComp}>+ Add Comp</button>
+        <button className={styles.addBtn} onClick={() => setShowPicker(true)}>+ Add to Pool</button>
         <button className={styles.importBtn} onClick={() => setShowImport(true)}>↑ Import</button>
-        <span className={styles.compCount}>{comps.length} comp{comps.length !== 1 ? 's' : ''}</span>
+        <span className={styles.compCount}>{comps.length} propert{comps.length !== 1 ? 'ies' : 'y'}</span>
       </div>
 
       {loading ? (
-        <div className={styles.loading}>Loading comps…</div>
+        <div className={styles.loading}>Loading…</div>
       ) : comps.length === 0 ? (
         <div className={styles.empty}>
-          <p className={styles.emptyTitle}>No comps yet</p>
-          <p className={styles.emptySub}>Add comps manually or import from a spreadsheet.</p>
+          <p className={styles.emptyTitle}>No properties in this pool</p>
+          <p className={styles.emptySub}>Add from your property library or import from a spreadsheet.</p>
           <div className={styles.emptyActions}>
-            <button className={styles.addBtn} onClick={onAddComp}>+ Add Comp</button>
-            <button className={styles.importBtn} onClick={() => setShowImport(true)}>↑ Import CSV</button>
+            <button className={styles.addBtn} onClick={() => setShowPicker(true)}>+ Add to Pool</button>
+            <button className={styles.importBtn} onClick={() => setShowImport(true)}>↑ Import</button>
           </div>
         </div>
       ) : (
@@ -114,9 +129,20 @@ export default function PoolView({ pool, theme, onToggleTheme, onBack, onAddComp
         />
       )}
 
+      {showPicker && (
+        <PropertyPicker
+          pool={pool}
+          user={user}
+          onClose={() => setShowPicker(false)}
+          onAdded={fetchComps}
+          onCreateNew={() => { setShowPicker(false); onAddProperty() }}
+        />
+      )}
+
       {showImport && (
         <ImportModal
           pool={pool}
+          user={user}
           onClose={() => setShowImport(false)}
           onImported={fetchComps}
         />

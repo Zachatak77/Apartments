@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
 import styles from './Dashboard.module.css'
 
-export default function Dashboard({ user, theme, onToggleTheme, onOpenPool, onOpenProfile, onSignOut }) {
+export default function Dashboard({ user, theme, onToggleTheme, onOpenPool, onOpenProfile, onOpenProperties, onSignOut }) {
   const [pools, setPools] = useState([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
@@ -19,7 +19,7 @@ export default function Dashboard({ user, theme, onToggleTheme, onOpenPool, onOp
     setLoading(true)
     const { data, error } = await supabase
       .from('comp_pools')
-      .select('*, comps(count)')
+      .select('*, pool_properties(count)')
       .eq('user_id', user.id)
       .order('updated_at', { ascending: false })
     if (!error) setPools(data || [])
@@ -70,6 +70,7 @@ export default function Dashboard({ user, theme, onToggleTheme, onOpenPool, onOp
           </div>
           <div className={styles.topActions}>
             <button className={styles.newBtn} onClick={() => setShowForm(true)}>+ New Pool</button>
+            <button className={styles.signOutBtn} onClick={onOpenProperties}>Properties</button>
             <button className={styles.signOutBtn} onClick={onOpenProfile}>Profile</button>
             <button className={styles.signOutBtn} onClick={onSignOut}>Sign out</button>
           </div>
@@ -141,7 +142,7 @@ export default function Dashboard({ user, theme, onToggleTheme, onOpenPool, onOp
                 </div>
                 <div className={styles.poolFooter}>
                   <span className={styles.poolCount}>
-                    {pool.comps?.[0]?.count ?? 0} comp{pool.comps?.[0]?.count !== 1 ? 's' : ''}
+                    {pool.pool_properties?.[0]?.count ?? 0} propert{pool.pool_properties?.[0]?.count !== 1 ? 'ies' : 'y'}
                   </span>
                   <span className={styles.poolDate}>Updated {fmt(pool.updated_at)}</span>
                 </div>
