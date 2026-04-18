@@ -113,6 +113,15 @@
 .sigHot    { color: var(--red);    }
 .sigActive { color: var(--text);   }
 
+.domCut {
+  display: block;
+  font-family: var(--font-m);
+  font-size: 0.52rem;
+  color: var(--amber);
+  margin-top: 2px;
+  letter-spacing: .04em;
+}
+
 .note {
   font-family: var(--font-m);
   font-size: 0.62rem;

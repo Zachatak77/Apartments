@@ -1,0 +1,148 @@
+.page {
+  padding: 28px 20px 64px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.pageTitle {
+  font-family: var(--font-d);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.sub {
+  font-size: 0.84rem;
+  color: var(--dim);
+  font-style: italic;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+/* ── Card ── */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  padding: 28px 24px;
+  margin-bottom: 20px;
+}
+
+.cardTitle {
+  font-family: var(--font-d);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 24px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Sliders ── */
+.sliderGroup { margin-bottom: 22px; }
+
+.sliderHead, .fieldHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.sliderLabel {
+  font-size: 0.85rem;
+  color: var(--text-2);
+}
+
+.sliderVal {
+  font-family: var(--font-m);
+  font-size: 0.78rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* ── Term buttons ── */
+.fieldGroup { margin-bottom: 8px; }
+
+.termBtns {
+  display: flex;
+  gap: 8px;
+}
+
+.termBtn {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--dim);
+  padding: 11px 0;
+  font-family: var(--font-m);
+  font-size: 0.68rem;
+  letter-spacing: .08em;
+  cursor: pointer;
+  transition: all .15s;
+}
+.termBtn:hover { border-color: var(--accent); color: var(--accent); }
+.termActive { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; }
+
+/* ── Actions ── */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+}
+
+.saveBtn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 12px 28px;
+  font-family: var(--font-m);
+  font-size: 0.65rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s, opacity .2s;
+  flex-shrink: 0;
+}
+.saveBtn:hover { opacity: .88; }
+.saveDone { background: #1a6640 !important; }
+
+.savedNote {
+  font-family: var(--font-m);
+  font-size: 0.62rem;
+  color: var(--accent);
+}
+
+/* ── Hint ── */
+.hint {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-dim);
+  padding: 16px 18px;
+}
+
+.hintTitle {
+  font-family: var(--font-m);
+  font-size: 0.52rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 8px;
+}
+
+.hint p {
+  font-size: 0.82rem;
+  color: var(--dim);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.hint strong { color: var(--text); }
+
+@media (min-width: 640px) {
+  .page { padding: 36px 32px 64px; }
+}

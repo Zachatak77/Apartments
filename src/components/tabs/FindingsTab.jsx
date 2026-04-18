@@ -34,13 +34,20 @@ export default function FindingsTab({ comps }) {
     ? Math.round(cuts.reduce((s, c) => s + (c.original_list_price - c.last_list_price), 0) / cuts.length)
     : 0
 
+  const cutsWithDates = cuts.filter(c => c.list_date && c.last_price_date)
+  const avgDomAtCut = cutsWithDates.length > 0
+    ? Math.round(cutsWithDates.reduce((sum, c) =>
+        sum + Math.max(0, Math.round((new Date(c.last_price_date) - new Date(c.list_date)) / 86400000)), 0
+      ) / cutsWithDates.length)
+    : null
+
   const findings = []
 
   if (cuts.length > 0) {
     findings.push({
       num: `Finding 01 — High Confidence`,
       title: 'Original List Price Is Systematically Misleading',
-      body: `${cuts.length} of ${comps.length} comps had price cuts before going under contract${avgCut ? `, averaging <strong>−$${Math.round(avgCut / 1000)}K</strong>` : ''}. <strong>Final list price is the negotiating baseline — listing history is non-negotiable due diligence.</strong>`,
+      body: `${cuts.length} of ${comps.length} comps had price cuts${avgCut ? `, averaging <strong>−$${Math.round(avgCut / 1000)}K</strong>` : ''}${avgDomAtCut !== null ? ` — sellers in this pool cut at an average of <strong>${avgDomAtCut} DOM</strong>` : ''}. <strong>Final list price is the negotiating baseline — listing history is non-negotiable due diligence.</strong>`,
       type: '',
     })
   }

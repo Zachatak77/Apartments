@@ -99,10 +99,14 @@ export default function BreakevenTab({ comps }) {
               const gap       = c._gap
               const maxOffer  = c._maxOffer
               const dom       = c.days_on_market ?? 0
+              const hasCut    = c.original_list_price && c.last_list_price && c.original_list_price > c.last_list_price
+              const domAtCut  = hasCut && c.list_date && c.last_price_date
+                ? Math.max(0, Math.round((new Date(c.last_price_date) - new Date(c.list_date)) / 86400000))
+                : null
               const signal    = c.is_closed
                 ? (c.over_ask ? '▲ over' : '✓ closed')
                 : dom > 45 ? `●${dom}d` : dom > 0 ? `○${dom}d` : 'new'
-              const cutTag = c.original_list_price && c.last_list_price && c.original_list_price > c.last_list_price
+              const cutTag = hasCut
                 ? `↓$${Math.round((c.original_list_price - c.last_list_price) / 1000)}K`
                 : '—'
               const aboveCeil = c.psf && c.psf > ceilPsf
@@ -128,6 +132,9 @@ export default function BreakevenTab({ comps }) {
                     <span className={c.is_closed ? (c.over_ask ? styles.sigOver : styles.sigClosed) : dom > 45 ? styles.sigHot : styles.sigActive}>
                       {signal}
                     </span>
+                    {domAtCut !== null && (
+                      <span className={styles.domCut}>cut @{domAtCut}d</span>
+                    )}
                   </td>
                 </tr>
               )

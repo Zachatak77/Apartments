@@ -94,6 +94,157 @@
   line-height: 1.6;
 }
 
+/* ── Section divider ── */
+.sectionDivider {
+  font-family: var(--font-m);
+  font-size: 0.52rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--dim);
+  padding: 14px 0 10px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+/* ── Term buttons ── */
+.termBtns {
+  display: flex;
+  gap: 6px;
+}
+
+.termBtn {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--dim);
+  padding: 7px 0;
+  font-family: var(--font-m);
+  font-size: 0.62rem;
+  letter-spacing: .08em;
+  cursor: pointer;
+  transition: all .15s;
+}
+.termBtn:hover { border-color: var(--accent); color: var(--accent); }
+.termActive { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; }
+
+/* ── Mortgage sensitivity panel ── */
+.mortPanel {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  margin-top: 18px;
+}
+
+.mortTitle {
+  font-family: var(--font-m);
+  font-size: 0.52rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 12px;
+}
+
+.mortPayment {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.mortPmt {
+  font-family: var(--font-d);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.mortSub {
+  font-family: var(--font-m);
+  font-size: 0.62rem;
+  color: var(--dim);
+}
+
+.mortRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.mortLbl {
+  font-family: var(--font-m);
+  font-size: 0.62rem;
+  color: var(--dim);
+}
+
+.mortVal {
+  font-family: var(--font-m);
+  font-size: 0.72rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.mortDivider {
+  height: 1px;
+  background: var(--border);
+  margin: 10px 0;
+}
+
+.mortRateTable {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mortRateRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 8px;
+  font-family: var(--font-m);
+  font-size: 0.68rem;
+}
+
+.mortRateLo { color: var(--dim); }
+.mortRateCur { background: var(--blue-bg); color: var(--accent); font-weight: 500; }
+.mortRateHi { color: var(--dim); }
+
+.mortRateTag {
+  display: inline-block;
+  font-size: 0.48rem;
+  background: var(--accent);
+  color: #fff;
+  padding: 1px 5px;
+  margin-left: 6px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.mortCash {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.mortCashVal {
+  font-family: var(--font-d);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.mortCashBreak {
+  font-family: var(--font-m);
+  font-size: 0.57rem;
+  color: var(--dim);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
 @media (min-width: 640px) {
   .layout { grid-template-columns: 1fr 1fr; }
   .outGrid { grid-template-columns: 1fr 1fr 1fr; }

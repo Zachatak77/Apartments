@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
 import styles from './Dashboard.module.css'
 
-export default function Dashboard({ user, theme, onToggleTheme, onOpenPool, onSignOut }) {
+export default function Dashboard({ user, theme, onToggleTheme, onOpenPool, onOpenProfile, onSignOut }) {
   const [pools, setPools] = useState([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
@@ -70,6 +70,7 @@ export default function Dashboard({ user, theme, onToggleTheme, onOpenPool, onSi
           </div>
           <div className={styles.topActions}>
             <button className={styles.newBtn} onClick={() => setShowForm(true)}>+ New Pool</button>
+            <button className={styles.signOutBtn} onClick={onOpenProfile}>Profile</button>
             <button className={styles.signOutBtn} onClick={onSignOut}>Sign out</button>
           </div>
         </div>

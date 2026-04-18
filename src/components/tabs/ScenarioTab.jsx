@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react'
 import { poolStats, MED_PSF, CEIL_PSF, buildPricingContext } from '../../lib/scoring'
+import { loadMortgagePrefs, calcMonthlyPayment } from '../../lib/mortgage'
 import styles from './ScenarioTab.module.css'
 
-function Slider({ label, id, min, max, step = 1, value, onChange, display }) {
+function Slider({ label, min, max, step = 1, value, onChange, display }) {
   return (
     <div className={styles.sliderGroup}>
       <div className={styles.sliderHead}>
@@ -28,6 +29,11 @@ export default function ScenarioTab({ comps }) {
   const [dom,   setDom]    = useState(14)
   const [cut,   setCut]    = useState(0)
   const [reno,  setReno]   = useState(100000)
+
+  const [mortPrefs]           = useState(loadMortgagePrefs)
+  const [rate, setRate]       = useState(mortPrefs.rate)
+  const [downPct, setDownPct] = useState(mortPrefs.downPct)
+  const [term, setTerm]       = useState(mortPrefs.term)
 
   const out = useMemo(() => {
     const psf    = price / sqft
@@ -62,10 +68,26 @@ export default function ScenarioTab({ comps }) {
     const verdict = score >= 70 && allin < ceilPsf ? 'Strong Buy'
       : score >= 50 && allin < ceilPsf ? 'Consider' : 'Pass'
 
-    return { psf, allin, taxMo, delta, score, lo: price * lo, hi: price * hi, flags, verdict }
-  }, [price, sqft, lot, tax, yr, dom, cut, reno, medPsf])
+    // Mortgage calculations
+    const downAmt    = Math.round(price * downPct / 100)
+    const loanAmt    = price - downAmt
+    const closing    = Math.round(price * 0.025)
+    const cashNeeded = downAmt + reno + closing
+    const monthlyPmt = calcMonthlyPayment(loanAmt, rate, term)
+    const loRate     = Math.max(1, rate - 1)
+    const hiRate     = rate + 1
+    const loPayment  = calcMonthlyPayment(loanAmt, loRate, term)
+    const hiPayment  = calcMonthlyPayment(loanAmt, hiRate, term)
 
-  const vc = (v, ok, warn) => v <= ok ? styles.ok : v <= warn ? styles.warn : styles.bad
+    return {
+      psf, allin, taxMo, delta, score,
+      lo: price * lo, hi: price * hi,
+      flags, verdict,
+      downAmt, loanAmt, closing, cashNeeded,
+      monthlyPmt, loRate, hiRate, loPayment, hiPayment,
+    }
+  }, [price, sqft, lot, tax, yr, dom, cut, reno, medPsf, rate, downPct, term])
+
   const verdictCls = out.verdict === 'Strong Buy' ? styles.verdictBuy : out.verdict === 'Consider' ? styles.verdictWatch : styles.verdictAvoid
 
   return (
@@ -76,7 +98,7 @@ export default function ScenarioTab({ comps }) {
 
       <div className={styles.layout}>
         <div className={styles.inputs}>
-          <div className={styles.panelTitle}>Input Parameters</div>
+          <div className={styles.panelTitle}>Property Parameters</div>
           <Slider label="List Price"          min={500000}  max={4000000} step={25000}  value={price} onChange={setPrice} display={`$${Math.round(price/1000)}K`} />
           <Slider label="Square Feet"         min={1000}    max={8000}    step={50}     value={sqft}  onChange={setSqft}  display={`${sqft.toLocaleString()} SF`} />
           <Slider label="Lot Size"            min={5000}    max={80000}   step={500}    value={lot}   onChange={setLot}   display={`${Math.round(lot/1000)}K SF`} />
@@ -85,6 +107,27 @@ export default function ScenarioTab({ comps }) {
           <Slider label="Days on Market"      min={0}       max={180}     step={1}      value={dom}   onChange={setDom}   display={`${dom}d`} />
           <Slider label="Price Cut from Orig" min={0}       max={600000}  step={10000}  value={cut}   onChange={setCut}   display={cut ? `−$${Math.round(cut/1000)}K` : 'None'} />
           <Slider label="Renovation Budget"   min={0}       max={1000000} step={25000}  value={reno}  onChange={setReno}  display={`$${Math.round(reno/1000)}K`} />
+
+          <div className={styles.sectionDivider}>Mortgage Parameters</div>
+          <Slider label="Interest Rate" min={3} max={10} step={0.125} value={rate}    onChange={setRate}    display={`${rate.toFixed(3)}%`} />
+          <Slider label="Down Payment"  min={5} max={50} step={5}     value={downPct} onChange={setDownPct} display={`${downPct}%`} />
+          <div className={styles.sliderGroup}>
+            <div className={styles.sliderHead}>
+              <span className={styles.sliderName}>Loan Term</span>
+              <span className={styles.sliderVal}>{term}yr</span>
+            </div>
+            <div className={styles.termBtns}>
+              {[10, 15, 20, 30].map(t => (
+                <button
+                  key={t}
+                  className={`${styles.termBtn} ${term === t ? styles.termActive : ''}`}
+                  onClick={() => setTerm(t)}
+                >
+                  {t}yr
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className={styles.outputs}>
@@ -103,6 +146,50 @@ export default function ScenarioTab({ comps }) {
             <div className={`${styles.verdict} ${verdictCls}`}>{out.verdict}</div>
             <div className={styles.verdictReason}>
               {out.flags.length ? out.flags.join('  ·  ') : 'No flags on this configuration.'}
+            </div>
+          </div>
+
+          <div className={styles.mortPanel}>
+            <div className={styles.mortTitle}>Mortgage Sensitivity</div>
+            <div className={styles.mortPayment}>
+              <span className={styles.mortPmt}>${out.monthlyPmt.toLocaleString()}/mo</span>
+              <span className={styles.mortSub}>{rate.toFixed(3)}% · {term}yr · {downPct}% down</span>
+            </div>
+            <div className={styles.mortRow}>
+              <span className={styles.mortLbl}>Down Payment</span>
+              <span className={styles.mortVal}>${Math.round(out.downAmt / 1000)}K</span>
+            </div>
+            <div className={styles.mortRow}>
+              <span className={styles.mortLbl}>Loan Amount</span>
+              <span className={styles.mortVal}>${Math.round(out.loanAmt / 1000)}K</span>
+            </div>
+            <div className={styles.mortDivider} />
+            <div className={styles.mortRateTable}>
+              <div className={`${styles.mortRateRow} ${styles.mortRateLo}`}>
+                <span>{out.loRate.toFixed(2)}%</span>
+                <span>${out.loPayment.toLocaleString()}/mo</span>
+              </div>
+              <div className={`${styles.mortRateRow} ${styles.mortRateCur}`}>
+                <span>{rate.toFixed(3)}%</span>
+                <span>
+                  ${out.monthlyPmt.toLocaleString()}/mo
+                  <span className={styles.mortRateTag}>current</span>
+                </span>
+              </div>
+              <div className={`${styles.mortRateRow} ${styles.mortRateHi}`}>
+                <span>{out.hiRate.toFixed(2)}%</span>
+                <span>${out.hiPayment.toLocaleString()}/mo</span>
+              </div>
+            </div>
+            <div className={styles.mortDivider} />
+            <div className={styles.mortCash}>
+              <span className={styles.mortLbl}>Total Cash Needed</span>
+              <span className={styles.mortCashVal}>${Math.round(out.cashNeeded / 1000)}K</span>
+            </div>
+            <div className={styles.mortCashBreak}>
+              ${Math.round(out.downAmt / 1000)}K down
+              {reno > 0 ? ` · $${Math.round(reno / 1000)}K reno` : ''}
+              {' '}· ${Math.round(out.closing / 1000)}K closing (est. 2.5%)
             </div>
           </div>
         </div>
