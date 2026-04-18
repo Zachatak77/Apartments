@@ -21,6 +21,22 @@
 }
 .addBtn:hover { opacity: .88; }
 
+.importBtn {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--accent);
+  padding: 8px 16px;
+  font-family: var(--font-m);
+  font-size: 0.6rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s;
+}
+.importBtn:hover { background: var(--accent-glow); }
+
+.emptyActions { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
+
 .compCount {
   font-family: var(--font-m);
   font-size: 0.6rem;
