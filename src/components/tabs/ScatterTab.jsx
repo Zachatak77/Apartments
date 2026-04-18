@@ -240,47 +240,53 @@ function Chart({ title, pts, xLabel, yLabel, formulaFn, isDark }) {
 
 // ── Tab ───────────────────────────────────────────────────────────────────────
 export default function ScatterTab({ comps, theme }) {
-  const isDark = theme === 'dark'
-  const valid  = comps.filter(c => c.sqft && c.psf)
+  const isDark    = theme === 'dark'
   const withPrice = comps.filter(c => c.last_list_price || c.original_list_price || c.sold_price)
-
-  const price = c => (c.is_closed ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
+  const price     = c => ((c.is_closed ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price) / 1000
+  const sgn       = (r, abs) => `${r.slope >= 0 ? '+' : '−'} $${Math.abs(abs)}`
 
   const charts = [
     {
       id: 'sc1',
-      title: 'Size vs. List Price',
-      xLabel: 'Size (SF)',  yLabel: 'Price ($K)',
-      pts: valid.filter(c => c.last_list_price).map(c => [c.sqft, c.last_list_price / 1000, c]),
-      formulaFn: r => `y = $${Math.round(r.inter)}K + $${Math.round(r.slope * 100)}/100SF`,
+      title: 'Sq Ft vs. List Price',
+      xLabel: 'Sq Ft', yLabel: 'Price ($K)',
+      pts: withPrice.filter(c => c.sqft).map(c => [c.sqft, price(c), c]),
+      formulaFn: r => `y = $${Math.round(r.inter)}K ${sgn(r, Math.round(r.slope * 100))}/100SF`,
     },
     {
       id: 'sc2',
-      title: 'Taxes vs. $/SF',
-      xLabel: 'Taxes ($K)',  yLabel: '$/SF',
-      pts: valid.filter(c => c.taxes).map(c => [c.taxes / 1000, c.psf, c]),
-      formulaFn: r => `y = $${Math.round(r.inter)} ${r.slope >= 0 ? '+' : '−'} $${Math.abs(r.slope).toFixed(2)} × taxes`,
+      title: 'Lot Size vs. List Price',
+      xLabel: 'Lot (K SF)', yLabel: 'Price ($K)',
+      pts: withPrice.filter(c => c.lot_sqft).map(c => [c.lot_sqft / 1000, price(c), c]),
+      formulaFn: r => `y = $${Math.round(r.inter)}K ${sgn(r, Math.abs(r.slope).toFixed(1))}K per 1K lot SF`,
     },
     {
       id: 'sc3',
-      title: 'List Price vs. Annual Taxes',
-      xLabel: 'Taxes ($K)',  yLabel: 'Price ($K)',
-      pts: withPrice.filter(c => c.taxes).map(c => [c.taxes / 1000, price(c) / 1000, c]),
-      formulaFn: r => `y = $${Math.round(r.inter)}K ${r.slope >= 0 ? '+' : '−'} $${Math.abs(r.slope).toFixed(1)}K × taxes`,
+      title: 'Taxes vs. List Price',
+      xLabel: 'Taxes ($K)', yLabel: 'Price ($K)',
+      pts: withPrice.filter(c => c.taxes).map(c => [c.taxes / 1000, price(c), c]),
+      formulaFn: r => `y = $${Math.round(r.inter)}K ${sgn(r, Math.abs(r.slope).toFixed(1))}K per $1K taxes`,
     },
     {
       id: 'sc4',
-      title: 'Lot Size vs. List Price',
-      xLabel: 'Lot (K SF)',  yLabel: 'Price ($K)',
-      pts: valid.filter(c => c.lot_sqft && c.last_list_price).map(c => [c.lot_sqft / 1000, c.last_list_price / 1000, c]),
-      formulaFn: r => `y = $${Math.round(r.inter)}K ${r.slope >= 0 ? '+' : '−'} $${Math.abs(r.slope).toFixed(1)}K per 1K lot SF`,
+      title: 'Bedrooms vs. List Price',
+      xLabel: 'Bedrooms', yLabel: 'Price ($K)',
+      pts: withPrice.filter(c => c.beds).map(c => [c.beds, price(c), c]),
+      formulaFn: r => `y = $${Math.round(r.inter)}K ${sgn(r, Math.round(r.slope))}K per bedroom`,
     },
     {
       id: 'sc5',
-      title: 'Year Built vs. $/SF',
-      xLabel: 'Year Built',  yLabel: '$/SF',
-      pts: valid.filter(c => c.year_built).map(c => [c.year_built, c.psf, c]),
-      formulaFn: r => `y = $${Math.round(r.inter)} + $${r.slope.toFixed(2)} per year`,
+      title: 'Bathrooms vs. List Price',
+      xLabel: 'Bathrooms', yLabel: 'Price ($K)',
+      pts: withPrice.filter(c => c.baths).map(c => [c.baths, price(c), c]),
+      formulaFn: r => `y = $${Math.round(r.inter)}K ${sgn(r, Math.round(r.slope))}K per bathroom`,
+    },
+    {
+      id: 'sc6',
+      title: '$/SF vs. $/Lot SF',
+      xLabel: '$/SF', yLabel: '$/Lot SF',
+      pts: comps.filter(c => c.psf && c.lot_psf).map(c => [c.psf, c.lot_psf, c]),
+      formulaFn: r => `y = $${r.inter.toFixed(2)} ${sgn(r, Math.abs(r.slope).toFixed(3))} per $/SF`,
     },
   ]
 
