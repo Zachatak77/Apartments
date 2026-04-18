@@ -18,7 +18,7 @@
 .table {
   border-collapse: collapse;
   width: 100%;
-  min-width: 660px;
+  min-width: 580px;
 }
 
 .thSortable {
@@ -30,7 +30,7 @@
 
 .table thead tr {
   background: var(--surface);
-  border-bottom: 2px solid var(--border2);
+  border-bottom: 1px solid var(--border2);
 }
 
 .table th {
@@ -39,7 +39,7 @@
   letter-spacing: .11em;
   text-transform: uppercase;
   color: var(--dim);
-  padding: 10px 10px;
+  padding: 9px 12px;
   text-align: center;
   white-space: nowrap;
   font-weight: 400;
@@ -49,9 +49,14 @@
   z-index: 2;
 }
 .thLeft { text-align: left; }
-.thAct { width: 80px; }
+.thAct { width: 72px; }
 
-.table td { padding: 0; border: 2px solid var(--bg); }
+.table td {
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid var(--border);
+}
+.table tr:last-child td { border-bottom: none; }
 
 /* sticky first col */
 .table tr td:first-child,
@@ -60,7 +65,7 @@
   left: 0;
   z-index: 1;
   background: var(--panel);
-  border-right: 2px solid var(--border);
+  border-right: 1px solid var(--border);
 }
 .table tr th:first-child { background: var(--surface); z-index: 3; }
 
@@ -68,7 +73,7 @@
   font-family: var(--font-b);
   font-size: 0.78rem;
   color: var(--text);
-  padding: 8px 12px !important;
+  padding: 7px 12px !important;
   white-space: nowrap;
   min-width: 150px;
   max-width: 200px;
@@ -82,16 +87,11 @@
   color: var(--dim);
   margin-top: 1px;
 }
-.cut {
-  font-family: var(--font-m);
-  font-size: 0.5rem;
-  color: var(--red);
-  margin-left: 4px;
-}
 
+/* Base cell shared by all data columns */
 .cell {
   width: 100%;
-  height: 40px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -99,9 +99,22 @@
   font-size: 0.68rem;
   font-weight: 400;
   cursor: default;
+}
+
+/* Sub-dimension cells: strip the global fill, use colored text + faint tint */
+.dim:global(.c5) { background: rgba(42,92,66,0.12);  color: var(--accent); }
+.dim:global(.c4) { background: rgba(42,92,66,0.07);  color: var(--accent); }
+.dim:global(.c3) { background: transparent;           color: var(--dim);   }
+.dim:global(.c2) { background: rgba(139,58,42,0.06); color: var(--red);   }
+.dim:global(.c1) { background: rgba(139,58,42,0.12); color: var(--red);   }
+
+/* Score cell: keep bold fill, larger text */
+.scoreCell {
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
   transition: filter .15s;
 }
-.cell:hover { filter: brightness(1.08); }
+.scoreCell:hover { filter: brightness(1.06); }
 
 .actCell {
   padding: 0 8px !important;
@@ -135,7 +148,7 @@
 }
 .legendDot {
   display: inline-block;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 2px;
 }
