@@ -143,6 +143,29 @@
 
 .hint strong { color: var(--text); }
 
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 20px 0 18px;
+}
+
+.sectionLabel {
+  font-family: var(--font-m);
+  font-size: 0.52rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 14px;
+}
+
+.taxHint {
+  font-size: 0.75rem;
+  color: var(--dim);
+  line-height: 1.55;
+  margin-top: 6px;
+  font-style: italic;
+}
+
 @media (min-width: 640px) {
   .page { padding: 36px 32px 64px; }
 }

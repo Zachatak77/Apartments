@@ -1,4 +1,6 @@
-export const DEFAULT_PREFS = { rate: 7.0, downPct: 20, term: 30 }
+export const DEFAULT_PREFS = { rate: 7.0, downPct: 20, term: 30, taxRate: 32 }
+
+export const MORTGAGE_DEDUCTION_CAP = 750_000
 
 const STORAGE_KEY = 'compiq_mortgage_prefs'
 

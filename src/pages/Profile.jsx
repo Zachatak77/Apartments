@@ -86,6 +86,23 @@ export default function Profile({ user, theme, onToggleTheme, onBack }) {
             </div>
           </div>
 
+          <div className={styles.divider} />
+
+          <div className={styles.sectionLabel}>Tax Parameters</div>
+
+          <Slider
+            label="Marginal Tax Rate"
+            min={10} max={50} step={1}
+            value={prefs.taxRate ?? 32}
+            onChange={v => update('taxRate', v)}
+            display={`${prefs.taxRate ?? 32}%`}
+          />
+          <p className={styles.taxHint}>
+            Combined federal + state marginal rate. Used to compute after-tax carrying costs
+            in the Cost Comparison tab. Mortgage interest deduction applies to the first
+            $750K of loan principal (TCJA 2017).
+          </p>
+
           <div className={styles.actions}>
             <button
               className={`${styles.saveBtn} ${saved ? styles.saveDone : ''}`}
@@ -95,7 +112,7 @@ export default function Profile({ user, theme, onToggleTheme, onBack }) {
             </button>
             {saved && (
               <span className={styles.savedNote}>
-                Preferences saved — Scenario tab will use these on next visit.
+                Saved — Scenario and Cost Comparison tabs will use these on next visit.
               </span>
             )}
           </div>
@@ -103,10 +120,10 @@ export default function Profile({ user, theme, onToggleTheme, onBack }) {
 
         <div className={styles.hint}>
           <div className={styles.hintTitle}>How this is used</div>
-          <p>The <strong>Scenario tab</strong> reads these defaults to populate the Mortgage
-          Sensitivity panel. For any active session you can drag the rate/down sliders in the
-          Scenario tab to explore &ldquo;what if&rdquo; scenarios — those overrides are not saved
-          here.</p>
+          <p>The <strong>Scenario tab</strong> reads rate, down payment, and term as defaults
+          (overridable per session). The <strong>Cost Comparison tab</strong> uses all four
+          parameters — including marginal tax rate — to compute after-tax monthly carrying
+          costs for every property in the pool.</p>
         </div>
       </div>
     </div>
