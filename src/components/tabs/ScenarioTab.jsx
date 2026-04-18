@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { poolStats, MED_PSF, CEIL_PSF } from '../../lib/scoring'
+import { poolStats, MED_PSF, CEIL_PSF, buildPricingContext } from '../../lib/scoring'
 import styles from './ScenarioTab.module.css'
 
 function Slider({ label, id, min, max, step = 1, value, onChange, display }) {
@@ -15,9 +15,10 @@ function Slider({ label, id, min, max, step = 1, value, onChange, display }) {
 }
 
 export default function ScenarioTab({ comps }) {
-  const stats = poolStats(comps)
-  const medPsf = stats.medianPsf || MED_PSF
-  const ceilPsf = CEIL_PSF
+  const stats    = poolStats(comps)
+  const pricing  = buildPricingContext(comps)
+  const medPsf   = pricing?.mean  ?? stats.medianPsf ?? MED_PSF
+  const ceilPsf  = pricing?.ceil  ?? CEIL_PSF
 
   const [price, setPrice]  = useState(1700000)
   const [sqft,  setSqft]   = useState(4000)

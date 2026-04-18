@@ -1,5 +1,34 @@
-export const MED_PSF  = 449  // fallback constant
-export const CEIL_PSF = 508  // fallback constant
+export const MED_PSF  = 449  // fallback when pool has no closed comps
+export const CEIL_PSF = 508  // fallback when pool has no closed comps
+
+// ── Pricing context (replaces hardcoded CEIL_PSF / fairPsf) ─────────────────
+// Derives fair value, ceiling, and floor from the pool's own closed-sale
+// distribution using mean ± 1 sample std dev. Re-run whenever comps change.
+//
+// Returns null when there are no qualifying closed comps.
+// With 1 comp: stdDev = 0, ceil = floor = fair = that comp's psf.
+export function buildPricingContext(comps) {
+  const psfs = comps
+    .filter(c => c.is_closed && c.psf && !c.over_ask)
+    .map(c => c.psf)
+
+  const n = psfs.length
+  if (!n) return null
+
+  const mean   = psfs.reduce((s, v) => s + v, 0) / n
+  const stdDev = n > 1
+    ? Math.sqrt(psfs.reduce((s, v) => s + (v - mean) ** 2, 0) / (n - 1))
+    : 0
+
+  return {
+    n,
+    mean:   Math.round(mean),
+    stdDev: Math.round(stdDev),
+    fair:   Math.round(mean),
+    ceil:   Math.round(mean + stdDev),
+    floor:  Math.round(Math.max(1, mean - stdDev)),
+  }
+}
 
 // Weights (must sum to 100)
 const W = { ps: 32, ts: 20, ss: 13, ls: 13, as: 12, ms: 10 }

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { scoreComp, buildPoolContext, CEIL_PSF } from '../lib/scoring'
+import { scoreComp, buildPoolContext, buildPricingContext, CEIL_PSF } from '../lib/scoring'
 import styles from './CompDetailModal.module.css'
 
 const DIMS = [
@@ -93,8 +93,10 @@ function generateFindings(comp, allComps, s, price) {
   const findings = []
   const psfs   = allComps.map(c => c.psf).filter(Boolean)
   const taxes  = allComps.map(c => c.taxes).filter(Boolean)
-  const ctx     = buildPoolContext(allComps)
-  const scores  = allComps.map(c => scoreComp({ ...c, psf: c.psf ?? 999 }, ctx).comp)
+  const ctx      = buildPoolContext(allComps)
+  const pricing  = buildPricingContext(allComps)
+  const ceilPsf  = pricing?.ceil ?? CEIL_PSF
+  const scores   = allComps.map(c => scoreComp({ ...c, psf: c.psf ?? 999 }, ctx).comp)
   const medPsf  = median(psfs)
   const medTax  = median(taxes)
   const scoreRank = rankOf(scores, s.comp, false)
@@ -110,8 +112,8 @@ function generateFindings(comp, allComps, s, price) {
   }
 
   // $/SF vs ceiling
-  if (comp.psf && comp.psf > CEIL_PSF) {
-    findings.push({ type: 'neg', text: `At $${comp.psf}/SF, this listing exceeds the pool ceiling of $${CEIL_PSF}/SF. No closed comp supports this price per square foot.` })
+  if (comp.psf && comp.psf > ceilPsf) {
+    findings.push({ type: 'neg', text: `At $${comp.psf}/SF, this listing exceeds the pool ceiling of $${ceilPsf}/SF (μ + 1σ of closed sales). No closed comp supports this price per square foot.` })
   } else if (comp.psf && medPsf && comp.psf < medPsf * 0.9) {
     findings.push({ type: 'pos', text: `$/SF of $${comp.psf} is more than 10% below pool median ($${medPsf}) — meaningful value buffer against further declines.` })
   }

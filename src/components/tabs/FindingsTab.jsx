@@ -1,4 +1,4 @@
-import { scoreComp, poolStats, CEIL_PSF } from '../../lib/scoring'
+import { scoreComp, poolStats, CEIL_PSF, buildPricingContext } from '../../lib/scoring'
 import styles from './FindingsTab.module.css'
 
 function Finding({ num, title, body, type = '' }) {
@@ -14,11 +14,13 @@ function Finding({ num, title, body, type = '' }) {
 export default function FindingsTab({ comps }) {
   if (!comps.length) return <div className={styles.empty}>Add comps to generate findings.</div>
 
-  const stats = poolStats(comps)
-  const closed = comps.filter(c => c.is_closed)
-  const active = comps.filter(c => !c.is_closed)
-  const cuts = comps.filter(c => c.original_list_price && c.last_list_price && c.original_list_price > c.last_list_price)
-  const overCeil = active.filter(c => c.psf && c.psf > CEIL_PSF)
+  const stats   = poolStats(comps)
+  const pricing = buildPricingContext(comps)
+  const ceilPsf = pricing?.ceil ?? CEIL_PSF
+  const closed  = comps.filter(c => c.is_closed)
+  const active  = comps.filter(c => !c.is_closed)
+  const cuts    = comps.filter(c => c.original_list_price && c.last_list_price && c.original_list_price > c.last_list_price)
+  const overCeil = active.filter(c => c.psf && c.psf > ceilPsf)
   const highDom  = active.filter(c => (c.days_on_market ?? 0) > 45)
   const overAsk  = closed.filter(c => c.over_ask)
 
@@ -65,7 +67,7 @@ export default function FindingsTab({ comps }) {
   if (overCeil.length > 0) {
     findings.push({
       num: `Finding 04 — High Confidence`,
-      title: `${overCeil.length} Active Listing${overCeil.length > 1 ? 's' : ''} Above $${CEIL_PSF}/SF — Market Has Spoken`,
+      title: `${overCeil.length} Active Listing${overCeil.length > 1 ? 's' : ''} Above $${ceilPsf}/SF — Market Has Spoken`,
       body: `${overCeil.map(c => `<strong>${c.address}</strong> ($${c.psf}/SF)`).join(', ')} ${overCeil.length === 1 ? 'is' : 'are'} sitting unsold${highDom.length ? ` with ${highDom.map(c => c.days_on_market + '+ DOM').join(', ')}` : ''}. These require meaningful reductions before representing fair value.`,
       type: 'r',
     })

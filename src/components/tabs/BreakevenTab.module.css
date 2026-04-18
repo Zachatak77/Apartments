@@ -1,5 +1,58 @@
-.title { font-family: var(--font-d); font-size: 1.25rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-.sub { font-size: 0.85rem; color: var(--dim); margin-bottom: 22px; font-style: italic; }
+.title { font-family: var(--font-d); font-size: 1.25rem; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+.sub { font-size: 0.82rem; color: var(--dim); margin-bottom: 18px; font-style: italic; line-height: 1.6; }
+
+/* ── Derived stats bar ── */
+.ctxBar {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  margin-bottom: 14px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.ctxStat {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 18px;
+  flex-shrink: 0;
+}
+.ctxDivider {
+  width: 1px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+.ctxLbl {
+  font-family: var(--font-m);
+  font-size: 0.5rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 3px;
+}
+.ctxVal {
+  font-family: var(--font-d);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1;
+}
+
+/* ── Above-ceiling rows ── */
+.rowAboveCeil td { background: rgba(139,58,42,0.04) !important; }
+.ceilTag {
+  display: inline-block;
+  font-family: var(--font-m);
+  font-size: 0.48rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--red);
+  border: 1px solid rgba(139,58,42,.3);
+  padding: 1px 5px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
 
 .tableWrap {
   overflow-x: auto;
