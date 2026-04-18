@@ -1,0 +1,49 @@
+.title { font-family: var(--font-d); font-size: 1.25rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.sub { font-size: 0.85rem; color: var(--dim); margin-bottom: 22px; font-style: italic; }
+
+.finding {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  padding: 22px 20px;
+  margin-bottom: 12px;
+  background: var(--panel);
+  transition: background .25s;
+}
+.finding.r { border-left-color: var(--red);   }
+.finding.a { border-left-color: var(--amber); }
+.finding.g { border-left-color: var(--green); }
+.finding.b { border-left-color: var(--accent);}
+
+.findingNum {
+  font-family: var(--font-m);
+  font-size: 0.54rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 7px;
+}
+.finding.r .findingNum { color: var(--red);   }
+.finding.a .findingNum { color: var(--amber); }
+.finding.g .findingNum { color: var(--green); }
+
+.findingTitle {
+  font-family: var(--font-d);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.findingBody {
+  font-size: 0.86rem;
+  color: var(--text-2);
+  line-height: 1.75;
+}
+
+.empty {
+  font-style: italic;
+  color: var(--dim);
+  padding: 40px 0;
+  text-align: center;
+}

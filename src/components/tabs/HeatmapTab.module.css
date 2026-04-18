@@ -1,0 +1,134 @@
+.title {
+  font-family: var(--font-d);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.sub { font-size: 0.85rem; color: var(--dim); margin-bottom: 22px; font-style: italic; }
+
+.tableWrap {
+  overflow-x: auto;
+  margin-bottom: 24px;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 660px;
+}
+
+.table thead tr {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border2);
+}
+
+.table th {
+  font-family: var(--font-m);
+  font-size: 0.54rem;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--dim);
+  padding: 10px 10px;
+  text-align: center;
+  white-space: nowrap;
+  font-weight: 400;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 2;
+}
+.thLeft { text-align: left; }
+.thAct { width: 80px; }
+
+.table td { padding: 0; border: 2px solid var(--bg); }
+
+/* sticky first col */
+.table tr td:first-child,
+.table tr th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--panel);
+  border-right: 2px solid var(--border);
+}
+.table tr th:first-child { background: var(--surface); z-index: 3; }
+
+.addrCell {
+  font-family: var(--font-b);
+  font-size: 0.78rem;
+  color: var(--text);
+  padding: 8px 12px !important;
+  white-space: nowrap;
+  min-width: 150px;
+  max-width: 200px;
+}
+
+.addr { display: block; font-weight: 400; }
+.town {
+  display: block;
+  font-family: var(--font-m);
+  font-size: 0.55rem;
+  color: var(--dim);
+  margin-top: 1px;
+}
+.cut {
+  font-family: var(--font-m);
+  font-size: 0.5rem;
+  color: var(--red);
+  margin-left: 4px;
+}
+
+.cell {
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-m);
+  font-size: 0.68rem;
+  font-weight: 400;
+  cursor: default;
+  transition: filter .15s;
+}
+.cell:hover { filter: brightness(1.08); }
+
+.actCell {
+  padding: 0 8px !important;
+  background: var(--panel) !important;
+  white-space: nowrap;
+}
+
+.editBtn, .delBtn {
+  background: none;
+  border: none;
+  font-family: var(--font-m);
+  font-size: 0.55rem;
+  letter-spacing: .08em;
+  cursor: pointer;
+  padding: 4px 6px;
+  transition: color .2s;
+}
+.editBtn { color: var(--accent); }
+.editBtn:hover { color: var(--text); }
+.delBtn { color: var(--dim); }
+.delBtn:hover { color: var(--red); }
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-m);
+  font-size: 0.57rem;
+  color: var(--dim);
+  margin-bottom: 28px;
+}
+.legendDot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}

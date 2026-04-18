@@ -1,0 +1,134 @@
+@import './tokens.css';
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-b);
+  font-weight: 300;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background .25s, color .25s;
+}
+
+button { cursor: pointer; font-family: inherit; }
+input, textarea, select { font-family: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* ── Scrollbar hide utility ── */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ── Section label ── */
+.sl {
+  font-family: var(--font-m);
+  font-size: 0.57rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sl::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── Insight cards ── */
+.ic {
+  border: 1px solid var(--border);
+  border-left: 4px solid;
+  padding: 18px 20px;
+  transition: background .25s;
+}
+.ic.g { border-left-color: var(--green); background: var(--green-bg); }
+.ic.r { border-left-color: var(--red);   background: var(--red-bg);   }
+.ic.a { border-left-color: var(--amber); background: var(--amber-bg); }
+.ic.b { border-left-color: var(--accent);background: var(--blue-bg);  }
+
+.ih {
+  font-family: var(--font-m);
+  font-size: 0.54rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.ic.g .ih { color: var(--green);  }
+.ic.r .ih { color: var(--red);    }
+.ic.a .ih { color: var(--amber);  }
+.ic.b .ih { color: var(--accent); }
+
+.ib { font-size: 0.85rem; color: var(--text-2); line-height: 1.65; }
+.ib strong { color: var(--text); font-weight: 600; }
+
+/* ── Stat cards ── */
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  padding: 16px 18px;
+  transition: background .25s;
+}
+.stat-card-val {
+  font-family: var(--font-d);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 5px;
+}
+.stat-card-lbl {
+  font-family: var(--font-m);
+  font-size: 0.54rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.stat-card-sub { font-size: 0.75rem; color: var(--dim); margin-top: 3px; font-style: italic; }
+
+/* ── Heatmap cell colors ── */
+.c5 { background: var(--h5); color: var(--ctxt-dk); }
+.c4 { background: var(--h4); color: var(--ctxt-dk); }
+.c3 { background: var(--h3); color: var(--text);    }
+.c2 { background: var(--h2); color: var(--ctxt-dk); }
+.c1 { background: var(--h1); color: var(--ctxt-dk); }
+
+/* ── Positive/negative/neutral ── */
+.pos { color: var(--green) !important; font-weight: 500; }
+.neg { color: var(--red)   !important; font-weight: 500; }
+.neu { color: var(--amber) !important; }
+
+/* ── Range input ── */
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 3px;
+  background: var(--border2);
+  outline: none;
+  border-radius: 2px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* ── Fade-up animation ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+.fade-up { animation: fadeUp .28s ease both; }

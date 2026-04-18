@@ -1,0 +1,56 @@
+.addBar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.addBtn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  font-family: var(--font-m);
+  font-size: 0.6rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.addBtn:hover { opacity: .88; }
+
+.compCount {
+  font-family: var(--font-m);
+  font-size: 0.6rem;
+  color: var(--dim);
+  letter-spacing: .08em;
+}
+
+.panel {
+  padding: 28px 20px 64px;
+  animation: fadeUp .28s ease both;
+}
+
+.loading, .empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--dim);
+}
+.emptyTitle {
+  font-family: var(--font-d);
+  font-size: 1.2rem;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.emptySub { font-size: 0.88rem; font-style: italic; }
+
+@media (min-width: 640px) {
+  .addBar { padding: 14px 32px; }
+  .panel { padding: 36px 32px 72px; }
+}
+@media (min-width: 900px) {
+  .addBar { padding: 14px 40px; }
+  .panel { padding: 48px 40px 80px; }
+}
