@@ -1,0 +1,7 @@
+{
+  "name": "apartments",
+  "scripts": {
+    "build": "cd comps && npm install && npm run build",
+    "dev": "cd comps && npm run dev"
+  }
+}
