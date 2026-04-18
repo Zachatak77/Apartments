@@ -12,7 +12,7 @@ function fmt(val, type) {
   return val
 }
 
-export default function HeatmapTab({ comps, onEdit, onDelete }) {
+export default function HeatmapTab({ comps, onEdit, onDelete, onSelect }) {
   const enriched = useMemo(() => comps.map(c => {
     const s = scoreComp({
       ...c,
@@ -56,7 +56,7 @@ export default function HeatmapTab({ comps, onEdit, onDelete }) {
             {sorted.map(c => {
               const s = c._s
               return (
-                <tr key={c.id}>
+                <tr key={c.id} className={styles.row} onClick={() => onSelect?.(c)}>
                   <td className={styles.addrCell}>
                     <span className={styles.addr}>{c.address}</span>
                     {c.town && <span className={styles.town}>{c.town}</span>}
@@ -70,7 +70,7 @@ export default function HeatmapTab({ comps, onEdit, onDelete }) {
                       {s.comp}
                     </div>
                   </td>
-                  <td className={styles.actCell}>
+                  <td className={styles.actCell} onClick={e => e.stopPropagation()}>
                     <button className={styles.editBtn} onClick={() => onEdit(c)}>Edit</button>
                     <button className={styles.delBtn}  onClick={() => onDelete(c.id)}>✕</button>
                   </td>

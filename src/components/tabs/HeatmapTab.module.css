@@ -58,6 +58,9 @@
 }
 .table tr:last-child td { border-bottom: none; }
 
+.row { cursor: pointer; }
+.row:hover td { background: var(--accent-glow); }
+
 /* sticky first col */
 .table tr td:first-child,
 .table tr th:first-child {

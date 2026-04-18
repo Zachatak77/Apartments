@@ -12,6 +12,7 @@ import ScenarioTab from '../components/tabs/ScenarioTab'
 import BreakevenTab from '../components/tabs/BreakevenTab'
 import FindingsTab from '../components/tabs/FindingsTab'
 import MapTab from '../components/tabs/MapTab'
+import CompDetailModal from '../components/CompDetailModal'
 import styles from './PoolView.module.css'
 
 const TABS = [
@@ -30,6 +31,7 @@ export default function PoolView({ pool, theme, onToggleTheme, onBack, onAddComp
   const [loading, setLoading]     = useState(true)
   const [activeTab, setActiveTab] = useState('heatmap')
   const [showImport, setShowImport] = useState(false)
+  const [selectedComp, setSelectedComp] = useState(null)
 
   useEffect(() => { fetchComps() }, [pool.id])
 
@@ -59,7 +61,7 @@ export default function PoolView({ pool, theme, onToggleTheme, onBack, onAddComp
     { value: stats.avgCut    ? `−$<em>${Math.round(stats.avgCut / 1000)}K</em>` : '—', label: 'Avg Price Cut' },
   ] : []
 
-  const tabProps = { comps, pool, onEdit: onEditComp, onDelete: deleteComp, theme }
+  const tabProps = { comps, pool, onEdit: onEditComp, onDelete: deleteComp, onSelect: setSelectedComp, theme }
 
   return (
     <div>
@@ -102,6 +104,14 @@ export default function PoolView({ pool, theme, onToggleTheme, onBack, onAddComp
           {activeTab === 'findings'  && <FindingsTab  {...tabProps} />}
           {activeTab === 'map'       && <MapTab       comps={comps} />}
         </div>
+      )}
+
+      {selectedComp && (
+        <CompDetailModal
+          comp={selectedComp}
+          comps={comps}
+          onClose={() => setSelectedComp(null)}
+        />
       )}
 
       {showImport && (
