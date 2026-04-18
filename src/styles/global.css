@@ -74,9 +74,17 @@ a { color: inherit; text-decoration: none; }
 .stat-card {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-top: 3px solid var(--accent);
+  border-top: 2px solid var(--accent);
   padding: 16px 18px;
   transition: background .25s;
+  position: relative;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), rgba(42,92,66,0.3));
 }
 .stat-card-val {
   font-family: var(--font-d);

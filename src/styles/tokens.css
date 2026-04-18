@@ -1,61 +1,68 @@
-/* ══ DESIGN TOKENS ══ */
+/* ══ DESIGN TOKENS — Forest + Warm Cream palette ══ */
 :root {
-  --accent:      #1a4fbf;
-  --accent-glow: rgba(26,79,191,0.12);
-  --accent-dim:  #d0daf5;
-  --green:       #1a6641;
-  --green-bg:    #e8f5ee;
-  --red:         #9b2020;
-  --red-bg:      #faeaea;
-  --amber:       #7a5000;
-  --amber-bg:    #fdf3e0;
-  --blue-bg:     #e8eefb;
-  --h5: rgba(26,79,191,0.90);
-  --h4: rgba(26,79,191,0.45);
-  --h3: rgba(140,140,160,0.22);
-  --h2: rgba(155,32,32,0.35);
-  --h1: rgba(155,32,32,0.80);
+  /* Primary accent — deep forest green */
+  --accent:      #2A5C42;
+  --accent-glow: rgba(42, 92, 66, 0.10);
+  --accent-dim:  #B8D4C4;
+
+  /* Semantic colors — warmer, less saturated */
+  --green:       #1F5C35;
+  --green-bg:    #EAF4EE;
+  --red:         #8B3A2A;
+  --red-bg:      #F5EAE7;
+  --amber:       #7A5200;
+  --amber-bg:    #FBF0DC;
+  --blue-bg:     #EAF0EB;   /* green-tinted info background */
+
+  /* Heatmap — forest green (strong) → warm terracotta (weak) */
+  --h5: rgba(42, 92, 66, 0.88);
+  --h4: rgba(42, 92, 66, 0.42);
+  --h3: rgba(140, 128, 108, 0.20);
+  --h2: rgba(139, 58, 42, 0.32);
+  --h1: rgba(139, 58, 42, 0.80);
+
+  /* Typography */
   --font-d: 'Playfair Display', Georgia, serif;
   --font-b: 'Source Serif 4', Georgia, serif;
   --font-m: 'JetBrains Mono', monospace;
 }
 
 [data-theme="light"] {
-  --bg:       #ffffff;
-  --surface:  #f4f6fb;
-  --panel:    #f9fafd;
-  --border:   #dde2ef;
-  --border2:  #c8cfe8;
-  --text:     #0d1526;
-  --text-2:   #2e3a56;
-  --dim:      #7a849e;
-  --hdr-bg:   #0d1a3a;
-  --hdr-text: #ffffff;
-  --hdr-dim:  rgba(255,255,255,0.5);
-  --tab-bg:   #f4f6fb;
-  --ctxt-dk:  #ffffff;
-  --ctxt-lt:  #0d1526;
+  --bg:       #FDFCF8;   /* warm cream white */
+  --surface:  #F4F0E8;   /* warm linen */
+  --panel:    #F9F7F2;   /* soft cream */
+  --border:   #E2D8C8;   /* warm tan */
+  --border2:  #CFC4AE;   /* deeper tan */
+  --text:     #1C1917;   /* warm near-black */
+  --text-2:   #3A2E24;   /* warm dark brown */
+  --dim:      #8B7B68;   /* warm mid-gray */
+  --hdr-bg:   #1A2B1E;   /* deep forest */
+  --hdr-text: #F5F2EC;   /* warm off-white */
+  --hdr-dim:  rgba(245, 242, 236, 0.48);
+  --tab-bg:   #F4F0E8;
+  --ctxt-dk:  #F5F2EC;
+  --ctxt-lt:  #1C1917;
 }
 
 [data-theme="dark"] {
-  --bg:       #0d1117;
-  --surface:  #131b2e;
-  --panel:    #1a2540;
-  --border:   #243054;
-  --border2:  #2e3d6a;
-  --text:     #e2e8f4;
-  --text-2:   #b0bcda;
-  --dim:      #607090;
-  --hdr-bg:   #060d1f;
-  --hdr-text: #f0f4ff;
-  --hdr-dim:  rgba(240,244,255,0.4);
-  --tab-bg:   #131b2e;
-  --ctxt-dk:  #ffffff;
-  --ctxt-lt:  #e2e8f4;
-  --accent-dim:  #1e2e54;
-  --accent-glow: rgba(26,79,191,0.18);
-  --green-bg:    #0d2a1a;
-  --red-bg:      #2a0d0d;
-  --amber-bg:    #2a1e0d;
-  --blue-bg:     #0d1a3a;
+  --bg:       #111210;   /* warm near-black */
+  --surface:  #191D1A;   /* dark forest-tinted */
+  --panel:    #1F2421;   /* slightly lighter */
+  --border:   #2A3330;   /* dark warm green-gray */
+  --border2:  #354038;
+  --text:     #E8E4DC;   /* warm off-white */
+  --text-2:   #B8B0A4;   /* warm light gray */
+  --dim:      #6E6860;   /* warm mid-dim */
+  --hdr-bg:   #0D1510;   /* deepest forest */
+  --hdr-text: #EEE8DE;   /* warm cream */
+  --hdr-dim:  rgba(238, 232, 222, 0.42);
+  --tab-bg:   #191D1A;
+  --ctxt-dk:  #EEE8DE;
+  --ctxt-lt:  #E8E4DC;
+  --accent-dim:  #1E3528;
+  --accent-glow: rgba(42, 92, 66, 0.18);
+  --green-bg:    #0F2018;
+  --red-bg:      #261510;
+  --amber-bg:    #241A08;
+  --blue-bg:     #0F2018;
 }
