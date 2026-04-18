@@ -40,7 +40,6 @@ const fields = [
   ]},
   { section: 'Financial', items: [
     { key: 'taxes',            label: 'Annual Taxes ($)', type: 'number', placeholder: '23145' },
-    { key: 'days_on_market',   label: 'Days on Market',   type: 'number', placeholder: '45' },
     { key: 'days_to_contract', label: 'Days to Contract', type: 'number', placeholder: '12' },
   ]},
 ]
