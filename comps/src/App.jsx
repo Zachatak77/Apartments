@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { useAuth } from './hooks/useAuth'
 import { useTheme } from './hooks/useTheme'
 import Auth from './pages/Auth'
@@ -15,46 +16,63 @@ export default function App() {
   const [editingComp, setEditingComp] = useState(null)
 
   if (loading) return (
-    <div style={{ padding: 40, textAlign: 'center', color: 'var(--dim)', fontFamily: 'var(--font-m)', fontSize: '0.75rem', letterSpacing: '.1em' }}>
-      Loading…
-    </div>
+    <>
+      <div style={{ padding: 40, textAlign: 'center', color: 'var(--dim)', fontFamily: 'var(--font-m)', fontSize: '0.75rem', letterSpacing: '.1em' }}>
+        Loading…
+      </div>
+      <Analytics />
+    </>
   )
 
-  if (!user) return <Auth onSignIn={signIn} onSignUp={signUp} />
+  if (!user) return (
+    <>
+      <Auth onSignIn={signIn} onSignUp={signUp} />
+      <Analytics />
+    </>
+  )
 
   if ((view === 'addComp' || view === 'editComp') && activePool) {
     return (
-      <CompForm
-        pool={activePool}
-        comp={editingComp}
-        theme={theme}
-        onToggleTheme={toggle}
-        onBack={() => { setView('pool'); setEditingComp(null) }}
-        onSaved={() => { setView('pool'); setEditingComp(null) }}
-      />
+      <>
+        <CompForm
+          pool={activePool}
+          comp={editingComp}
+          theme={theme}
+          onToggleTheme={toggle}
+          onBack={() => { setView('pool'); setEditingComp(null) }}
+          onSaved={() => { setView('pool'); setEditingComp(null) }}
+        />
+        <Analytics />
+      </>
     )
   }
 
   if (view === 'pool' && activePool) {
     return (
-      <PoolView
-        pool={activePool}
-        theme={theme}
-        onToggleTheme={toggle}
-        onBack={() => { setView('dashboard'); setActivePool(null) }}
-        onAddComp={() => { setEditingComp(null); setView('addComp') }}
-        onEditComp={comp => { setEditingComp(comp); setView('editComp') }}
-      />
+      <>
+        <PoolView
+          pool={activePool}
+          theme={theme}
+          onToggleTheme={toggle}
+          onBack={() => { setView('dashboard'); setActivePool(null) }}
+          onAddComp={() => { setEditingComp(null); setView('addComp') }}
+          onEditComp={comp => { setEditingComp(comp); setView('editComp') }}
+        />
+        <Analytics />
+      </>
     )
   }
 
   return (
-    <Dashboard
-      user={user}
-      theme={theme}
-      onToggleTheme={toggle}
-      onOpenPool={pool => { setActivePool(pool); setView('pool') }}
-      onSignOut={signOut}
-    />
+    <>
+      <Dashboard
+        user={user}
+        theme={theme}
+        onToggleTheme={toggle}
+        onOpenPool={pool => { setActivePool(pool); setView('pool') }}
+        onSignOut={signOut}
+      />
+      <Analytics />
+    </>
   )
 }
