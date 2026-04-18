@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
+import ImportModal from '../components/ImportModal'
 import styles from './PropertiesPage.module.css'
 
 export default function PropertiesPage({ user, theme, onToggleTheme, onBack, onAddProperty, onEditProperty }) {
@@ -9,6 +10,7 @@ export default function PropertiesPage({ user, theme, onToggleTheme, onBack, onA
   const [loading,    setLoading]    = useState(true)
   const [addPoolFor, setAddPoolFor] = useState(null)  // property id showing pool picker
   const [search,     setSearch]     = useState('')
+  const [showImport, setShowImport] = useState(false)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -82,6 +84,7 @@ export default function PropertiesPage({ user, theme, onToggleTheme, onBack, onA
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
+            <button className={styles.importBtn} onClick={() => setShowImport(true)}>↑ Import</button>
             <button className={styles.addBtn} onClick={onAddProperty}>+ New Property</button>
           </div>
         </div>
@@ -95,7 +98,10 @@ export default function PropertiesPage({ user, theme, onToggleTheme, onBack, onA
               Add properties to your library, then apply them to comp pools for analysis.
               A single property can appear in multiple pools.
             </p>
-            <button className={styles.addBtn} onClick={onAddProperty}>+ Add First Property</button>
+            <div className={styles.emptyBtns}>
+              <button className={styles.importBtn} onClick={() => setShowImport(true)}>↑ Import</button>
+              <button className={styles.addBtn} onClick={onAddProperty}>+ Add First Property</button>
+            </div>
           </div>
         ) : (
           <div className={styles.tableWrap}>
@@ -185,6 +191,13 @@ export default function PropertiesPage({ user, theme, onToggleTheme, onBack, onA
           </div>
         )}
       </div>
+      {showImport && (
+        <ImportModal
+          user={user}
+          onClose={() => setShowImport(false)}
+          onImported={() => { fetchData(); setShowImport(false) }}
+        />
+      )}
     </div>
   )
 }

@@ -5,7 +5,7 @@ import styles from './ImportModal.module.css'
 
 const PREVIEW_COLS = ['address', 'town', 'last_list_price', 'sold_price', 'sqft', 'taxes', 'days_on_market', 'is_closed']
 
-export default function ImportModal({ pool, user, onClose, onImported }) {
+export default function ImportModal({ pool = null, user, onClose, onImported }) {
   const [tab, setTab]         = useState('upload')
   const [paste, setPaste]     = useState('')
   const [preview, setPreview] = useState(null)  // { comps, errors }
@@ -58,17 +58,16 @@ export default function ImportModal({ pool, user, onClose, onImported }) {
       if (!error && data) insertedIds = [...insertedIds, ...data.map(r => r.id)]
     }
 
-    // Link each new property to this pool
-    if (insertedIds.length > 0) {
+    // Link each new property to this pool (if called from a pool context)
+    if (pool && insertedIds.length > 0) {
       const links = insertedIds.map(id => ({ pool_id: pool.id, property_id: id }))
       for (let i = 0; i < links.length; i += 50) {
         await supabase.from('pool_properties').insert(links.slice(i, i + 50))
       }
+      await supabase.from('comp_pools')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', pool.id)
     }
-
-    await supabase.from('comp_pools')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', pool.id)
 
     setSaving(false)
     setSaved(insertedIds.length)

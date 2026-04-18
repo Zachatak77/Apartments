@@ -57,6 +57,28 @@
 }
 .addBtn:hover { opacity: .88; }
 
+.importBtn {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 10px 18px;
+  font-family: var(--font-m);
+  font-size: 0.62rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+.importBtn:hover { background: var(--accent); color: #fff; }
+
+.emptyBtns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
 /* ── Empty state ── */
 .empty {
   text-align: center;
