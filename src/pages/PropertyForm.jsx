@@ -6,7 +6,7 @@ import styles from './CompForm.module.css'
 const EMPTY = {
   address: '', town: '', source_url: '',
   original_list_price: '', last_list_price: '', sold_price: '',
-  list_date: '', last_price_date: '', sold_date: '',
+  list_date: '', last_price_date: '', contract_date: '', sold_date: '',
   sqft: '', lot_sqft: '', year_built: '', beds: '', baths: '',
   taxes: '', days_on_market: '', days_to_contract: '',
   stories: '2', is_closed: false, over_ask: false,
@@ -27,7 +27,8 @@ const fields = [
   { section: 'Dates', items: [
     { key: 'list_date',       label: 'List Date',         type: 'date' },
     { key: 'last_price_date', label: 'Last Price Change', type: 'date' },
-    { key: 'sold_date',       label: 'Sold / Contract',   type: 'date' },
+    { key: 'contract_date',   label: 'Contract Date',     type: 'date' },
+    { key: 'sold_date',       label: 'Sold / Close Date', type: 'date' },
   ]},
   { section: 'Physical', items: [
     { key: 'sqft',       label: 'Interior Sq Ft', type: 'number', placeholder: '4475' },
@@ -70,6 +71,10 @@ export default function PropertyForm({ user, property, contextLabel, theme, onTo
     const psf    = form.sqft && listPrice ? Math.round(listPrice / num(form.sqft)) : null
     const lotPsf = form.lot_sqft && listPrice ? +(listPrice / num(form.lot_sqft)).toFixed(2) : null
 
+    const computedDom = (form.contract_date && form.list_date)
+      ? Math.max(0, Math.round((new Date(form.contract_date) - new Date(form.list_date)) / 86400000))
+      : num(form.days_on_market)
+
     const payload = {
       user_id:              user.id,
       address:              form.address.trim(),
@@ -80,6 +85,7 @@ export default function PropertyForm({ user, property, contextLabel, theme, onTo
       sold_price:           num(form.sold_price),
       list_date:            form.list_date || null,
       last_price_date:      form.last_price_date || null,
+      contract_date:        form.contract_date || null,
       sold_date:            form.sold_date || null,
       sqft:                 num(form.sqft),
       lot_sqft:             num(form.lot_sqft),
@@ -88,7 +94,7 @@ export default function PropertyForm({ user, property, contextLabel, theme, onTo
       baths:                num(form.baths),
       stories:              num(form.stories),
       taxes:                num(form.taxes),
-      days_on_market:       num(form.days_on_market),
+      days_on_market:       computedDom,
       days_to_contract:     num(form.days_to_contract),
       is_closed:            form.is_closed,
       over_ask:             form.over_ask,

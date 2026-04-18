@@ -8,6 +8,7 @@ export const TEMPLATE_COLUMNS = [
   { key: 'sold_price',          label: 'Sold Price',           required: false },
   { key: 'list_date',           label: 'List Date (YYYY-MM-DD)',      required: false },
   { key: 'last_price_date',     label: 'Last Price Date (YYYY-MM-DD)',required: false },
+  { key: 'contract_date',       label: 'Contract Date (YYYY-MM-DD)',  required: false },
   { key: 'sold_date',           label: 'Sold Date (YYYY-MM-DD)',      required: false },
   { key: 'sqft',                label: 'Interior Sq Ft',       required: false },
   { key: 'lot_sqft',            label: 'Lot Sq Ft',            required: false },
@@ -29,7 +30,7 @@ const NUM_KEYS = new Set([
   'taxes','days_on_market','days_to_contract',
 ])
 const BOOL_KEYS  = new Set(['is_closed','over_ask'])
-const DATE_KEYS  = new Set(['list_date','last_price_date','sold_date'])
+const DATE_KEYS  = new Set(['list_date','last_price_date','contract_date','sold_date'])
 
 function parseValue(key, raw) {
   const v = (raw ?? '').toString().trim()
@@ -49,9 +50,12 @@ function parseValue(key, raw) {
 
 function computeDerived(row) {
   const price = row.last_list_price ?? row.original_list_price ?? row.sold_price
-  const psf     = price && row.sqft    ? Math.round(price / row.sqft)                   : null
-  const lot_psf = price && row.lot_sqft ? +(price / row.lot_sqft).toFixed(2)            : null
-  return { ...row, psf, lot_psf }
+  const psf     = price && row.sqft     ? Math.round(price / row.sqft)        : null
+  const lot_psf = price && row.lot_sqft ? +(price / row.lot_sqft).toFixed(2)  : null
+  const days_on_market = (row.contract_date && row.list_date)
+    ? Math.max(0, Math.round((new Date(row.contract_date) - new Date(row.list_date)) / 86400000))
+    : (row.days_on_market ?? null)
+  return { ...row, psf, lot_psf, days_on_market }
 }
 
 // Parse a 2D array of strings (header row + data rows) into comp objects
@@ -134,7 +138,7 @@ export function generateTemplate() {
       address: '14 Ranch Rd', town: 'Upper Saddle River',
       source_url: 'https://zillow.com/...',
       original_list_price: '1749000', last_list_price: '1625000', sold_price: '1450000',
-      list_date: '2025-09-01', last_price_date: '2025-11-15', sold_date: '2026-01-10',
+      list_date: '2025-09-01', last_price_date: '2025-11-15', contract_date: '2025-12-20', sold_date: '2026-01-10',
       sqft: '4475', lot_sqft: '37897', year_built: '1975',
       beds: '4', baths: '2.5', stories: '2',
       taxes: '23145', days_on_market: '45', days_to_contract: '12',
