@@ -1,50 +1,63 @@
+import { useMemo } from 'react'
 import { scoreComp, cellClass } from '../../lib/scoring'
+import { useSortable } from '../../hooks/useSortable'
 import styles from './HeatmapTab.module.css'
 
 function fmt(val, type) {
   if (val == null) return '—'
-  if (type === 'psf')   return `$${val}`
-  if (type === 'tax')   return `$${Math.round(val / 1000)}K`
-  if (type === 'sqft')  return `${(val / 1000).toFixed(1)}K`
-  if (type === 'lot')   return `${Math.round(val / 1000)}K`
-  if (type === 'year')  return val || '—'
+  if (type === 'psf')  return `$${val}`
+  if (type === 'tax')  return `$${Math.round(val / 1000)}K`
+  if (type === 'sqft') return `${(val / 1000).toFixed(1)}K`
+  if (type === 'lot')  return `${Math.round(val / 1000)}K`
+  if (type === 'year') return val || '—'
   return val
 }
 
 export default function HeatmapTab({ comps, onEdit, onDelete }) {
-  const sorted = [...comps].sort((a, b) => {
-    const sa = scoreComp({ ...a, psf: a.psf ?? 999 })
-    const sb = scoreComp({ ...b, psf: b.psf ?? 999 })
-    return sb.comp - sa.comp
-  })
+  // Enrich comps with computed score so we can sort by it
+  const enriched = useMemo(() => comps.map(c => {
+    const s = scoreComp({
+      ...c,
+      psf: c.psf ?? (c.last_list_price && c.sqft ? Math.round(c.last_list_price / c.sqft) : null) ?? 999,
+    })
+    return { ...c, _score: s.comp, _s: s }
+  }), [comps])
+
+  const { sorted, handleSort, SortIcon } = useSortable(enriched, '_score', 'desc')
+
+  const Th = ({ colKey, label, left }) => (
+    <th
+      className={`${styles.thSortable} ${left ? styles.thLeft : ''}`}
+      onClick={() => handleSort(colKey)}
+    >
+      {label}<SortIcon colKey={colKey} />
+    </th>
+  )
 
   return (
     <div>
       <div className="sl">Value heatmap</div>
       <h2 className={styles.title}>Comparative Value by Dimension</h2>
-      <p className={styles.sub}>Sorted by composite score. Blue = strong value; red = weak. Scroll right to see all columns.</p>
+      <p className={styles.sub}>Click any column header to sort. Green = strong value; terracotta = weak.</p>
 
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
             <tr>
-              <th className={styles.thLeft}>Property</th>
-              <th>$/SF</th>
-              <th>Taxes</th>
-              <th>Size</th>
-              <th>Lot</th>
-              <th>Age</th>
-              <th>Signal</th>
-              <th>Score</th>
-              <th className={styles.thAct}></th>
+              <Th colKey="address"        label="Property"  left />
+              <Th colKey="psf"            label="$/SF"      />
+              <Th colKey="taxes"          label="Taxes"     />
+              <Th colKey="sqft"           label="Size"      />
+              <Th colKey="lot_sqft"       label="Lot"       />
+              <Th colKey="year_built"     label="Age"       />
+              <Th colKey="days_on_market" label="Signal"    />
+              <Th colKey="_score"         label="Score"     />
+              <th className={styles.thAct} />
             </tr>
           </thead>
           <tbody>
             {sorted.map(c => {
-              const s = scoreComp({
-                ...c,
-                psf: c.psf ?? (c.last_list_price && c.sqft ? Math.round(c.last_list_price / c.sqft) : null) ?? 999,
-              })
+              const s = c._s
               const dom = c.days_on_market ?? 0
               const signal = c.is_closed ? (c.over_ask ? '▲ over' : '✓ sold') : dom > 0 ? `${dom}d` : 'active'
               const cut = c.original_list_price && c.last_list_price && c.original_list_price > c.last_list_price

@@ -12,6 +12,10 @@
 
 .table thead tr { background: var(--surface); border-bottom: 2px solid var(--border2); }
 
+.thSortable { cursor: pointer; user-select: none; transition: color .15s; }
+.thSortable:hover { color: var(--accent) !important; }
+.thStatic { cursor: default; }
+
 .table th {
   font-family: var(--font-m);
   font-size: 0.54rem;

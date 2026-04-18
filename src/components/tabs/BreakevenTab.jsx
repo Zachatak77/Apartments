@@ -1,4 +1,6 @@
+import { useMemo } from 'react'
 import { scoreComp, CEIL_PSF } from '../../lib/scoring'
+import { useSortable } from '../../hooks/useSortable'
 import styles from './BreakevenTab.module.css'
 
 function fairPsf(comps) {
@@ -11,8 +13,29 @@ function fairPsf(comps) {
 }
 
 export default function BreakevenTab({ comps }) {
-  const fpsf = fairPsf(comps)
-  const sorted = [...comps].sort((a, b) => (a.psf ?? 999) - (b.psf ?? 999))
+  const fpsf = useMemo(() => fairPsf(comps), [comps])
+
+  const enriched = useMemo(() => comps.map(c => {
+    const actual = (c.is_closed ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
+    const fairPrice = fpsf && c.sqft ? Math.round(fpsf * c.sqft / 1000) : null
+    const gap = fairPrice && actual ? Math.round(actual / 1000 - fairPrice) : null
+    const maxOffer = actual && c.sqft
+      ? Math.round(Math.min(actual * 0.97, CEIL_PSF * c.sqft) / 1000)
+      : null
+    return { ...c, _actual: actual, _fairPrice: fairPrice, _gap: gap, _maxOffer: maxOffer }
+  }), [comps, fpsf])
+
+  const { sorted, handleSort, SortIcon } = useSortable(enriched, 'psf', 'asc')
+
+  const Th = ({ colKey, label, left }) => (
+    <th
+      className={`${styles.thSortable} ${left ? '' : ''}`}
+      style={{ textAlign: left ? 'left' : 'right' }}
+      onClick={() => handleSort(colKey)}
+    >
+      {label}<SortIcon colKey={colKey} />
+    </th>
+  )
 
   return (
     <div>
@@ -27,27 +50,24 @@ export default function BreakevenTab({ comps }) {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Property</th>
-              <th>Ask / Sold</th>
-              <th>Orig List</th>
-              <th>$/SF</th>
-              <th>Lot $/SF</th>
-              <th>Fair $/SF</th>
-              <th>Fair Val.</th>
-              <th>Gap</th>
-              <th>Max Offer</th>
-              <th>Signal</th>
+              <Th colKey="address"        label="Property"   left />
+              <Th colKey="_actual"        label="Ask / Sold"      />
+              <Th colKey="original_list_price" label="Orig List" />
+              <Th colKey="psf"            label="$/SF"            />
+              <Th colKey="lot_psf"        label="Lot $/SF"        />
+              <th style={{ textAlign: 'right' }} className={styles.thStatic}>Fair $/SF</th>
+              <th style={{ textAlign: 'right' }} className={styles.thStatic}>Fair Val.</th>
+              <Th colKey="_gap"           label="Gap"             />
+              <Th colKey="_maxOffer"      label="Max Offer"       />
+              <Th colKey="days_on_market" label="Signal"          />
             </tr>
           </thead>
           <tbody>
             {sorted.map(c => {
-              const actual = (c.is_closed ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
-              const fairPrice = fpsf && c.sqft ? Math.round(fpsf * c.sqft / 1000) : null
-              const gap = fairPrice && actual ? Math.round(actual / 1000 - fairPrice) : null
-              const ceilPrice = c.sqft ? Math.round(Math.min(actual ?? Infinity, CEIL_PSF * c.sqft) / 1000) : null
-              const maxOffer = actual && c.sqft
-                ? Math.round(Math.min(actual * 0.97, CEIL_PSF * c.sqft) / 1000)
-                : null
+              const actual = c._actual
+              const fairPrice = c._fairPrice
+              const gap = c._gap
+              const maxOffer = c._maxOffer
               const dom = c.days_on_market ?? 0
               const signal = c.is_closed
                 ? (c.over_ask ? '▲ over' : '✓ closed')

@@ -21,7 +21,14 @@
   min-width: 660px;
 }
 
-.table thead tr {
+.thSortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color .15s;
+}
+.thSortable:hover { color: var(--accent) !important; }
+
+
   background: var(--surface);
   border-bottom: 2px solid var(--border2);
 }
