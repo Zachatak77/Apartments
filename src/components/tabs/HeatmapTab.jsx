@@ -5,11 +5,10 @@ import styles from './HeatmapTab.module.css'
 
 function fmt(val, type) {
   if (val == null) return '—'
-  if (type === 'psf')  return `$${val}`
-  if (type === 'tax')  return `$${Math.round(val / 1000)}K`
-  if (type === 'sqft') return `${(val / 1000).toFixed(1)}K sf`
-  if (type === 'lot')  return `${Math.round(val / 1000)}K`
-  if (type === 'year') return val || '—'
+  if (type === 'psf')   return `$${val}`
+  if (type === 'tax')   return `$${Math.round(val / 1000)}K`
+  if (type === 'lot')   return `${Math.round(val / 1000)}K`
+  if (type === 'price') return `$${Math.round(val / 1000)}K`
   return val
 }
 
@@ -19,7 +18,8 @@ export default function HeatmapTab({ comps, onEdit, onDelete }) {
       ...c,
       psf: c.psf ?? (c.last_list_price && c.sqft ? Math.round(c.last_list_price / c.sqft) : null) ?? 999,
     })
-    return { ...c, _score: s.comp, _s: s }
+    const price = (c.is_closed ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
+    return { ...c, _score: s.comp, _s: s, _price: price }
   }), [comps])
 
   const { sorted, handleSort, SortIcon } = useSortable(enriched, '_score', 'desc')
@@ -43,13 +43,12 @@ export default function HeatmapTab({ comps, onEdit, onDelete }) {
         <table className={styles.table}>
           <thead>
             <tr>
-              <Th colKey="address"    label="Property" left />
-              <Th colKey="psf"        label="$/SF"     />
-              <Th colKey="taxes"      label="Taxes"    />
-              <Th colKey="sqft"       label="Size"     />
-              <Th colKey="lot_sqft"   label="Lot"      />
-              <Th colKey="year_built" label="Age"      />
-              <Th colKey="_score"     label="Score"    />
+              <Th colKey="address"  label="Property" left />
+              <Th colKey="psf"      label="$/SF"     />
+              <Th colKey="taxes"    label="Taxes"    />
+              <Th colKey="lot_sqft" label="Lot"      />
+              <Th colKey="_price"   label="Price"    />
+              <Th colKey="_score"   label="Score"    />
               <th className={styles.thAct} />
             </tr>
           </thead>
@@ -64,9 +63,8 @@ export default function HeatmapTab({ comps, onEdit, onDelete }) {
                   </td>
                   <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.ps, 3)}`}>{fmt(c.psf, 'psf')}</div></td>
                   <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.ts, 3)}`}>{fmt(c.taxes, 'tax')}</div></td>
-                  <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.ss, 3)}`}>{fmt(c.sqft, 'sqft')}</div></td>
                   <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.ls, 3)}`}>{fmt(c.lot_sqft, 'lot')}</div></td>
-                  <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.as, 3)}`}>{fmt(c.year_built, 'year')}</div></td>
+                  <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.ps, 3)}`}>{fmt(c._price, 'price')}</div></td>
                   <td>
                     <div className={`${styles.cell} ${styles.scoreCell} ${cellClass(s.comp, 100)}`}>
                       {s.comp}
