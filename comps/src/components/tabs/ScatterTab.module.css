@@ -1,0 +1,46 @@
+.title { font-family: var(--font-d); font-size: 1.25rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.sub { font-size: 0.85rem; color: var(--dim); margin-bottom: 22px; font-style: italic; }
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.chartWrap {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 18px;
+}
+
+.chartTitle {
+  font-family: var(--font-d);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.chartSub {
+  font-family: var(--font-m);
+  font-size: 0.55rem;
+  color: var(--dim);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+canvas { display: block; width: 100% !important; }
+
+.note {
+  font-family: var(--font-m);
+  font-size: 0.62rem;
+  color: var(--dim);
+  margin-bottom: 28px;
+  line-height: 1.7;
+}
+
+@media (min-width: 640px) {
+  .grid { grid-template-columns: 1fr 1fr; }
+}

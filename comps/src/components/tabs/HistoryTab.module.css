@@ -1,0 +1,49 @@
+.title { font-family: var(--font-d); font-size: 1.25rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.sub { font-size: 0.85rem; color: var(--dim); margin-bottom: 22px; font-style: italic; }
+
+.statRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.domGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.card { background: var(--panel); border: 1px solid var(--border); overflow: hidden; }
+
+.cardHead {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  font-family: var(--font-m);
+  font-size: 0.55rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  transition: background .15s;
+}
+.row:last-child { border-bottom: none; }
+.row:hover { background: var(--accent-glow); }
+
+.rowAddr { font-size: 0.82rem; color: var(--text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rowVal  { font-family: var(--font-m); font-size: 0.75rem; font-weight: 500; flex-shrink: 0; color: var(--dim); }
+
+@media (min-width: 640px) {
+  .statRow { grid-template-columns: repeat(4, 1fr); }
+  .domGrid { grid-template-columns: repeat(3, 1fr); }
+}

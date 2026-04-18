@@ -1,0 +1,61 @@
+/* ══ DESIGN TOKENS ══ */
+:root {
+  --accent:      #1a4fbf;
+  --accent-glow: rgba(26,79,191,0.12);
+  --accent-dim:  #d0daf5;
+  --green:       #1a6641;
+  --green-bg:    #e8f5ee;
+  --red:         #9b2020;
+  --red-bg:      #faeaea;
+  --amber:       #7a5000;
+  --amber-bg:    #fdf3e0;
+  --blue-bg:     #e8eefb;
+  --h5: rgba(26,79,191,0.90);
+  --h4: rgba(26,79,191,0.45);
+  --h3: rgba(140,140,160,0.22);
+  --h2: rgba(155,32,32,0.35);
+  --h1: rgba(155,32,32,0.80);
+  --font-d: 'Playfair Display', Georgia, serif;
+  --font-b: 'Source Serif 4', Georgia, serif;
+  --font-m: 'JetBrains Mono', monospace;
+}
+
+[data-theme="light"] {
+  --bg:       #ffffff;
+  --surface:  #f4f6fb;
+  --panel:    #f9fafd;
+  --border:   #dde2ef;
+  --border2:  #c8cfe8;
+  --text:     #0d1526;
+  --text-2:   #2e3a56;
+  --dim:      #7a849e;
+  --hdr-bg:   #0d1a3a;
+  --hdr-text: #ffffff;
+  --hdr-dim:  rgba(255,255,255,0.5);
+  --tab-bg:   #f4f6fb;
+  --ctxt-dk:  #ffffff;
+  --ctxt-lt:  #0d1526;
+}
+
+[data-theme="dark"] {
+  --bg:       #0d1117;
+  --surface:  #131b2e;
+  --panel:    #1a2540;
+  --border:   #243054;
+  --border2:  #2e3d6a;
+  --text:     #e2e8f4;
+  --text-2:   #b0bcda;
+  --dim:      #607090;
+  --hdr-bg:   #060d1f;
+  --hdr-text: #f0f4ff;
+  --hdr-dim:  rgba(240,244,255,0.4);
+  --tab-bg:   #131b2e;
+  --ctxt-dk:  #ffffff;
+  --ctxt-lt:  #e2e8f4;
+  --accent-dim:  #1e2e54;
+  --accent-glow: rgba(26,79,191,0.18);
+  --green-bg:    #0d2a1a;
+  --red-bg:      #2a0d0d;
+  --amber-bg:    #2a1e0d;
+  --blue-bg:     #0d1a3a;
+}
