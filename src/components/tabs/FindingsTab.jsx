@@ -91,38 +91,59 @@ export default function FindingsTab({ comps }) {
 
   // 1. Price cut pattern
   if (cuts.length > 0) {
+    const cutRate = cuts.length / comps.length
+    const avgCutK = avgCut ? Math.round(avgCut / 1000) : 0
+    const title = cutRate >= 0.7
+      ? `${cuts.length} of ${comps.length} Sellers Listed Too High — Original Prices Are Not Anchor Points`
+      : cutRate >= 0.4
+      ? avgCutK >= 50
+        ? `Price Cutting Is the Pattern Here — ${cuts.length} of ${comps.length} Cut, Averaging −$${avgCutK}K`
+        : `Price Cuts Are the Norm, Not the Exception — ${cuts.length} of ${comps.length} Comps Reduced`
+      : `Selective Overpricing — ${cuts.length} of ${comps.length} Comps Were Listed Above Market`
     findings.push({
       num: label('High Confidence'),
-      title: 'Original List Price Is Systematically Misleading',
-      body: `${cuts.length} of ${comps.length} comps had price cuts${avgCut ? `, averaging <strong>−$${Math.round(avgCut / 1000)}K</strong>` : ''}${avgDomAtCut !== null ? ` — sellers in this pool cut at an average of <strong>${avgDomAtCut} DOM</strong>` : ''}. <strong>Final list price is the negotiating baseline — listing history is non-negotiable due diligence.</strong>`,
+      title,
+      body: `Averaging <strong>−$${avgCutK}K</strong> per cut${avgDomAtCut !== null ? `; sellers in this pool reduced at an average of <strong>${avgDomAtCut} DOM</strong>` : ''}. <strong>Final list price is the negotiating baseline — listing history is non-negotiable due diligence.</strong>`,
     })
   }
 
   // 2. Closed price floor
   if (closedFloor.length >= 2) {
     const f1 = closedFloor[0], f2 = closedFloor[1]
+    const band = f2.psf - f1.psf
+    const title = band <= 10
+      ? `Two Closings in Tight Agreement — Hard Floor Confirmed at $${f1.psf}–$${f2.psf}/SF`
+      : band <= 30
+      ? `Closed Floor at $${f1.psf}–$${f2.psf}/SF — Profile Differences Explain the $${band}/SF Spread`
+      : `Wide Closed Range: $${f1.psf}–$${f2.psf}/SF — Condition Is Driving a $${band}/SF Variance`
     findings.push({
       num: label('High Confidence'),
-      title: `Closed Price Floor: $${f1.psf}–$${f2.psf}/SF`,
-      body: `<strong>${f1.address}</strong> ($${f1.psf}/SF) and <strong>${f2.address}</strong> ($${f2.psf}/SF) establish a two-point closed floor. Two independent data points in the same band is a robust statistical floor. Any active listing above <strong>$${Math.round(f2.psf * 1.2)}/SF</strong> with a weaker profile has no comp support.`,
+      title,
+      body: `<strong>${f1.address}</strong> ($${f1.psf}/SF) and <strong>${f2.address}</strong> ($${f2.psf}/SF) establish a two-point closed floor. Any active listing above <strong>$${Math.round(f2.psf * 1.2)}/SF</strong> with a weaker profile has no comp support.`,
       type: 'g',
     })
   }
 
-  // 3. Active-to-closed $/SF gap (replaces raw $/SF spread)
+  // 3. Active-to-closed $/SF gap
   if (psfGap !== null && medClosedPsf && medActivePsf) {
-    const direction = psfGap > 0 ? 'above' : 'below'
-    const absPct    = psfGapPct
-    const conf      = Math.abs(psfGap) > 30 ? 'High Confidence' : 'Moderate Confidence'
+    const absPct = psfGapPct
+    const conf   = Math.abs(psfGap) > 30 ? 'High Confidence' : 'Moderate Confidence'
+    const title = psfGap >= 50
+      ? `Sellers Are Living in a Different Market — Active Asks Run $${psfGap}/SF Above Last Closings`
+      : psfGap >= 20
+      ? `Sellers Are Asking $${psfGap}/SF More Than This Market Has Cleared`
+      : psfGap > 5
+      ? `Active Listings Asking $${psfGap}/SF Above Where Buyers Last Paid`
+      : psfGap < -20
+      ? `Active Listings Running $${Math.abs(psfGap)}/SF Below Recent Closings — An Unusual Entry Point`
+      : psfGap < -5
+      ? `Active $/SF Is $${Math.abs(psfGap)} Below Closed Comps — Buyers Have More Pricing Leverage Than Usual`
+      : `Active $/SF Aligned With Recent Closings — Sellers Are Pricing in Line With Evidence`
     findings.push({
       num: label(conf),
-      title: psfGap > 5
-        ? `Active Listings Asking $${psfGap}/SF Above Where Market Last Cleared`
-        : psfGap < -5
-        ? `Active Listings Pricing $${Math.abs(psfGap)}/SF Below Closed Comps — Unusual Buyer Advantage`
-        : `Active Listings Aligned With Closed $/SF — Rational Pricing`,
+      title,
       body: psfGap > 5
-        ? `Active median $/SF is <strong>$${medActivePsf}</strong> vs. closed median of <strong>$${medClosedPsf}</strong> — a <strong>${absPct}% gap</strong> (${psfGap}/SF) above where this market last transacted. Gaps of this size typically resolve through price reductions, not appreciation. <strong>$/SF is the single largest driver of composite score — no other variable compensates for an overpriced ask.</strong>`
+        ? `Active median $/SF is <strong>$${medActivePsf}</strong> vs. closed median of <strong>$${medClosedPsf}</strong> — a <strong>${absPct}% gap</strong> ($${psfGap}/SF) above where this market last transacted. Gaps of this size typically resolve through price reductions, not appreciation. <strong>$/SF is the single largest driver of composite score — no other variable compensates for an overpriced ask.</strong>`
         : psfGap < -5
         ? `Active median $/SF is <strong>$${medActivePsf}</strong> vs. closed median of <strong>$${medClosedPsf}</strong> — active listings are priced <strong>${absPct}% below</strong> recent closed comps. Unusually favorable entry conditions. <strong>$/SF drives more composite score variance than any other dimension — pricing at this level provides a meaningful value buffer.</strong>`
         : `Active median $/SF (<strong>$${medActivePsf}</strong>) is closely aligned with closed comps (<strong>$${medClosedPsf}</strong>). Sellers are pricing in line with evidence. <strong>$/SF is the dominant scoring variable — evaluate each listing on its own position within this range.</strong>`,
@@ -132,9 +153,15 @@ export default function FindingsTab({ comps }) {
 
   // 4. Above ceiling
   if (overCeil.length > 0) {
+    const ceilPct = Math.round(overCeil.length / Math.max(1, active.length) * 100)
+    const title = ceilPct >= 66
+      ? `${overCeil.length} of ${active.length} Active Listings Are Priced Beyond Market Evidence — Most of This Pool Has No Comp Support`
+      : overCeil.length === 1
+      ? `One Listing Is Priced Above Where This Market Clears — $${overCeil[0].psf}/SF With No Comparable Closings`
+      : `${overCeil.length} Listings Above $${ceilPsf}/SF — Sellers Pricing for a Ceiling the Market Hasn't Set`
     findings.push({
       num: label('High Confidence'),
-      title: `${overCeil.length} Active Listing${overCeil.length > 1 ? 's' : ''} Above $${ceilPsf}/SF — Market Has Spoken`,
+      title,
       body: `${overCeil.map(c => `<strong>${c.address}</strong> ($${c.psf}/SF)`).join(', ')} ${overCeil.length === 1 ? 'is' : 'are'} sitting unsold${highDom.length ? ` with ${highDom.map(c => c.days_on_market + '+ DOM').join(', ')}` : ''}. These require meaningful reductions before representing fair value.`,
       type: 'r',
     })
@@ -142,9 +169,17 @@ export default function FindingsTab({ comps }) {
 
   // 5. High DOM
   if (highDom.length > 0) {
+    const maxDom = Math.max(...highDom.map(c => c.days_on_market ?? 0))
+    const title = maxDom >= 120
+      ? `Up to ${maxDom} DOM — ${highDom.length > 1 ? 'These Sellers Are' : 'This Seller Is'} Running Out of Options`
+      : maxDom >= 90
+      ? `${highDom.length} Listing${highDom.length > 1 ? 's' : ''} Past 90 Days — Seller Urgency Is Real`
+      : maxDom >= 60
+      ? `${highDom.length} Listing${highDom.length > 1 ? 's' : ''} Past 60 DOM — Negotiating Position Has Shifted to Buyers`
+      : `${highDom.length} Listing${highDom.length > 1 ? 's' : ''} Past 45 DOM — Early Signs of Seller Fatigue`
     findings.push({
       num: label('High Confidence'),
-      title: `${highDom.length} Active Listing${highDom.length > 1 ? 's' : ''} with 45+ DOM — Seller Leverage Is Gone`,
+      title,
       body: `${highDom.map(c => `<strong>${c.address}</strong> (${c.days_on_market}d)`).join(', ')}. Extended DOM signals motivated sellers. These listings represent the strongest negotiating opportunities in your pool.`,
       type: 'g',
     })
@@ -152,9 +187,15 @@ export default function FindingsTab({ comps }) {
 
   // 6. Over-ask signal
   if (overAsk.length > 0) {
+    const overAskRate = overAsk.length / Math.max(1, closed.length)
+    const title = overAskRate >= 0.5
+      ? `${overAsk.length} of ${closed.length} Closings Went Over Ask — Accurate Pricing Creates Bidding Competition Here`
+      : overAsk.length === 1
+      ? `One Closing Went Over Ask — Well-Priced Product Still Commands Attention`
+      : `${overAsk.length} of ${closed.length} Closings Over Ask — Competition Exists but Remains Selective`
     findings.push({
       num: label('Moderate Confidence'),
-      title: `${overAsk.length} Comp${overAsk.length > 1 ? 's' : ''} Closed Over Ask — Bidding War Signal`,
+      title,
       body: `${overAsk.map(c => `<strong>${c.address}</strong>`).join(', ')} sold above asking price. Accurately-priced, move-in ready product in your market generates competition. <strong>Fair initial pricing outperforms strategic over-asking in this dataset.</strong>`,
       type: 'b',
     })
@@ -162,24 +203,37 @@ export default function FindingsTab({ comps }) {
 
   // 7. Monthly cost range + tax spread
   if (minMonthly && maxMonthly && maxMonthly > minMonthly) {
-    const spread = maxMonthly - minMonthly
+    const spread  = maxMonthly - minMonthly
+    const annualK = Math.round(spread * 12 / 1000)
     const taxNote = taxSpreadMo && taxSpreadMo > 200
       ? ` Most of that spread is taxes — a <strong>$${taxSpreadMo.toLocaleString()}/mo</strong> difference that is permanent, not negotiable.`
       : ''
+    const title = spread >= 3000
+      ? `The Cheapest and Most Expensive Listing Here Differ by $${annualK}K/yr in Carrying Cost`
+      : spread >= 1500
+      ? `$${spread.toLocaleString()}/mo Swing in Obligations — These Are Not Comparable Decisions`
+      : `Monthly Cost Varies $${spread.toLocaleString()}/mo Across This Pool — Price Tag Doesn't Tell the Full Story`
     findings.push({
       num: label('High Confidence'),
-      title: `Monthly Cost Spans $${minMonthly.toLocaleString()}–$${maxMonthly.toLocaleString()} Across This Pool`,
-      body: `Estimated carrying cost (P&I at ${prefs.rate}%, ${prefs.downPct}% down + taxes + insurance) ranges <strong>$${spread.toLocaleString()}/mo</strong> across your comps — a difference that compounds to <strong>$${Math.round(spread * 12 / 1000)}K/yr</strong>.${taxNote} <strong>Evaluate each listing on monthly cost, not just purchase price.</strong>`,
+      title,
+      body: `Estimated carrying cost (P&I at ${prefs.rate}%, ${prefs.downPct}% down + taxes + insurance) ranges <strong>$${minMonthly.toLocaleString()}–$${maxMonthly.toLocaleString()}/mo</strong> — a gap that compounds to <strong>$${annualK}K/yr</strong>.${taxNote} <strong>Evaluate each listing on monthly cost, not just purchase price.</strong>`,
       type: spread > 1500 ? 'r' : '',
     })
   }
 
   // 8. Negotiating room aggregate
   if (totalNegRoom > 0 && activeWithOffer.length > 0) {
+    const totalK = Math.round(totalNegRoom / 1000)
+    const avgK   = Math.round(avgNegRoom / 1000)
+    const title = avgK >= 75
+      ? `Sellers Are Materially Overpriced — ~$${avgK}K Per Listing of Estimated Negotiating Room`
+      : avgK >= 40
+      ? `Real Negotiating Room Exists — ~$${avgK}K Average Gap Per Active Listing`
+      : `Limited Slack in Current Asks — ~$${avgK}K Per Listing Based on DOM and $/SF Position`
     findings.push({
       num: label('Moderate Confidence'),
-      title: `~$${Math.round(totalNegRoom / 1000)}K in Combined Negotiating Room Across ${activeWithOffer.length} Active Listing${activeWithOffer.length > 1 ? 's' : ''}`,
-      body: `Based on DOM, price cut history, and $/SF position, the estimated gap between current asks and reasonable offer midpoints totals <strong>~$${Math.round(totalNegRoom / 1000)}K</strong> — an average of <strong>~$${Math.round(avgNegRoom / 1000)}K per listing</strong>. Sellers in aggregate have more room to move than individual negotiations suggest.`,
+      title,
+      body: `Based on DOM, price cut history, and $/SF position, the estimated gap between current asks and reasonable offer midpoints totals <strong>~$${totalK}K</strong> across ${activeWithOffer.length} active listing${activeWithOffer.length > 1 ? 's' : ''} — an average of <strong>~$${avgK}K per listing</strong>. Sellers in aggregate have more room to move than individual negotiations suggest.`,
       type: 'g',
     })
   }
