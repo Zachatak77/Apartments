@@ -185,8 +185,9 @@ export default function HistoryTab({ comps }) {
   const cuts = comps.filter(c => c.original_list_price && c.last_list_price && c.original_list_price > c.last_list_price)
     .sort((a, b) => (b.original_list_price - b.last_list_price) - (a.original_list_price - a.last_list_price))
 
-  const avgCut = cuts.length
-    ? Math.round(cuts.reduce((s, c) => s + (c.original_list_price - c.last_list_price), 0) / cuts.length)
+  const contracted = comps.filter(c => c.list_date && c.contract_date)
+  const avgDaysToContract = contracted.length
+    ? Math.round(contracted.reduce((s, c) => s + Math.round((new Date(c.contract_date) - new Date(c.list_date)) / 86400000), 0) / contracted.length)
     : null
 
   const s2l    = closed.filter(c => c.sold_price && c.last_list_price)
@@ -197,8 +198,8 @@ export default function HistoryTab({ comps }) {
   return (
     <div>
       <div className="sl">Listing history</div>
-      <h2 className={styles.title}>Price Cuts, DOM &amp; Sell-to-Ask</h2>
-      <p className={styles.sub}>The gap between original ask and close price is your real negotiating room.</p>
+      <h2 className={styles.title}>Days to Contract, DOM &amp; Sell-to-Ask</h2>
+      <p className={styles.sub}>How long properties sat before going under contract reveals true market velocity and negotiating room.</p>
 
       <div className={styles.statRow}>
         <div className="stat-card">
@@ -210,9 +211,9 @@ export default function HistoryTab({ comps }) {
           <div className="stat-card-lbl">Comps w/ Price Cut</div>
         </div>
         <div className="stat-card">
-          <div className="stat-card-val">{avgCut ? `−$${Math.round(avgCut / 1000)}K` : '—'}</div>
-          <div className="stat-card-lbl">Avg Cut Amount</div>
-          <div className="stat-card-sub">Orig list → final list</div>
+          <div className="stat-card-val">{avgDaysToContract != null ? `${avgDaysToContract}d` : '—'}</div>
+          <div className="stat-card-lbl">Avg Days to Contract</div>
+          <div className="stat-card-sub">{contracted.length} with contract date</div>
         </div>
         <div className="stat-card">
           <div className="stat-card-val">{avgS2L ? `${avgS2L}%` : '—'}</div>

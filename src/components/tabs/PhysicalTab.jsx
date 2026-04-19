@@ -4,20 +4,7 @@ import styles from './PhysicalTab.module.css'
 
 const SQFT_TO_ACRES = 1 / 43560
 
-function lotAcres(sqft) {
-  return sqft ? sqft * SQFT_TO_ACRES : null
-}
-
-function lotCategory(acres) {
-  if (acres == null) return null
-  if (acres < 0.10)  return { label: 'Micro',        cls: styles.lotMicro }
-  if (acres < 0.25)  return { label: 'Small',         cls: styles.lotSmall }
-  if (acres < 0.50)  return { label: 'Suburban',      cls: styles.lotSuburban }
-  if (acres < 1.00)  return { label: 'Large Suburban',cls: styles.lotLargeSub }
-  if (acres < 2.00)  return { label: 'Estate',        cls: styles.lotEstate }
-  if (acres < 5.00)  return { label: 'Grand Estate',  cls: styles.lotGrandEstate }
-  return               { label: 'Estate+',            cls: styles.lotEstatePlus }
-}
+function lotAcres(sqft) { return sqft ? sqft * SQFT_TO_ACRES : null }
 
 function fmtAcres(acres) {
   if (acres == null) return '—'
@@ -33,50 +20,42 @@ function pctRank(val, vals) {
   return idx / (sorted.length - 1)
 }
 
-function heatCls(rank) {
+function dimCls(rank) {
   if (rank == null) return ''
-  if (rank >= 0.80) return 'c5'
-  if (rank >= 0.60) return 'c4'
-  if (rank >= 0.40) return 'c3'
-  if (rank >= 0.20) return 'c2'
-  return 'c1'
+  if (rank >= 0.80) return styles.c5
+  if (rank >= 0.60) return styles.c4
+  if (rank >= 0.40) return styles.c3
+  if (rank >= 0.20) return styles.c2
+  return styles.c1
 }
 
 export default function PhysicalTab({ comps }) {
   const enriched = useMemo(() => {
-    const sqfts     = comps.map(c => c.sqft).filter(Boolean)
-    const lots      = comps.map(c => lotAcres(c.lot_sqft)).filter(Boolean)
-    const baths     = comps.map(c => c.bathrooms).filter(Boolean)
-    const beds      = comps.map(c => c.bedrooms).filter(Boolean)
-    const years     = comps.map(c => c.year_built).filter(Boolean)
+    const sqfts = comps.map(c => c.sqft).filter(Boolean)
+    const lots  = comps.map(c => lotAcres(c.lot_sqft)).filter(Boolean)
+    const baths = comps.map(c => c.baths).filter(Boolean)
+    const beds  = comps.map(c => c.beds).filter(Boolean)
+    const years = comps.map(c => c.year_built).filter(Boolean)
 
-    return comps.map(c => {
-      const acres  = lotAcres(c.lot_sqft)
-      const cat    = lotCategory(acres)
-      const age    = c.year_built ? new Date().getFullYear() - c.year_built : null
-      return {
-        ...c,
-        _acres:    acres,
-        _cat:      cat,
-        _age:      age,
-        _sqftRank: pctRank(c.sqft,       sqfts),
-        _lotRank:  pctRank(acres,         lots),
-        _bathRank: pctRank(c.bathrooms,   baths),
-        _bedRank:  pctRank(c.bedrooms,    beds),
-        _yearRank: pctRank(c.year_built,  years),
-      }
-    })
+    return comps.map(c => ({
+      ...c,
+      _acres:    lotAcres(c.lot_sqft),
+      _sqftRank: pctRank(c.sqft,             sqfts),
+      _lotRank:  pctRank(lotAcres(c.lot_sqft), lots),
+      _bathRank: pctRank(c.baths,            baths),
+      _bedRank:  pctRank(c.beds,             beds),
+      _yearRank: pctRank(c.year_built,       years),
+    }))
   }, [comps])
 
   const { sorted, handleSort, SortIcon } = useSortable(enriched, 'sqft', 'desc')
 
-  const sqfts  = enriched.map(c => c.sqft).filter(Boolean)
-  const lots   = enriched.map(c => c._acres).filter(Boolean)
-  const avgSqft = sqfts.length ? Math.round(sqfts.reduce((s, v) => s + v, 0) / sqfts.length) : null
-  const avgAcres = lots.length ? lots.reduce((s, v) => s + v, 0) / lots.length : null
-  const avgBeds  = enriched.filter(c => c.bedrooms).length
-    ? (enriched.reduce((s, c) => s + (c.bedrooms || 0), 0) / enriched.filter(c => c.bedrooms).length).toFixed(1)
-    : null
+  const sqfts    = enriched.map(c => c.sqft).filter(Boolean)
+  const lots     = enriched.map(c => c._acres).filter(Boolean)
+  const bedsArr  = enriched.map(c => c.beds).filter(Boolean)
+  const avgSqft  = sqfts.length  ? Math.round(sqfts.reduce((s, v) => s + v, 0) / sqfts.length) : null
+  const avgAcres = lots.length   ? lots.reduce((s, v) => s + v, 0) / lots.length : null
+  const avgBeds  = bedsArr.length ? (bedsArr.reduce((s, v) => s + v, 0) / bedsArr.length).toFixed(1) : null
 
   const Th = ({ colKey, label, left }) => (
     <th
@@ -91,7 +70,7 @@ export default function PhysicalTab({ comps }) {
     <div>
       <div className="sl">Physical comparison</div>
       <h2 className={styles.title}>Property Attributes</h2>
-      <p className={styles.sub}>Color intensity reflects rank within the pool. Lot size converted to acres at industry breakpoints.</p>
+      <p className={styles.sub}>Click a column header to sort. Color intensity reflects rank within the pool. Lot size uses industry breakpoints.</p>
 
       <div className={styles.statRow}>
         <div className="stat-card">
@@ -117,53 +96,46 @@ export default function PhysicalTab({ comps }) {
           <thead>
             <tr>
               <Th colKey="address"    label="Property"    left />
-              <Th colKey="bedrooms"   label="Beds"        />
-              <Th colKey="bathrooms"  label="Baths"       />
+              <Th colKey="beds"       label="Beds"        />
+              <Th colKey="baths"      label="Baths"       />
               <Th colKey="sqft"       label="Interior SF" />
               <Th colKey="_acres"     label="Lot"         />
-              <th className={styles.thLeft}>Lot Type</th>
               <Th colKey="year_built" label="Built"       />
-              <Th colKey="_age"       label="Age"         />
               <Th colKey="stories"    label="Stories"     />
             </tr>
           </thead>
           <tbody>
-            {sorted.map(c => (
-              <tr key={c.id}>
-                <td className={styles.addrCell}>
-                  <div className={styles.addr}>{c.address.split(',')[0]}</div>
-                  {c.town && <div className={styles.town}>{c.town}</div>}
-                </td>
-                <td className={`${styles.cell} ${heatCls(c._bedRank)}`}>
-                  {c.bedrooms ?? '—'}
-                </td>
-                <td className={`${styles.cell} ${heatCls(c._bathRank)}`}>
-                  {c.bathrooms ?? '—'}
-                </td>
-                <td className={`${styles.cell} ${heatCls(c._sqftRank)}`}>
-                  {c.sqft ? c.sqft.toLocaleString() : '—'}
-                </td>
-                <td className={`${styles.cell} ${heatCls(c._lotRank)}`}>
-                  {fmtAcres(c._acres)}
-                </td>
-                <td className={styles.catCell}>
-                  {c._cat ? (
-                    <span className={`${styles.lotBadge} ${c._cat.cls}`}>{c._cat.label}</span>
-                  ) : '—'}
-                </td>
-                <td className={`${styles.cell} ${heatCls(c._yearRank)}`}>
-                  {c.year_built ?? '—'}
-                </td>
-                <td className={`${styles.cell} ${c._age != null && c._age > 50 ? styles.old : ''}`}>
-                  {c._age != null ? `${c._age}y` : '—'}
-                </td>
-                <td className={styles.cell}>
-                  {c.stories ?? '—'}
-                </td>
-              </tr>
-            ))}
+            {sorted.map(c => {
+              const status = c.sold_date ? 'Sold'
+                : (c.contract_date && !c.sold_date) ? 'In Contract'
+                : 'Active'
+              const statusCls = status === 'Sold' ? styles.tagSold
+                : status === 'In Contract' ? styles.tagContract
+                : styles.tagActive
+              return (
+                <tr key={c.id} className={styles.row}>
+                  <td className={styles.addrCell}>
+                    <span className={styles.addr}>{c.address}</span>
+                    {c.town && <span className={styles.town}>{c.town}</span>}
+                    <span className={`${styles.statusTag} ${statusCls}`}>{status}</span>
+                  </td>
+                  <td><div className={`${styles.cell} ${styles.dim} ${dimCls(c._bedRank)}`}>{c.beds ?? '—'}</div></td>
+                  <td><div className={`${styles.cell} ${styles.dim} ${dimCls(c._bathRank)}`}>{c.baths ?? '—'}</div></td>
+                  <td><div className={`${styles.cell} ${styles.dim} ${dimCls(c._sqftRank)}`}>{c.sqft ? c.sqft.toLocaleString() : '—'}</div></td>
+                  <td><div className={`${styles.cell} ${styles.dim} ${dimCls(c._lotRank)}`}>{fmtAcres(c._acres)}</div></td>
+                  <td><div className={`${styles.cell} ${styles.dim} ${dimCls(c._yearRank)}`}>{c.year_built ?? '—'}</div></td>
+                  <td><div className={`${styles.cell} ${styles.dim}`}>{c.stories ?? '—'}</div></td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
+      </div>
+
+      <div className={styles.legend}>
+        <span className={`${styles.legendDot} ${styles.c5}`} /> Large / New
+        <span className={`${styles.legendDot} ${styles.c3}`} style={{ marginLeft: 14 }} /> Average
+        <span className={`${styles.legendDot} ${styles.c1}`} style={{ marginLeft: 14 }} /> Small / Older
       </div>
     </div>
   )

@@ -71,8 +71,8 @@ export default function PropertiesPage({ user, onAddProperty, onEditProperty }) 
       if (filters.status === 'active' && p.is_closed) return false
     }
     if (filters.town !== 'all' && p.town !== filters.town) return false
-    if (filters.minBeds && (p.bedrooms == null || p.bedrooms < Number(filters.minBeds))) return false
-    if (filters.minBaths && (p.bathrooms == null || p.bathrooms < Number(filters.minBaths))) return false
+    if (filters.minBeds && (p.beds == null || p.beds < Number(filters.minBeds))) return false
+    if (filters.minBaths && (p.baths == null || p.baths < Number(filters.minBaths))) return false
     if (filters.minSqft && (p.sqft == null || p.sqft < Number(filters.minSqft))) return false
     if (filters.builtAfter && (p.year_built == null || p.year_built < Number(filters.builtAfter))) return false
     return true
@@ -196,7 +196,7 @@ export default function PropertiesPage({ user, onAddProperty, onEditProperty }) 
                       </td>
                       <td className={styles.numCell}>{fmt(price)}</td>
                       <td className={styles.numCell}>{p.psf ? `$${p.psf}` : '—'}</td>
-                      <td className={styles.numCell}>{p.bedrooms != null ? p.bedrooms : '—'} / {p.bathrooms != null ? p.bathrooms : '—'}</td>
+                      <td className={styles.numCell}>{p.beds != null ? p.beds : '—'} / {p.baths != null ? p.baths : '—'}</td>
                       <td className={styles.numCell}>{p.sqft ? p.sqft.toLocaleString() : '—'}</td>
                       <td>
                         <span className={p.is_closed ? styles.badgeClosed : styles.badgeActive}>
