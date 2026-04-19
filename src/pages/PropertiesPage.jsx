@@ -4,13 +4,16 @@ import Header from '../components/Header'
 import ImportModal from '../components/ImportModal'
 import styles from './PropertiesPage.module.css'
 
+const EMPTY_FILTERS = { status: 'all', town: 'all', minBeds: '', minBaths: '', minSqft: '', builtAfter: '' }
+
 export default function PropertiesPage({ user, onAddProperty, onEditProperty }) {
   const [properties, setProperties] = useState([])
   const [pools,      setPools]      = useState([])
   const [loading,    setLoading]    = useState(true)
-  const [addPoolFor, setAddPoolFor] = useState(null)  // property id showing pool picker
+  const [addPoolFor, setAddPoolFor] = useState(null)
   const [search,     setSearch]     = useState('')
   const [showImport, setShowImport] = useState(false)
+  const [filters,    setFilters]    = useState(EMPTY_FILTERS)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -54,11 +57,26 @@ export default function PropertiesPage({ user, onAddProperty, onEditProperty }) 
 
   const fmt = v => v ? `$${Math.round(v / 1000)}K` : '—'
 
-  const filtered = properties.filter(p =>
-    !search
-    || p.address.toLowerCase().includes(search.toLowerCase())
-    || (p.town || '').toLowerCase().includes(search.toLowerCase())
-  )
+  const towns = [...new Set(properties.map(p => p.town).filter(Boolean))].sort()
+
+  const setFilter = (key, val) => setFilters(f => ({ ...f, [key]: val }))
+  const clearFilters = () => setFilters(EMPTY_FILTERS)
+
+  const activeFilterCount = Object.entries(filters).filter(([, v]) => v && v !== 'all').length
+
+  const filtered = properties.filter(p => {
+    if (search && !p.address.toLowerCase().includes(search.toLowerCase()) && !(p.town || '').toLowerCase().includes(search.toLowerCase())) return false
+    if (filters.status !== 'all') {
+      if (filters.status === 'closed' && !p.is_closed) return false
+      if (filters.status === 'active' && p.is_closed) return false
+    }
+    if (filters.town !== 'all' && p.town !== filters.town) return false
+    if (filters.minBeds && (p.bedrooms == null || p.bedrooms < Number(filters.minBeds))) return false
+    if (filters.minBaths && (p.bathrooms == null || p.bathrooms < Number(filters.minBaths))) return false
+    if (filters.minSqft && (p.sqft == null || p.sqft < Number(filters.minSqft))) return false
+    if (filters.builtAfter && (p.year_built == null || p.year_built < Number(filters.builtAfter))) return false
+    return true
+  })
 
   return (
     <div>
@@ -85,6 +103,54 @@ export default function PropertiesPage({ user, onAddProperty, onEditProperty }) 
           </div>
         </div>
 
+        <div className={styles.filterBar}>
+          <select className={styles.filterSelect} value={filters.status} onChange={e => setFilter('status', e.target.value)}>
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="closed">Closed</option>
+          </select>
+          {towns.length > 0 && (
+            <select className={styles.filterSelect} value={filters.town} onChange={e => setFilter('town', e.target.value)}>
+              <option value="all">All Towns</option>
+              {towns.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          )}
+          <select className={styles.filterSelect} value={filters.minBeds} onChange={e => setFilter('minBeds', e.target.value)}>
+            <option value="">Any Beds</option>
+            {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}+ Beds</option>)}
+          </select>
+          <select className={styles.filterSelect} value={filters.minBaths} onChange={e => setFilter('minBaths', e.target.value)}>
+            <option value="">Any Baths</option>
+            {[1, 1.5, 2, 2.5, 3, 4].map(n => <option key={n} value={n}>{n}+ Baths</option>)}
+          </select>
+          <select className={styles.filterSelect} value={filters.minSqft} onChange={e => setFilter('minSqft', e.target.value)}>
+            <option value="">Any Size</option>
+            <option value="500">500+ SF</option>
+            <option value="750">750+ SF</option>
+            <option value="1000">1,000+ SF</option>
+            <option value="1250">1,250+ SF</option>
+            <option value="1500">1,500+ SF</option>
+            <option value="2000">2,000+ SF</option>
+            <option value="2500">2,500+ SF</option>
+            <option value="3000">3,000+ SF</option>
+          </select>
+          <select className={styles.filterSelect} value={filters.builtAfter} onChange={e => setFilter('builtAfter', e.target.value)}>
+            <option value="">Any Year</option>
+            <option value="2020">Built 2020+</option>
+            <option value="2015">Built 2015+</option>
+            <option value="2010">Built 2010+</option>
+            <option value="2000">Built 2000+</option>
+            <option value="1990">Built 1990+</option>
+            <option value="1980">Built 1980+</option>
+          </select>
+          {activeFilterCount > 0 && (
+            <button className={styles.clearBtn} onClick={clearFilters}>
+              Clear {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}
+            </button>
+          )}
+          <span className={styles.filterSummary}>{filtered.length} of {properties.length}</span>
+        </div>
+
         {loading ? (
           <div className={styles.empty}>Loading…</div>
         ) : filtered.length === 0 && properties.length === 0 ? (
@@ -107,6 +173,8 @@ export default function PropertiesPage({ user, onAddProperty, onEditProperty }) 
                   <th className={styles.thLeft}>Property</th>
                   <th>Price</th>
                   <th>$/SF</th>
+                  <th>Bed/Bath</th>
+                  <th>Sqft</th>
                   <th>Status</th>
                   <th className={styles.thLeft}>Pools</th>
                   <th></th>
@@ -128,6 +196,8 @@ export default function PropertiesPage({ user, onAddProperty, onEditProperty }) 
                       </td>
                       <td className={styles.numCell}>{fmt(price)}</td>
                       <td className={styles.numCell}>{p.psf ? `$${p.psf}` : '—'}</td>
+                      <td className={styles.numCell}>{p.bedrooms != null ? p.bedrooms : '—'} / {p.bathrooms != null ? p.bathrooms : '—'}</td>
+                      <td className={styles.numCell}>{p.sqft ? p.sqft.toLocaleString() : '—'}</td>
                       <td>
                         <span className={p.is_closed ? styles.badgeClosed : styles.badgeActive}>
                           {p.is_closed ? 'Closed' : 'Active'}

@@ -3,19 +3,10 @@ import styles from './HistoryTab.module.css'
 
 function fmtK(v) { return v ? `$${Math.round(v / 1000)}K` : '—' }
 
-const TODAY = new Date()
-
-const BAR_COLOR = {
-  active:   '#2A5C42',
-  contract: '#7A5200',
-  closed:   '#4A8C62',
-}
-
-function compStatus(c) {
-  if (c.sold_date)      return 'closed'
-  if (c.contract_date)  return 'contract'
-  return 'active'
-}
+const TODAY    = new Date()
+const GREEN    = '#2A5C42'   // var(--accent)
+const AMBER    = '#7A5200'   // var(--amber)
+const SOLD_CLR = '#1F5C35'   // var(--green)
 
 function endDateOf(c) {
   if (c.sold_date)     return new Date(c.sold_date)
@@ -25,6 +16,10 @@ function endDateOf(c) {
 
 function fmtAxisDate(d) {
   return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+}
+
+function fmtShortDate(str) {
+  return new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 function TimelineChart({ comps }) {
@@ -39,13 +34,12 @@ function TimelineChart({ comps }) {
 
   const minTime = Math.min(...dated.map(c => new Date(c.list_date).getTime()))
   const maxTime = Math.max(...dated.map(c => endDateOf(c).getTime()))
-  const span    = Math.max(maxTime - minTime, 86400000) // at least 1 day
+  const span    = Math.max(maxTime - minTime, 86400000)
 
-  const toPct = (date) => ((new Date(date).getTime() - minTime) / span) * 100
-
-  const sorted = [...dated].sort((a, b) => new Date(a.list_date) - new Date(b.list_date))
+  const toPct = (dateStr) => ((new Date(dateStr).getTime() - minTime) / span) * 100
 
   const axisDates = [0, 0.5, 1].map(f => new Date(minTime + span * f))
+  const sorted    = [...dated].sort((a, b) => new Date(a.list_date) - new Date(b.list_date))
 
   return (
     <div className={styles.chart}>
@@ -64,54 +58,84 @@ function TimelineChart({ comps }) {
 
       {/* Rows */}
       {sorted.map(c => {
-        const status   = compStatus(c)
-        const color    = BAR_COLOR[status]
-        const startPct = toPct(c.list_date)
-        const endPct   = toPct(endDateOf(c))
-        const widthPct = Math.max(endPct - startPct, 0.4)
+        const startPct    = toPct(c.list_date)
+        const contractPct = c.contract_date ? toPct(c.contract_date) : null
+        const soldPct     = c.sold_date ? toPct(c.sold_date) : null
+        const endPct      = toPct(endDateOf(c))
 
+        // Green phase: list → contract (or end)
+        const greenEndPct   = contractPct ?? endPct
+        const greenWidth    = Math.max(greenEndPct - startPct, 0.3)
+
+        // Amber phase: contract → end (only if contract exists)
+        const amberWidth    = contractPct !== null ? Math.max(endPct - contractPct, 0.3) : 0
+
+        // Price-cut tick within green phase
         const hasCut     = c.last_price_date && c.original_list_price && c.last_list_price && c.original_list_price > c.last_list_price
         const cutPctAbs  = hasCut ? toPct(c.last_price_date) : null
-        const cutWithin  = hasCut ? ((cutPctAbs - startPct) / widthPct) * 100 : null
-        const showCutTick = cutWithin !== null && cutWithin > 4 && cutWithin < 96
+        const cutWithin  = hasCut ? ((cutPctAbs - startPct) / greenWidth) * 100 : null
+        const showCut    = cutWithin != null && cutWithin > 3 && cutWithin < 97
 
-        const isHovered  = hoveredId === c.id
-        const tooltipLeft = Math.min(Math.max(startPct + widthPct / 2, 5), 82)
+        const fullSpan      = endPct - startPct
+        const midPct        = startPct + fullSpan / 2
+        const tooltipLeft   = Math.min(Math.max(midPct, 8), 82)
+        const isHovered     = hoveredId === c.id
+
+        // Days in each phase for tooltip
+        const daysToContract = c.list_date && c.contract_date
+          ? Math.round((new Date(c.contract_date) - new Date(c.list_date)) / 86400000)
+          : null
+        const daysUnderContract = c.contract_date && c.sold_date
+          ? Math.round((new Date(c.sold_date) - new Date(c.contract_date)) / 86400000)
+          : null
 
         return (
-          <div key={c.id} className={styles.chartRow}>
+          <div
+            key={c.id}
+            className={styles.chartRow}
+            onMouseEnter={() => setHoveredId(c.id)}
+            onMouseLeave={() => setHoveredId(null)}
+          >
             <div className={styles.rowLabel} title={c.address}>
               {c.address.split(',')[0]}
             </div>
 
             <div className={styles.rowTrack}>
+              {/* Green active phase */}
               <div
-                className={`${styles.bar} ${styles[`bar_${status}`]}`}
-                style={{ left: `${startPct}%`, width: `${widthPct}%`, background: color }}
-                onMouseEnter={() => setHoveredId(c.id)}
-                onMouseLeave={() => setHoveredId(null)}
+                className={`${styles.bar} ${styles.barGreen}`}
+                style={{ left: `${startPct}%`, width: `${greenWidth}%`, background: GREEN }}
               >
-                {showCutTick && (
-                  <div className={styles.cutTick} style={{ left: `${cutWithin}%` }} />
-                )}
+                {showCut && <div className={styles.cutTick} style={{ left: `${cutWithin}%` }} />}
               </div>
 
+              {/* Amber contract phase */}
+              {contractPct !== null && (
+                <div
+                  className={`${styles.bar} ${styles.barAmber}`}
+                  style={{ left: `${contractPct}%`, width: `${amberWidth}%`, background: AMBER }}
+                />
+              )}
+
+              {/* Sold diamond */}
+              {soldPct !== null && (
+                <div className={styles.diamond} style={{ left: `${soldPct}%` }} />
+              )}
+
+              {/* Tooltip */}
               {isHovered && (
                 <div className={styles.tooltip} style={{ left: `${tooltipLeft}%` }}>
                   <span className={styles.ttAddr}>{c.address}</span>
-                  {c.days_on_market != null && <span>{c.days_on_market} days on market</span>}
+                  {c.days_on_market != null && <span>{c.days_on_market}d total on market</span>}
+                  {daysToContract != null && <span>{daysToContract}d to contract</span>}
+                  {daysUnderContract != null && <span>{daysUnderContract}d under contract</span>}
                   {hasCut && (
                     <span>
-                      Cut −{fmtK(c.original_list_price - c.last_list_price)} on{' '}
-                      {new Date(c.last_price_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      Cut −{fmtK(c.original_list_price - c.last_list_price)} on {fmtShortDate(c.last_price_date)}
                     </span>
                   )}
-                  <span className={status === 'closed' ? 'pos' : status === 'contract' ? 'neu' : ''}>
-                    {status === 'closed'
-                      ? `Sold ${fmtK(c.sold_price)}`
-                      : status === 'contract'
-                      ? 'In Contract'
-                      : 'Active'}
+                  <span className={c.sold_date ? 'pos' : c.contract_date ? 'neu' : ''}>
+                    {c.sold_date ? `Sold ${fmtK(c.sold_price)}` : c.contract_date ? 'In Contract' : 'Active'}
                   </span>
                 </div>
               )}
@@ -122,16 +146,24 @@ function TimelineChart({ comps }) {
 
       {/* Legend */}
       <div className={styles.legend}>
-        {[
-          { key: 'active',   label: 'Active'      },
-          { key: 'contract', label: 'In Contract' },
-          { key: 'closed',   label: 'Closed'      },
-        ].map(({ key, label }) => (
-          <span key={key} className={styles.legendItem}>
-            <span className={styles.legendSwatch} style={{ background: BAR_COLOR[key] }} />
-            {label}
+        <span className={styles.legendItem}>
+          <span className={styles.legendSwatch} style={{ background: GREEN, opacity: 0.7 }} />
+          Active
+        </span>
+        <span className={styles.legendItem}>
+          <span className={styles.legendSwatch} style={{ background: AMBER, opacity: 0.85 }} />
+          Under Contract
+        </span>
+        <span className={styles.legendItem}>
+          <span className={styles.legendDiamond} />
+          Sold
+        </span>
+        <span className={styles.legendItem}>
+          <span className={styles.legendCutSwatch}>
+            <span className={styles.legendCutLine} />
           </span>
-        ))}
+          Price Cut
+        </span>
         {excluded > 0 && (
           <span className={styles.excludedNote}>
             {excluded} comp{excluded > 1 ? 's' : ''} excluded — no list date

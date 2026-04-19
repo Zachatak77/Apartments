@@ -12,6 +12,7 @@ import ScenarioTab from '../components/tabs/ScenarioTab'
 import FindingsTab from '../components/tabs/FindingsTab'
 import MapTab from '../components/tabs/MapTab'
 import CostTab from '../components/tabs/CostTab'
+import PhysicalTab from '../components/tabs/PhysicalTab'
 import CompDetailModal from '../components/CompDetailModal'
 import styles from './PoolView.module.css'
 
@@ -108,6 +109,7 @@ export default function PoolView({ pool, user, activeTab, onTabChange, onAddProp
           {activeTab === 'findings' && <FindingsTab {...tabProps} />}
           {activeTab === 'cost'      && <CostTab      comps={comps} />}
           {activeTab === 'map'       && <MapTab       comps={comps} />}
+          {activeTab === 'physical'  && <PhysicalTab  comps={comps} />}
         </div>
       )}
 

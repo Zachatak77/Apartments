@@ -9,6 +9,7 @@ const POOL_TABS = [
   { id: 'findings', label: 'Findings'     },
   { id: 'cost',     label: 'Cost'         },
   { id: 'map',      label: 'Map'          },
+  { id: 'physical', label: 'Physical'     },
 ]
 
 const APP_NAV = [
