@@ -52,9 +52,14 @@ function computeDerived(row) {
   const price = row.last_list_price ?? row.original_list_price ?? row.sold_price
   const psf     = price && row.sqft     ? Math.round(price / row.sqft)        : null
   const lot_psf = price && row.lot_sqft ? +(price / row.lot_sqft).toFixed(2)  : null
-  const days_on_market = (row.contract_date && row.list_date)
-    ? Math.max(0, Math.round((new Date(row.contract_date) - new Date(row.list_date)) / 86400000))
-    : (row.days_on_market ?? null)
+  const days_on_market = (() => {
+    if (!row.list_date) return row.days_on_market ?? null
+    const listD = new Date(row.list_date)
+    const endD  = row.contract_date ? new Date(row.contract_date)
+                : row.sold_date     ? new Date(row.sold_date)
+                : new Date()
+    return Math.max(0, Math.round((endD - listD) / 86400000))
+  })()
   return { ...row, psf, lot_psf, days_on_market }
 }
 

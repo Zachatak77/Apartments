@@ -70,9 +70,14 @@ export default function PropertyForm({ user, property, contextLabel, theme, onTo
     const psf    = form.sqft && listPrice ? Math.round(listPrice / num(form.sqft)) : null
     const lotPsf = form.lot_sqft && listPrice ? +(listPrice / num(form.lot_sqft)).toFixed(2) : null
 
-    const computedDom = (form.contract_date && form.list_date)
-      ? Math.max(0, Math.round((new Date(form.contract_date) - new Date(form.list_date)) / 86400000))
-      : num(form.days_on_market)
+    const computedDom = (() => {
+      if (!form.list_date) return num(form.days_on_market)
+      const listD = new Date(form.list_date)
+      const endD  = form.contract_date ? new Date(form.contract_date)
+                  : form.sold_date     ? new Date(form.sold_date)
+                  : new Date()
+      return Math.max(0, Math.round((endD - listD) / 86400000))
+    })()
 
     const payload = {
       user_id:              user.id,
