@@ -51,3 +51,164 @@
 @media (min-width: 1024px) {
   .domGrid { grid-template-columns: repeat(4, 1fr); }
 }
+
+/* ── Timeline Chart ──────────────────────────────── */
+.chartEmpty {
+  font-size: 0.82rem;
+  color: var(--dim);
+  font-style: italic;
+  margin-bottom: 28px;
+}
+
+.chart {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 14px 16px 12px;
+  margin-bottom: 28px;
+}
+
+/* X-axis */
+.xAxis {
+  position: relative;
+  height: 18px;
+  margin-left: 90px;
+  margin-bottom: 4px;
+}
+
+.xTick {
+  position: absolute;
+  transform: translateX(-50%);
+  font-family: var(--font-m);
+  font-size: 0.48rem;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--dim);
+  white-space: nowrap;
+  opacity: 0.8;
+}
+.xTickStart { transform: translateX(0); }
+.xTickEnd   { transform: translateX(-100%); }
+
+/* Rows */
+.chartRow {
+  display: flex;
+  align-items: center;
+  height: 24px;
+}
+.chartRow:hover .rowLabel { color: var(--text); }
+
+.rowLabel {
+  width: 90px;
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  color: var(--dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 10px;
+  transition: color .15s;
+}
+
+.rowTrack {
+  flex: 1;
+  position: relative;
+  height: 100%;
+  border-left: 1px solid var(--border);
+}
+
+/* Bar */
+.bar {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 8px;
+  border-radius: 3px;
+  min-width: 3px;
+  cursor: pointer;
+  transition: filter .15s;
+}
+.bar_active   { opacity: 0.62; }
+.bar_contract { opacity: 0.80; }
+.bar_closed   { opacity: 0.90; }
+.bar:hover    { filter: brightness(1.25); opacity: 1 !important; }
+
+/* Price-cut tick mark inside bar */
+.cutTick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background: rgba(255, 255, 255, 0.75);
+  transform: translateX(-50%);
+  pointer-events: none;
+  border-radius: 1px;
+}
+
+/* Hover tooltip */
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 7px);
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  padding: 9px 12px;
+  z-index: 50;
+  pointer-events: none;
+  min-width: 160px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ttAddr {
+  font-family: var(--font-m);
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.tooltip span { font-size: 0.7rem; color: var(--dim); }
+
+/* Legend */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  margin-left: 90px;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-m);
+  font-size: 0.48rem;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.legendSwatch {
+  width: 10px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.excludedNote {
+  margin-left: auto;
+  font-family: var(--font-m);
+  font-size: 0.48rem;
+  color: var(--dim);
+  font-style: italic;
+  opacity: 0.7;
+}
+
+@media (min-width: 640px) {
+  .xAxis   { margin-left: 130px; }
+  .rowLabel { width: 130px; }
+  .legend  { margin-left: 130px; }
+}
