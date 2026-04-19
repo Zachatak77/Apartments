@@ -291,6 +291,123 @@
   opacity: .5;
 }
 
+/* ── Scenario section ── */
+.scenSliders { display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px; }
+
+.scenSlider {}
+
+.scenSliderHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+
+.scenSliderLabel {
+  font-family: var(--font-m);
+  font-size: 0.72rem;
+  color: var(--text-2);
+}
+
+.scenSliderVal {
+  font-family: var(--font-m);
+  font-size: 0.72rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.scenResult {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.scenScoreBlock { text-align: center; flex-shrink: 0; }
+
+.scenScore {
+  font-family: var(--font-d);
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.scenScoreSub {
+  font-family: var(--font-m);
+  font-size: 0.52rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-top: 2px;
+}
+
+.scenVerdictBlock { flex: 1; }
+
+.scenVerdict {
+  font-family: var(--font-m);
+  font-size: 0.7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 4px 10px;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+.vBuy      { background: rgba(42,92,66,0.14);  color: #2A5C42; }
+.vConsider { background: rgba(180,150,60,0.14); color: #8a7030; }
+.vPass     { background: rgba(139,58,42,0.14);  color: #8B3A2A; }
+
+.scenMeta {
+  font-family: var(--font-m);
+  font-size: 0.68rem;
+  color: var(--dim);
+  line-height: 1.6;
+}
+
+.scenCosts {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  padding: 14px 16px;
+}
+
+.scenCostTitle {
+  font-family: var(--font-m);
+  font-size: 0.52rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 10px;
+}
+
+.scenCostRow {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-m);
+  font-size: 0.74rem;
+  color: var(--text-2);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.scenCostRow:last-child { border-bottom: none; }
+
+.scenCostTotal {
+  color: var(--text);
+  font-weight: 600;
+  padding-top: 8px;
+  margin-top: 2px;
+}
+
+.scenCostAfterTax {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 @media (min-width: 640px) {
   .overlay { align-items: center; padding: 24px; }
   .drawer {

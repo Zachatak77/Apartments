@@ -1,5 +1,7 @@
-import { useMemo } from 'react'
-import { scoreComp, buildPoolContext, buildPricingContext, CEIL_PSF } from '../lib/scoring'
+import { useState, useMemo } from 'react'
+import { scoreComp, buildPoolContext, buildPricingContext, CEIL_PSF, offerRange } from '../lib/scoring'
+import { loadMortgagePrefs, calcMonthlyPayment, MORTGAGE_DEDUCTION_CAP } from '../lib/mortgage'
+import { loadModelSettings } from '../lib/modelSettings'
 import styles from './CompDetailModal.module.css'
 
 const DIMS = [
@@ -167,13 +169,61 @@ function generateFindings(comp, allComps, s, price) {
 }
 
 export default function CompDetailModal({ comp, comps, onClose }) {
-  const ctx = useMemo(() => buildPoolContext(comps), [comps])
-  const s   = useMemo(() => scoreComp({
+  const ctx      = useMemo(() => buildPoolContext(comps), [comps])
+  const pricing  = useMemo(() => buildPricingContext(comps), [comps])
+  const ceilPsf  = pricing?.ceil ?? CEIL_PSF
+  const prefs    = useMemo(() => loadMortgagePrefs(), [])
+  const ms       = useMemo(() => loadModelSettings(), [])
+
+  const s = useMemo(() => scoreComp({
     ...comp,
     psf: comp.psf ?? (comp.last_list_price && comp.sqft ? Math.round(comp.last_list_price / comp.sqft) : null) ?? 999,
   }, ctx), [comp, ctx])
 
   const price = (comp.is_closed ? comp.sold_price : null) ?? comp.last_list_price ?? comp.original_list_price
+
+  // ── Scenario state ────────────────────────────────────────────────
+  const listPrice = comp.last_list_price ?? comp.original_list_price ?? price ?? 1500000
+  const [scenPrice, setScenPrice] = useState(listPrice)
+  const [scenDom,   setScenDom]   = useState(comp.days_on_market ?? 0)
+  const [scenReno,  setScenReno]  = useState(0)
+
+  const scen = useMemo(() => {
+    const scenPsf   = comp.sqft ? Math.round(scenPrice / comp.sqft) : null
+    const scenAllin = comp.sqft ? Math.round((scenPrice + scenReno) / comp.sqft) : null
+
+    const scenScore = scoreComp(
+      { ...comp, psf: scenPsf ?? 999, days_on_market: scenDom },
+      ctx,
+    )
+
+    const verdict = scenScore.comp >= ms.strongBuyScore && (scenAllin == null || scenAllin < ceilPsf)
+      ? 'Strong Buy'
+      : scenScore.comp >= ms.considerScore && (scenAllin == null || scenAllin < ceilPsf)
+        ? 'Consider'
+        : 'Pass'
+
+    // Carrying costs
+    const downAmt    = Math.round(scenPrice * prefs.downPct / 100)
+    const loanAmt    = scenPrice - downAmt
+    const monthlyPI  = calcMonthlyPayment(loanAmt, prefs.rate, prefs.term)
+    const monthlyTax = comp.taxes ? comp.taxes / 12 : null
+    const monthlyIns = scenPrice * (ms.insuranceRate / 100) / 12
+    const monthlyTotal = monthlyPI + (monthlyTax ?? 0) + monthlyIns
+
+    // After-tax
+    const deductibleLoan     = Math.min(loanAmt, MORTGAGE_DEDUCTION_CAP)
+    const annualIntDeductible = deductibleLoan * (prefs.rate / 100)
+    const taxSavingsMonthly  = ((annualIntDeductible + (comp.taxes ?? 0)) * ((prefs.taxRate ?? 32) / 100)) / 12
+    const monthlyAfterTax    = monthlyTotal - taxSavingsMonthly
+
+    const offer = offerRange(
+      { ...comp, days_on_market: scenDom, last_list_price: scenPrice },
+      ms,
+    )
+
+    return { scenPsf, scenAllin, scenScore, verdict, downAmt, loanAmt, monthlyPI, monthlyTax, monthlyIns, monthlyTotal, monthlyAfterTax, offer }
+  }, [scenPrice, scenDom, scenReno, comp, ctx, prefs, ms, ceilPsf])
   const findings = useMemo(() => generateFindings(comp, comps, s, price), [comp, comps, s])
 
   const scoreColor = s.comp >= 70 ? '#2A5C42' : s.comp >= 50 ? '#7A9E8A' : s.comp >= 35 ? '#B8A87A' : '#8B3A2A'
@@ -293,8 +343,100 @@ export default function CompDetailModal({ comp, comps, onClose }) {
               ))}
             </div>
           </section>
+
+          {/* Scenario */}
+          <section className={styles.section}>
+            <div className={styles.sectionTitle}>Scenario</div>
+
+            <div className={styles.scenSliders}>
+              <ScenSlider
+                label="Offer Price"
+                min={Math.round(listPrice * 0.6 / 25000) * 25000}
+                max={Math.round(listPrice * 1.3 / 25000) * 25000}
+                step={25000}
+                value={scenPrice}
+                onChange={setScenPrice}
+                display={`$${Math.round(scenPrice / 1000)}K`}
+              />
+              <ScenSlider
+                label="Days on Market"
+                min={0} max={180} step={1}
+                value={scenDom}
+                onChange={setScenDom}
+                display={`${scenDom}d`}
+              />
+              <ScenSlider
+                label="Renovation Budget"
+                min={0} max={500000} step={10000}
+                value={scenReno}
+                onChange={setScenReno}
+                display={scenReno ? `$${Math.round(scenReno / 1000)}K` : 'None'}
+              />
+            </div>
+
+            {/* Score + verdict */}
+            <div className={styles.scenResult}>
+              <div className={styles.scenScoreBlock}>
+                <div
+                  className={styles.scenScore}
+                  style={{ color: scen.scenScore.comp >= 70 ? '#2A5C42' : scen.scenScore.comp >= 50 ? '#7A9E8A' : '#8B3A2A' }}
+                >
+                  {scen.scenScore.comp}
+                </div>
+                <div className={styles.scenScoreSub}>score</div>
+              </div>
+              <div className={styles.scenVerdictBlock}>
+                <div className={`${styles.scenVerdict} ${scen.verdict === 'Strong Buy' ? styles.vBuy : scen.verdict === 'Consider' ? styles.vConsider : styles.vPass}`}>
+                  {scen.verdict}
+                </div>
+                {scen.scenPsf && <div className={styles.scenMeta}>${scen.scenPsf}/SF{scen.scenAllin ? ` · $${scen.scenAllin} all-in` : ''}</div>}
+                {scen.offer && <div className={styles.scenMeta}>Offer range: ${Math.round(scen.offer.lo / 1000)}K – ${Math.round(scen.offer.hi / 1000)}K</div>}
+              </div>
+            </div>
+
+            {/* Carrying costs */}
+            <div className={styles.scenCosts}>
+              <div className={styles.scenCostTitle}>Monthly Carrying Costs</div>
+              <div className={styles.scenCostRow}>
+                <span>P&amp;I ({prefs.rate.toFixed(2)}%, {prefs.term}yr)</span>
+                <span>${Math.round(scen.monthlyPI).toLocaleString()}</span>
+              </div>
+              {scen.monthlyTax != null && (
+                <div className={styles.scenCostRow}>
+                  <span>Property tax</span>
+                  <span>${Math.round(scen.monthlyTax).toLocaleString()}</span>
+                </div>
+              )}
+              <div className={styles.scenCostRow}>
+                <span>Insurance (est. {ms.insuranceRate}%/yr)</span>
+                <span>${Math.round(scen.monthlyIns).toLocaleString()}</span>
+              </div>
+              <div className={`${styles.scenCostRow} ${styles.scenCostTotal}`}>
+                <span>Total /mo</span>
+                <span>${Math.round(scen.monthlyTotal).toLocaleString()}</span>
+              </div>
+              {scen.monthlyTax != null && (
+                <div className={`${styles.scenCostRow} ${styles.scenCostAfterTax}`}>
+                  <span>After-tax /mo</span>
+                  <span>${Math.round(scen.monthlyAfterTax).toLocaleString()}</span>
+                </div>
+              )}
+            </div>
+          </section>
         </div>
       </div>
+    </div>
+  )
+}
+
+function ScenSlider({ label, min, max, step, value, onChange, display }) {
+  return (
+    <div className={styles.scenSlider}>
+      <div className={styles.scenSliderHead}>
+        <span className={styles.scenSliderLabel}>{label}</span>
+        <span className={styles.scenSliderVal}>{display}</span>
+      </div>
+      <input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(+e.target.value)} />
     </div>
   )
 }
