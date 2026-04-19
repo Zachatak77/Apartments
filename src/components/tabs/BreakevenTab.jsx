@@ -23,8 +23,7 @@ export default function BreakevenTab({ comps }) {
 
   const Th = ({ colKey, label, left }) => (
     <th
-      className={styles.thSortable}
-      style={{ textAlign: left ? 'left' : 'right' }}
+      className={`${styles.thSortable} ${left ? styles.thLeft : ''}`}
       onClick={() => handleSort(colKey)}
     >
       {label}<SortIcon colKey={colKey} />
@@ -85,8 +84,8 @@ export default function BreakevenTab({ comps }) {
               <Th colKey="original_list_price" label="Orig List"      />
               <Th colKey="psf"                 label="$/SF"           />
               <Th colKey="lot_psf"             label="Lot $/SF"       />
-              <th style={{ textAlign: 'right' }} className={styles.thStatic}>Fair $/SF</th>
-              <th style={{ textAlign: 'right' }} className={styles.thStatic}>Fair Val.</th>
+              <th className={styles.thStatic}>Fair $/SF</th>
+              <th className={styles.thStatic}>Fair Val.</th>
               <Th colKey="_gap"                label="Gap"            />
               <Th colKey="_maxOffer"           label="Max Offer"      />
               <Th colKey="days_on_market"      label="Signal"         />
@@ -114,17 +113,17 @@ export default function BreakevenTab({ comps }) {
               return (
                 <tr key={c.id} className={aboveCeil ? styles.rowAboveCeil : ''}>
                   <td className={styles.addrCell}>
-                    <span>{c.address}</span>
+                    <span className={styles.addrLine}>{c.address}</span>
                     {c.town && <span className={styles.town}>{c.town}</span>}
                     {aboveCeil && <span className={styles.ceilTag}>above ceiling</span>}
                   </td>
                   <td>${actual ? Math.round(actual / 1000) : '—'}K</td>
-                  <td className={cutTag !== '—' ? 'neg' : ''}>{cutTag}</td>
-                  <td className={aboveCeil ? 'neg' : ''}>{c.psf ? `$${c.psf}` : '—'}</td>
+                  <td style={{ color: cutTag !== '—' ? 'var(--accent)' : undefined }}>{cutTag}</td>
+                  <td style={{ color: aboveCeil ? 'var(--red)' : undefined }}>{c.psf ? `$${c.psf}` : '—'}</td>
                   <td>{c.lot_psf ? `$${c.lot_psf}` : '—'}</td>
                   <td>{fpsf ? `$${fpsf}` : '—'}</td>
                   <td>{fairPrice ? `$${fairPrice}K` : '—'}</td>
-                  <td className={gap === null ? '' : gap > 80 ? 'neg' : gap < -30 ? 'pos' : 'neu'}>
+                  <td style={{ color: gap === null ? undefined : gap > 80 ? 'var(--red)' : gap < -30 ? 'var(--accent)' : 'var(--dim)' }}>
                     {gap !== null ? `${gap >= 0 ? '+' : ''}${gap}K` : '—'}
                   </td>
                   <td className={styles.maxOffer}>{maxOffer ? `$${maxOffer}K` : '—'}</td>

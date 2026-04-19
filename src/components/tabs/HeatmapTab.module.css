@@ -91,6 +91,19 @@
   margin-top: 1px;
 }
 
+.statusTag {
+  display: inline-block;
+  margin-top: 4px;
+  font-family: var(--font-m);
+  font-size: 0.44rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+}
+.tagActive   { background: rgba(42,92,66,0.10);  color: var(--accent); }
+.tagContract { background: rgba(180,150,60,0.12); color: #8a7030; }
+.tagSold     { background: var(--surface); color: var(--dim); border: 1px solid var(--border); }
+
 /* Base cell shared by all data columns */
 .cell {
   width: 100%;

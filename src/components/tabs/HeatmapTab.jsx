@@ -57,11 +57,18 @@ export default function HeatmapTab({ comps, onEdit, onDelete, onSelect }) {
           <tbody>
             {sorted.map(c => {
               const s = c._s
+              const status = c.sold_date ? 'Sold'
+                : (c.contract_date && !c.sold_date) ? 'In Contract'
+                : 'Active'
+              const statusCls = status === 'Sold' ? styles.tagSold
+                : status === 'In Contract' ? styles.tagContract
+                : styles.tagActive
               return (
                 <tr key={c.id} className={styles.row} onClick={() => onSelect?.(c)}>
                   <td className={styles.addrCell}>
                     <span className={styles.addr}>{c.address}</span>
                     {c.town && <span className={styles.town}>{c.town}</span>}
+                    <span className={`${styles.statusTag} ${statusCls}`}>{status}</span>
                   </td>
                   <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.ps, 3)}`}>{fmt(c.psf, 'psf')}</div></td>
                   <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.ts, 3)}`}>{fmt(c.taxes, 'tax')}</div></td>
