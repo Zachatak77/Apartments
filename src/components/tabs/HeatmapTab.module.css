@@ -76,7 +76,7 @@
   font-family: var(--font-b);
   font-size: 0.78rem;
   color: var(--text);
-  padding: 7px 12px !important;
+  padding: 6px 12px !important;
   white-space: nowrap;
   min-width: 150px;
   max-width: 200px;
@@ -93,12 +93,12 @@
 
 .statusTag {
   display: inline-block;
-  margin-top: 4px;
+  margin-top: 3px;
   font-family: var(--font-m);
   font-size: 0.44rem;
   letter-spacing: .1em;
   text-transform: uppercase;
-  padding: 2px 6px;
+  padding: 1px 5px;
 }
 .tagActive   { background: rgba(42,92,66,0.10);  color: var(--accent); }
 .tagContract { background: rgba(180,150,60,0.12); color: #8a7030; }
