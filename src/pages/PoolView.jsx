@@ -27,6 +27,15 @@ const TABS = [
   { id: 'map',      label: 'Map'          },
 ]
 
+function hydrateDom(c) {
+  if (!c.list_date) return c
+  const listD = new Date(c.list_date)
+  const endD  = c.contract_date ? new Date(c.contract_date)
+              : c.sold_date     ? new Date(c.sold_date)
+              : new Date()
+  return { ...c, days_on_market: Math.max(0, Math.round((endD - listD) / 86400000)) }
+}
+
 export default function PoolView({ pool, user, theme, onToggleTheme, onBack, onAddProperty, onEditProperty }) {
   const [comps,        setComps]        = useState([])
   const [loading,      setLoading]      = useState(true)
@@ -44,7 +53,7 @@ export default function PoolView({ pool, user, theme, onToggleTheme, onBack, onA
       .select('properties(*)')
       .eq('pool_id', pool.id)
       .order('added_at', { ascending: true })
-    setComps((data || []).map(r => r.properties).filter(Boolean))
+    setComps((data || []).map(r => r.properties).filter(Boolean).map(hydrateDom))
     setLoading(false)
   }
 
