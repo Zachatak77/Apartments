@@ -7,26 +7,23 @@ import ImportModal from '../components/ImportModal'
 import PropertyPicker from '../components/PropertyPicker'
 import HeatmapTab from '../components/tabs/HeatmapTab'
 import HistoryTab from '../components/tabs/HistoryTab'
-import TornadoTab from '../components/tabs/TornadoTab'
+import OffersTab from '../components/tabs/OffersTab'
 import ScatterTab from '../components/tabs/ScatterTab'
 import ScenarioTab from '../components/tabs/ScenarioTab'
-import BreakevenTab from '../components/tabs/BreakevenTab'
-import FindingsTab from '../components/tabs/FindingsTab'
-import MapTab from '../components/tabs/MapTab'
+import FindingsTab from '../components/tabs/FindingsTab'import MapTab from '../components/tabs/MapTab'
 import CostTab from '../components/tabs/CostTab'
 import CompDetailModal from '../components/CompDetailModal'
 import styles from './PoolView.module.css'
 
 const TABS = [
-  { id: 'heatmap',   label: 'Heatmap'      },
-  { id: 'history',   label: 'History'      },
-  { id: 'tornado',   label: 'Tornado'      },
-  { id: 'scatter',   label: 'Correlations' },
-  { id: 'scenario',  label: 'Scenario'     },
-  { id: 'breakeven', label: 'Breakeven'    },
-  { id: 'findings',  label: 'Findings'     },
-  { id: 'cost',      label: 'Cost'         },
-  { id: 'map',       label: 'Map'          },
+  { id: 'heatmap',  label: 'Heatmap'      },
+  { id: 'history',  label: 'History'      },
+  { id: 'offers',   label: 'Offers'       },
+  { id: 'scatter',  label: 'Correlations' },
+  { id: 'scenario', label: 'Scenario'     },
+  { id: 'findings', label: 'Findings'     },
+  { id: 'cost',     label: 'Cost'         },
+  { id: 'map',      label: 'Map'          },
 ]
 
 export default function PoolView({ pool, user, theme, onToggleTheme, onBack, onAddProperty, onEditProperty }) {
@@ -112,13 +109,12 @@ export default function PoolView({ pool, user, theme, onToggleTheme, onBack, onA
         </div>
       ) : (
         <div className={styles.panel}>
-          {activeTab === 'heatmap'   && <HeatmapTab   {...tabProps} />}
-          {activeTab === 'history'   && <HistoryTab   {...tabProps} />}
-          {activeTab === 'tornado'   && <TornadoTab   {...tabProps} />}
-          {activeTab === 'scatter'   && <ScatterTab   {...tabProps} />}
-          {activeTab === 'scenario'  && <ScenarioTab  {...tabProps} />}
-          {activeTab === 'breakeven' && <BreakevenTab {...tabProps} />}
-          {activeTab === 'findings'  && <FindingsTab  {...tabProps} />}
+          {activeTab === 'heatmap'  && <HeatmapTab  {...tabProps} />}
+          {activeTab === 'history'  && <HistoryTab  {...tabProps} />}
+          {activeTab === 'offers'   && <OffersTab   comps={comps} />}
+          {activeTab === 'scatter'  && <ScatterTab  {...tabProps} />}
+          {activeTab === 'scenario' && <ScenarioTab {...tabProps} />}
+          {activeTab === 'findings' && <FindingsTab {...tabProps} />}
           {activeTab === 'cost'      && <CostTab      comps={comps} />}
           {activeTab === 'map'       && <MapTab       comps={comps} />}
         </div>
