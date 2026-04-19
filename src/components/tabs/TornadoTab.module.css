@@ -28,7 +28,6 @@
 .table {
   border-collapse: collapse;
   width: 100%;
-  min-width: 480px;
 }
 
 .table thead tr {
@@ -77,6 +76,7 @@
 
 .row { transition: background .1s; }
 .row:hover td { background: var(--accent-glow); }
+.row:hover td:first-child { background: var(--panel); }
 
 .addrCell {
   display: flex;

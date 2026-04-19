@@ -79,16 +79,12 @@ export default function BreakevenTab({ comps }) {
         <table className={styles.table}>
           <thead>
             <tr>
-              <Th colKey="address"             label="Property"  left />
-              <Th colKey="_actual"             label="Ask / Sold"     />
-              <Th colKey="original_list_price" label="Orig List"      />
-              <Th colKey="psf"                 label="$/SF"           />
-              <Th colKey="lot_psf"             label="Lot $/SF"       />
-              <th className={styles.thStatic}>Fair $/SF</th>
-              <th className={styles.thStatic}>Fair Val.</th>
-              <Th colKey="_gap"                label="Gap"            />
-              <Th colKey="_maxOffer"           label="Max Offer"      />
-              <Th colKey="days_on_market"      label="Signal"         />
+              <Th colKey="address"        label="Property"   left />
+              <Th colKey="_actual"        label="Ask / Sold"      />
+              <Th colKey="psf"            label="$/SF"            />
+              <Th colKey="_gap"           label="Gap to Fair"     />
+              <Th colKey="_maxOffer"      label="Max Offer"       />
+              <Th colKey="days_on_market" label="Signal"          />
             </tr>
           </thead>
           <tbody>
@@ -116,13 +112,10 @@ export default function BreakevenTab({ comps }) {
                     <span className={styles.addrLine}>{c.address}</span>
                     {c.town && <span className={styles.town}>{c.town}</span>}
                     {aboveCeil && <span className={styles.ceilTag}>above ceiling</span>}
+                    {hasCut && <span className={styles.cutTag}>↓${Math.round((c.original_list_price - c.last_list_price) / 1000)}K cut</span>}
                   </td>
                   <td>${actual ? Math.round(actual / 1000) : '—'}K</td>
-                  <td style={{ color: cutTag !== '—' ? 'var(--accent)' : undefined }}>{cutTag}</td>
                   <td style={{ color: aboveCeil ? 'var(--red)' : undefined }}>{c.psf ? `$${c.psf}` : '—'}</td>
-                  <td>{c.lot_psf ? `$${c.lot_psf}` : '—'}</td>
-                  <td>{fpsf ? `$${fpsf}` : '—'}</td>
-                  <td>{fairPrice ? `$${fairPrice}K` : '—'}</td>
                   <td style={{ color: gap === null ? undefined : gap > 80 ? 'var(--red)' : gap < -30 ? 'var(--accent)' : 'var(--dim)' }}>
                     {gap !== null ? `${gap >= 0 ? '+' : ''}${gap}K` : '—'}
                   </td>
@@ -131,9 +124,7 @@ export default function BreakevenTab({ comps }) {
                     <span className={c.is_closed ? (c.over_ask ? styles.sigOver : styles.sigClosed) : dom > 45 ? styles.sigHot : styles.sigActive}>
                       {signal}
                     </span>
-                    {domAtCut !== null && (
-                      <span className={styles.domCut}>cut @{domAtCut}d</span>
-                    )}
+                    {domAtCut !== null && <span className={styles.domCut}>cut @{domAtCut}d</span>}
                   </td>
                 </tr>
               )

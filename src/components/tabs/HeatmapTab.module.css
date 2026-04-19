@@ -60,6 +60,7 @@
 
 .row { cursor: pointer; }
 .row:hover td { background: var(--accent-glow); }
+.row:hover td:first-child { background: var(--panel); }
 
 /* sticky first col */
 .table tr td:first-child,
