@@ -2,12 +2,13 @@ const STORAGE_KEY = 'compiq_model_settings'
 
 export const MODEL_DEFAULTS = {
   // Scoring weights — should sum to 100
-  wPsf:    32,
-  wTax:    20,
-  wSqft:   13,
-  wLot:    13,
-  wAge:    12,
-  wMarket: 10,
+  wPsf:     28,
+  wTax:     18,
+  wSqft:    12,
+  wLot:     12,
+  wAge:     10,
+  wMarket:  10,
+  wMonthly: 10,
 
   // Verdict thresholds (score 0–100)
   strongBuyScore: 70,

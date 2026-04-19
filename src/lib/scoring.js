@@ -1,4 +1,5 @@
 import { loadModelSettings } from './modelSettings'
+import { loadMortgagePrefs, calcMonthlyPayment } from './mortgage'
 
 export const MED_PSF  = 449  // fallback when pool has no closed comps
 export const CEIL_PSF = 508  // fallback when pool has no closed comps
@@ -47,12 +48,23 @@ export function buildPoolContext(comps) {
     }
     return { p10: at(.1), p25: at(.25), p50: at(.5), p75: at(.75), p90: at(.9) }
   }
+  const prefs    = loadMortgagePrefs()
+  const mSettings = loadModelSettings()
+  const monthlyVals = comps.map(c => {
+    const p = c.last_list_price ?? c.original_list_price ?? c.sold_price
+    if (!p) return null
+    const loan = p * (1 - prefs.downPct / 100)
+    const pi   = calcMonthlyPayment(loan, prefs.rate, prefs.term)
+    const ins  = p * (mSettings.insuranceRate / 100) / 12
+    return pi + (c.taxes ? c.taxes / 12 : 0) + ins
+  }).filter(Boolean)
   return {
     psf:        pcts(comps.map(c => c.psf).filter(Boolean)),
     taxes:      pcts(comps.map(c => c.taxes).filter(Boolean)),
     sqft:       pcts(comps.map(c => c.sqft).filter(Boolean)),
     lot_sqft:   pcts(comps.map(c => c.lot_sqft).filter(Boolean)),
     year_built: pcts(comps.map(c => c.year_built).filter(Boolean)),
+    monthly:    pcts(monthlyVals),
   }
 }
 
@@ -88,7 +100,8 @@ function scoreHigh(val, p, fallback) {
 // Falls back to hardcoded thresholds for small pools or missing metrics.
 export function scoreComp(c, ctx, weights) {
   const s = weights ?? loadModelSettings()
-  const W = { ps: s.wPsf, ts: s.wTax, ss: s.wSqft, ls: s.wLot, as: s.wAge, ms: s.wMarket }
+  const W = { ps: s.wPsf, ts: s.wTax, ss: s.wSqft, ls: s.wLot, as: s.wAge, ms: s.wMarket, mm: s.wMonthly ?? 0 }
+
   const ps = scoreLow(c.psf, ctx?.psf,
     v => v < 340 ? 3 : v < 400 ? 2.5 : v < 450 ? 2 : v < 510 ? 1.5 : 1)
 
@@ -109,8 +122,24 @@ export function scoreComp(c, ctx, weights) {
   const dom = c.days_on_market ?? 0
   const ms  = c.over_ask ? 3 : c.is_closed ? 2 : dom > 50 ? 1 : dom > 20 ? 1.8 : 2.2
 
-  const weighted = (ps * W.ps + ts * W.ts + ss * W.ss + ls * W.ls + as * W.as + ms * W.ms) / 100
-  return { ps, ts, ss, ls, as, ms, comp: Math.round((weighted / 3) * 100) }
+  // Monthly carrying cost score (lower is better)
+  let mm = 1.5
+  if (W.mm > 0) {
+    const p = c.last_list_price ?? c.original_list_price ?? c.sold_price
+    if (p) {
+      const prefs = loadMortgagePrefs()
+      const loan  = p * (1 - prefs.downPct / 100)
+      const pi    = calcMonthlyPayment(loan, prefs.rate, prefs.term)
+      const ins   = p * (s.insuranceRate / 100) / 12
+      const tax   = c.taxes ? c.taxes / 12 : 0
+      const monthly = pi + tax + ins
+      mm = scoreLow(monthly, ctx?.monthly, v => v < 5000 ? 3 : v < 7000 ? 2.5 : v < 9000 ? 2 : v < 12000 ? 1.5 : 1)
+    }
+  }
+
+  const totalW   = W.ps + W.ts + W.ss + W.ls + W.as + W.ms + W.mm
+  const weighted = (ps * W.ps + ts * W.ts + ss * W.ss + ls * W.ls + as * W.as + ms * W.ms + mm * W.mm) / totalW
+  return { ps, ts, ss, ls, as, ms, mm, comp: Math.round((weighted / 3) * 100) }
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

@@ -4,18 +4,31 @@ import { loadMortgagePrefs, calcMonthlyPayment, MORTGAGE_DEDUCTION_CAP } from '.
 import { loadModelSettings } from '../lib/modelSettings'
 import styles from './CompDetailModal.module.css'
 
-const DIMS = [
-  { key: 'ps', label: '$/SF',   weight: 32, valKey: 'psf',        lower: true,  fmt: v => v ? `$${v}/SF`                          : '—' },
-  { key: 'ts', label: 'Taxes',  weight: 20, valKey: 'taxes',       lower: true,  fmt: v => v ? `$${Math.round(v / 1000)}K/yr`       : '—' },
-  { key: 'ss', label: 'Size',   weight: 13, valKey: 'sqft',        lower: false, fmt: v => v ? `${v.toLocaleString()} SF`           : '—' },
-  { key: 'ls', label: 'Lot',    weight: 13, valKey: 'lot_sqft',    lower: false, fmt: v => v ? `${Math.round(v / 1000)}K SF`        : '—' },
-  { key: 'as', label: 'Age',    weight: 12, valKey: 'year_built',  lower: false, fmt: v => v ? `Built ${v}`                        : '—' },
-  { key: 'ms', label: 'Signal', weight: 10, valKey: null,          lower: false, fmt: (_, c) => {
-    if (!c) return '—'
-    const dom = c.days_on_market ?? 0
-    return c.over_ask ? '▲ over ask' : c.is_closed ? '✓ closed' : dom > 0 ? `${dom}d on market` : 'active'
-  }},
-]
+function buildDims(ms) {
+  return [
+    { key: 'ps', label: '$/SF',    weight: ms.wPsf,     valKey: 'psf',        lower: true,  fmt: v => v ? `$${v}/SF`                       : '—' },
+    { key: 'ts', label: 'Taxes',   weight: ms.wTax,     valKey: 'taxes',      lower: true,  fmt: v => v ? `$${Math.round(v / 1000)}K/yr`   : '—' },
+    { key: 'ss', label: 'Size',    weight: ms.wSqft,    valKey: 'sqft',       lower: false, fmt: v => v ? `${v.toLocaleString()} SF`        : '—' },
+    { key: 'ls', label: 'Lot',     weight: ms.wLot,     valKey: 'lot_sqft',   lower: false, fmt: v => v ? `${Math.round(v / 1000)}K SF`     : '—' },
+    { key: 'as', label: 'Age',     weight: ms.wAge,     valKey: 'year_built', lower: false, fmt: v => v ? `Built ${v}`                      : '—' },
+    { key: 'ms', label: 'Signal',  weight: ms.wMarket,  valKey: null,         lower: false, fmt: (_, c) => {
+      if (!c) return '—'
+      const dom = c.days_on_market ?? 0
+      return c.over_ask ? '▲ over ask' : c.is_closed ? '✓ closed' : dom > 0 ? `${dom}d on market` : 'active'
+    }},
+    ...((ms.wMonthly ?? 0) > 0 ? [{ key: 'mm', label: 'Monthly', weight: ms.wMonthly, valKey: null, lower: true, fmt: (_, c) => {
+      if (!c) return '—'
+      const p = c.last_list_price ?? c.original_list_price
+      if (!p) return '—'
+      const prefs = loadMortgagePrefs()
+      const loan  = p * (1 - prefs.downPct / 100)
+      const pi    = calcMonthlyPayment(loan, prefs.rate, prefs.term)
+      const ins   = p * (ms.insuranceRate / 100) / 12
+      const tax   = c.taxes ? c.taxes / 12 : 0
+      return `$${Math.round((pi + tax + ins) / 1000)}K/mo`
+    }}] : []),
+  ]
+}
 
 function median(arr) {
   if (!arr.length) return null
@@ -31,7 +44,7 @@ function rankOf(arr, val, lower) {
   return idx === -1 ? null : idx + 1
 }
 
-function dimText(key, score, comp, allComps) {
+function dimText(key, score, comp, allComps, ms) {
   const vals = allComps.map(c => c[{ ps: 'psf', ts: 'taxes', ss: 'sqft', ls: 'lot_sqft', as: 'year_built' }[key]]).filter(Boolean)
   const med = median(vals)
 
@@ -87,6 +100,29 @@ function dimText(key, score, comp, allComps) {
     if (yr >= 1985) return `Built ${yr} — mid-age; verify major systems (roof, HVAC, plumbing).`
     if (yr >= 1970) return `Built ${yr} — older build; budget for updates.`
     return `Built ${yr} — pre-1970 construction; expect significant deferred maintenance.`
+  }
+  if (key === 'mm') {
+    const p = comp.last_list_price ?? comp.original_list_price
+    if (!p) return 'No price data to estimate monthly cost.'
+    const prefs = loadMortgagePrefs()
+    const loan  = p * (1 - prefs.downPct / 100)
+    const pi    = calcMonthlyPayment(loan, prefs.rate, prefs.term)
+    const ins   = p * ((ms?.insuranceRate ?? 0.5) / 100) / 12
+    const tax   = comp.taxes ? comp.taxes / 12 : 0
+    const monthly = pi + tax + ins
+    const poolMonthlies = allComps.map(c => {
+      const cp = c.last_list_price ?? c.original_list_price
+      if (!cp) return null
+      const cl  = cp * (1 - prefs.downPct / 100)
+      const cpi = calcMonthlyPayment(cl, prefs.rate, prefs.term)
+      return cpi + (c.taxes ? c.taxes / 12 : 0) + cp * ((ms?.insuranceRate ?? 0.5) / 100) / 12
+    }).filter(Boolean)
+    const medM = median(poolMonthlies)
+    if (!medM) return `Est. ~$${Math.round(monthly / 1000)}K/mo (P&I + tax + ins).`
+    const diff = monthly - medM
+    if (diff < -300) return `~$${Math.abs(Math.round(diff))}/mo below pool median ($${Math.round(medM / 1000)}K) — lighter carry.`
+    if (diff < 300)  return `Near pool median monthly carrying cost (~$${Math.round(medM / 1000)}K/mo).`
+    return `~$${Math.round(diff)}/mo above pool median ($${Math.round(medM / 1000)}K) — heavier carry.`
   }
   return ''
 }
@@ -175,10 +211,12 @@ export default function CompDetailModal({ comp, comps, onClose, onEdit }) {
   const prefs    = useMemo(() => loadMortgagePrefs(), [])
   const ms       = useMemo(() => loadModelSettings(), [])
 
+  const dims = useMemo(() => buildDims(ms), [ms])
+
   const s = useMemo(() => scoreComp({
     ...comp,
     psf: comp.psf ?? (comp.last_list_price && comp.sqft ? Math.round(comp.last_list_price / comp.sqft) : null) ?? 999,
-  }, ctx), [comp, ctx])
+  }, ctx, ms), [comp, ctx, ms])
 
   const price = (comp.is_closed ? comp.sold_price : null) ?? comp.last_list_price ?? comp.original_list_price
 
@@ -195,6 +233,7 @@ export default function CompDetailModal({ comp, comps, onClose, onEdit }) {
     const scenScore = scoreComp(
       { ...comp, psf: scenPsf ?? 999, days_on_market: scenDom },
       ctx,
+      ms,
     )
 
     const verdict = scenScore.comp >= ms.strongBuyScore && (scenAllin == null || scenAllin < ceilPsf)
@@ -254,6 +293,9 @@ export default function CompDetailModal({ comp, comps, onClose, onEdit }) {
             <span className={`${styles.badge} ${statusCls}`}>{status}</span>
             {price && <span className={styles.price}>${Math.round(price / 1000)}K</span>}
             {comp.psf && <span className={styles.psf}>${comp.psf}/SF</span>}
+            {pricing && comp.sqft && (
+              <span className={styles.fairVal}>Fair ${Math.round(pricing.fair * comp.sqft / 1000)}K</span>
+            )}
           </div>
         </div>
 
@@ -276,11 +318,11 @@ export default function CompDetailModal({ comp, comps, onClose, onEdit }) {
           <section className={styles.section}>
             <div className={styles.sectionTitle}>Score Breakdown</div>
             <div className={styles.dims}>
-              {DIMS.map(d => {
-                const rawScore = s[d.key]  // 1–3
+              {dims.map(d => {
+                const rawScore = s[d.key] ?? 1.5
                 const barPct   = ((rawScore - 1) / 2) * 100
                 const val      = d.valKey ? comp[d.valKey] : null
-                const text     = dimText(d.key, rawScore, comp, comps)
+                const text     = dimText(d.key, rawScore, comp, comps, ms)
                 const good     = rawScore >= 2.2
                 const weak     = rawScore < 1.6
                 return (
@@ -311,7 +353,7 @@ export default function CompDetailModal({ comp, comps, onClose, onEdit }) {
             <section className={styles.section}>
               <div className={styles.sectionTitle}>Pool Position ({comps.length} comps)</div>
               <div className={styles.rankGrid}>
-                {DIMS.filter(d => d.valKey).map(d => {
+                {dims.filter(d => d.valKey).map(d => {
                   const vals = comps.map(c => c[d.valKey]).filter(Boolean)
                   if (!vals.length || comp[d.valKey] == null) return null
                   const r = rankOf(vals, comp[d.valKey], d.lower)

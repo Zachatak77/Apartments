@@ -82,6 +82,7 @@ export default function BreakevenTab({ comps }) {
               <Th colKey="address"        label="Property"   left />
               <Th colKey="_actual"        label="Ask / Sold"      />
               <Th colKey="psf"            label="$/SF"            />
+              <Th colKey="_fairPrice"     label="Fair Val"        />
               <Th colKey="_gap"           label="Gap to Fair"     />
               <Th colKey="_maxOffer"      label="Max Offer"       />
               <Th colKey="days_on_market" label="Signal"          />
@@ -116,6 +117,7 @@ export default function BreakevenTab({ comps }) {
                   </td>
                   <td>${actual ? Math.round(actual / 1000) : '—'}K</td>
                   <td style={{ color: aboveCeil ? 'var(--red)' : undefined }}>{c.psf ? `$${c.psf}` : '—'}</td>
+                  <td style={{ color: 'var(--accent)' }}>{fairPrice ? `$${fairPrice}K` : '—'}</td>
                   <td style={{ color: gap === null ? undefined : gap > 80 ? 'var(--red)' : gap < -30 ? 'var(--accent)' : 'var(--dim)' }}>
                     {gap !== null ? `${gap >= 0 ? '+' : ''}${gap}K` : '—'}
                   </td>

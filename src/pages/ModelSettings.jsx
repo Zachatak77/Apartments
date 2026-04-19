@@ -62,7 +62,7 @@ export default function ModelSettings({ user, theme, onToggleTheme, onBack }) {
     setTimeout(() => setSaved(false), 2500)
   }
 
-  const weightTotal = s.wPsf + s.wTax + s.wSqft + s.wLot + s.wAge + s.wMarket
+  const weightTotal = s.wPsf + s.wTax + s.wSqft + s.wLot + s.wAge + s.wMarket + (s.wMonthly ?? 0)
   const weightOk    = weightTotal === 100
 
   return (
@@ -101,7 +101,8 @@ export default function ModelSettings({ user, theme, onToggleTheme, onBack }) {
           <Slider label="Interior Size"  min={0} max={40} value={s.wSqft}   onChange={v => update('wSqft', v)}   display={`${s.wSqft}%`}   hint="Interior square footage — larger is better" />
           <Slider label="Lot Size"       min={0} max={40} value={s.wLot}    onChange={v => update('wLot', v)}    display={`${s.wLot}%`}    hint="Lot square footage — larger is better" />
           <Slider label="Year Built"     min={0} max={40} value={s.wAge}    onChange={v => update('wAge', v)}    display={`${s.wAge}%`}    hint="Construction vintage — newer is better" />
-          <Slider label="Market Signal"  min={0} max={40} value={s.wMarket} onChange={v => update('wMarket', v)} display={`${s.wMarket}%`} hint="DOM and over-ask signal — used in Heatmap & detail modal" />
+          <Slider label="Market Signal"  min={0} max={40} value={s.wMarket}  onChange={v => update('wMarket', v)}  display={`${s.wMarket}%`}          hint="DOM and over-ask signal — used in Heatmap & detail modal" />
+          <Slider label="Monthly Cost"   min={0} max={40} value={s.wMonthly ?? 0} onChange={v => update('wMonthly', v)} display={`${s.wMonthly ?? 0}%`} hint="Est. P&I + tax + insurance — lower monthly is better" />
 
           {!weightOk && (
             <div className={styles.weightWarn}>

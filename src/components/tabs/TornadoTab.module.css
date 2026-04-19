@@ -72,7 +72,7 @@
   background: var(--panel);
   border-right: 1px solid var(--border);
 }
-.table tr th:first-child { background: var(--surface); z-index: 3; }
+.table tr th:first-child { background: var(--surface); z-index: 3; min-width: 160px; }
 
 .row { transition: background .1s; }
 .row:hover td { background: var(--accent-glow); }
