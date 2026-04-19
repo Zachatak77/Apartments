@@ -83,13 +83,7 @@
   max-width: 150px;
 }
 
-.addrRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.addr { font-weight: 400; }
+.addr { display: block; font-weight: 400; }
 .town {
   display: block;
   font-family: var(--font-m);

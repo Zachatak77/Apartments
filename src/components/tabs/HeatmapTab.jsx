@@ -65,11 +65,9 @@ export default function HeatmapTab({ comps, onEdit, onDelete, onSelect }) {
               return (
                 <tr key={c.id} className={styles.row} onClick={() => onSelect?.(c)}>
                   <td className={styles.addrCell}>
-                    <div className={styles.addrRow}>
-                      <span className={styles.addr}>{c.address}</span>
-                      <span className={`${styles.statusTag} ${statusCls}`}>{status}</span>
-                    </div>
+                    <span className={styles.addr}>{c.address}</span>
                     {c.town && <span className={styles.town}>{c.town}</span>}
+                    <span className={`${styles.statusTag} ${statusCls}`}>{status}</span>
                   </td>
                   <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.ps, 3)}`}>{fmt(c.psf, 'psf')}</div></td>
                   <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.ts, 3)}`}>{fmt(c.taxes, 'tax')}</div></td>
