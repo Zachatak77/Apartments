@@ -1,11 +1,10 @@
 import { useMemo } from 'react'
 import { loadMortgagePrefs, calcMonthlyPayment, MORTGAGE_DEDUCTION_CAP } from '../../lib/mortgage'
+import { loadModelSettings } from '../../lib/modelSettings'
 import { useSortable } from '../../hooks/useSortable.jsx'
 import styles from './CostTab.module.css'
 
-const INS_RATE = 0.005  // estimated 0.5% of price annually
-
-function computeRow(comp, prefs) {
+function computeRow(comp, prefs, insRate) {
   const price = comp.sold_price ?? comp.last_list_price ?? comp.original_list_price
   if (!price) return null
 
@@ -16,7 +15,7 @@ function computeRow(comp, prefs) {
   // Monthly costs
   const monthlyPI  = calcMonthlyPayment(loanAmt, rate, term)
   const monthlyTax = comp.taxes ? comp.taxes / 12 : 0
-  const monthlyIns = price * INS_RATE / 12
+  const monthlyIns = price * (insRate / 100) / 12
   const monthlyDrag = monthlyPI + monthlyTax + monthlyIns
 
   // Tax deductions — year-1 interest approximation
@@ -65,11 +64,12 @@ const K = v => `$${Math.round(v / 1000)}K`
 const Mo = v => `$${Math.round(v).toLocaleString()}`
 
 export default function CostTab({ comps }) {
-  const prefs = useMemo(() => loadMortgagePrefs(), [])
+  const prefs    = useMemo(() => loadMortgagePrefs(), [])
+  const modelSettings = useMemo(() => loadModelSettings(), [])
 
   const rows = useMemo(() =>
-    comps.map(c => computeRow(c, prefs)).filter(Boolean),
-  [comps, prefs])
+    comps.map(c => computeRow(c, prefs, modelSettings.insuranceRate)).filter(Boolean),
+  [comps, prefs, modelSettings])
 
   const { sorted, handleSort, SortIcon } = useSortable(rows, '_monthlyAfterTax', 'asc')
 
@@ -246,7 +246,7 @@ export default function CostTab({ comps }) {
       {/* Footnotes */}
       <div className={styles.footnotes}>
         <div className={styles.footnote}>
-          Insurance estimated at 0.5% of list price annually. Actual premiums vary.
+          Insurance estimated at {modelSettings.insuranceRate}% of list price annually. Actual premiums vary.
         </div>
         <div className={styles.footnote}>
           Mortgage interest deductible on first $750K of loan principal (TCJA 2017).

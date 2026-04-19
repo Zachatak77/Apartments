@@ -8,6 +8,7 @@ import PoolView from './pages/PoolView'
 import PropertyForm from './pages/PropertyForm'
 import PropertiesPage from './pages/PropertiesPage'
 import Profile from './pages/Profile'
+import ModelSettings from './pages/ModelSettings'
 
 export default function App() {
   const { user, loading, signIn, signUp, signOut } = useAuth()
@@ -28,6 +29,17 @@ export default function App() {
   if (view === 'profile') {
     return (
       <Profile
+        user={user}
+        theme={theme}
+        onToggleTheme={toggle}
+        onBack={() => setView('dashboard')}
+      />
+    )
+  }
+
+  if (view === 'modelSettings') {
+    return (
+      <ModelSettings
         user={user}
         theme={theme}
         onToggleTheme={toggle}
@@ -101,6 +113,7 @@ export default function App() {
       onOpenPool={pool => { setActivePool(pool); setView('pool') }}
       onOpenProfile={() => setView('profile')}
       onOpenProperties={() => setView('properties')}
+      onOpenModelSettings={() => setView('modelSettings')}
       onSignOut={signOut}
     />
   )

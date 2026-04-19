@@ -1,3 +1,5 @@
+import { loadModelSettings } from './modelSettings'
+
 export const MED_PSF  = 449  // fallback when pool has no closed comps
 export const CEIL_PSF = 508  // fallback when pool has no closed comps
 
@@ -30,8 +32,6 @@ export function buildPricingContext(comps) {
   }
 }
 
-// Weights (must sum to 100)
-const W = { ps: 32, ts: 20, ss: 13, ls: 13, as: 12, ms: 10 }
 
 // ── Pool context ────────────────────────────────────────────────────────────
 // Call once per render with the full comps array; pass result to scoreComp.
@@ -86,7 +86,9 @@ function scoreHigh(val, p, fallback) {
 // ctx is optional. When provided (pool has 3+ data points per metric),
 // thresholds are derived from the pool's own percentile distribution.
 // Falls back to hardcoded thresholds for small pools or missing metrics.
-export function scoreComp(c, ctx) {
+export function scoreComp(c, ctx, weights) {
+  const s = weights ?? loadModelSettings()
+  const W = { ps: s.wPsf, ts: s.wTax, ss: s.wSqft, ls: s.wLot, as: s.wAge, ms: s.wMarket }
   const ps = scoreLow(c.psf, ctx?.psf,
     v => v < 340 ? 3 : v < 400 ? 2.5 : v < 450 ? 2 : v < 510 ? 1.5 : 1)
 
@@ -129,9 +131,10 @@ export function calcLotPsf(comp) {
   return +(price / comp.lot_sqft).toFixed(2)
 }
 
-export function offerRange(comp) {
+export function offerRange(comp, settings) {
   const price = comp.last_list_price ?? comp.original_list_price
   if (!price) return null
+  const s   = settings ?? loadModelSettings()
   const dom = comp.days_on_market ?? 0
   const cut = (comp.original_list_price ?? 0) - (comp.last_list_price ?? comp.original_list_price ?? 0)
 
@@ -142,7 +145,7 @@ export function offerRange(comp) {
   else if (dom > 10) { lo = .95; hi = .98 }
   else               { lo = .97; hi = 1.02 }
 
-  if (cut > 150000) { lo *= .97; hi *= .97 }
+  if (cut > s.largeCutThresh) { lo *= .97; hi *= .97 }
   return { lo: Math.round(price * lo), hi: Math.round(price * hi) }
 }
 

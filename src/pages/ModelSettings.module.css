@@ -1,0 +1,223 @@
+.page {
+  padding: 28px 20px 64px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.pageTitle {
+  font-family: var(--font-d);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.sub {
+  font-size: 0.84rem;
+  color: var(--dim);
+  font-style: italic;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.cardTitle {
+  font-family: var(--font-d);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cardSub {
+  font-size: 0.78rem;
+  color: var(--dim);
+  line-height: 1.55;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+/* ── Sliders ── */
+.sliderGroup { margin-bottom: 18px; }
+
+.sliderHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.sliderLabel {
+  font-size: 0.84rem;
+  color: var(--text-2);
+}
+
+.sliderVal {
+  font-family: var(--font-m);
+  font-size: 0.78rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.hint {
+  font-size: 0.72rem;
+  color: var(--dim);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* ── Weight total indicator ── */
+.weightTotal {
+  font-family: var(--font-m);
+  font-size: 0.62rem;
+  letter-spacing: .08em;
+  padding: 3px 8px;
+  border-radius: 0;
+}
+
+.weightOk  { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
+.weightBad { background: color-mix(in srgb, var(--red, #c0392b) 12%, transparent); color: var(--red, #c0392b); }
+
+.weightWarn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: color-mix(in srgb, var(--amber) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber) 25%, transparent);
+  border-left: 3px solid var(--amber);
+  padding: 10px 14px;
+  font-size: 0.78rem;
+  color: var(--amber);
+  margin-top: 12px;
+}
+
+.autoBtn {
+  background: var(--amber);
+  color: #fff;
+  border: none;
+  padding: 4px 10px;
+  font-family: var(--font-m);
+  font-size: 0.55rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── Number inputs ── */
+.fieldGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.fieldGroup { display: flex; flex-direction: column; }
+
+.fieldHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.fieldHint {
+  font-size: 0.68rem;
+  color: var(--dim);
+  font-style: italic;
+}
+
+.inputWrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.inputAdorn {
+  padding: 0 8px;
+  font-family: var(--font-m);
+  font-size: 0.72rem;
+  color: var(--dim);
+  background: var(--surface);
+  white-space: nowrap;
+}
+
+.numInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 9px 8px;
+  font-family: var(--font-m);
+  font-size: 0.82rem;
+  color: var(--text);
+  outline: none;
+  text-align: right;
+}
+
+.numInput:focus { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* ── Actions ── */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 4px;
+  flex-wrap: wrap;
+}
+
+.saveBtn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 12px 28px;
+  font-family: var(--font-m);
+  font-size: 0.65rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s, opacity .2s;
+}
+.saveBtn:hover { opacity: .88; }
+.saveDone { background: #1a6640 !important; }
+
+.resetBtn {
+  background: transparent;
+  color: var(--dim);
+  border: 1px solid var(--border);
+  padding: 12px 20px;
+  font-family: var(--font-m);
+  font-size: 0.65rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.resetBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+.savedNote {
+  font-family: var(--font-m);
+  font-size: 0.62rem;
+  color: var(--accent);
+}
+
+@media (min-width: 640px) {
+  .page { padding: 36px 32px 64px; }
+}
+
+@media (max-width: 500px) {
+  .fieldGrid { grid-template-columns: 1fr; }
+}

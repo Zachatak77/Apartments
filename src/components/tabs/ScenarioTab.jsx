@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { poolStats, MED_PSF, CEIL_PSF, buildPricingContext } from '../../lib/scoring'
 import { loadMortgagePrefs, calcMonthlyPayment } from '../../lib/mortgage'
+import { loadModelSettings } from '../../lib/modelSettings'
 import styles from './ScenarioTab.module.css'
 
 function Slider({ label, min, max, step = 1, value, onChange, display }) {
@@ -34,6 +35,7 @@ export default function ScenarioTab({ comps }) {
   const [rate, setRate]       = useState(mortPrefs.rate)
   const [downPct, setDownPct] = useState(mortPrefs.downPct)
   const [term, setTerm]       = useState(mortPrefs.term)
+  const ms = useMemo(() => loadModelSettings(), [])
 
   const out = useMemo(() => {
     const psf    = price / sqft
@@ -46,7 +48,9 @@ export default function ScenarioTab({ comps }) {
     const ss = sqft > 4600 ? 3 : sqft > 4100 ? 2.5 : sqft > 3700 ? 2 : sqft > 3300 ? 1.5 : 1
     const ls = lot > 40000 ? 3 : lot > 33000 ? 2.5 : lot > 25000 ? 2 : lot > 18000 ? 1.5 : 1
     const as = yr >= 2010 ? 3 : yr >= 2000 ? 2.8 : yr >= 1990 ? 2.2 : yr >= 1975 ? 1.8 : 1.5
-    const score = Math.round(((ps * 35 + ts * 20 + ss * 15 + ls * 15 + as * 15) / 100 / 3) * 100)
+    const score = Math.round(
+      ((ps * ms.wPsf + ts * ms.wTax + ss * ms.wSqft + ls * ms.wLot + as * ms.wAge) / 100 / 3) * 100
+    )
 
     let lo, hi
     if (dom > 60)      { lo = .84; hi = .89 }
@@ -54,24 +58,24 @@ export default function ScenarioTab({ comps }) {
     else if (dom > 20) { lo = .92; hi = .96 }
     else if (dom > 10) { lo = .95; hi = .98 }
     else               { lo = .97; hi = 1.02 }
-    if (cut > 150000)  { lo *= .97; hi *= .97 }
+    if (cut > ms.largeCutThresh) { lo *= .97; hi *= .97 }
 
     const flags = []
-    if (psf < 390)         flags.push('$/SF in buy zone')
-    if (psf > 460)         flags.push('$/SF above threshold')
-    if (allin > ceilPsf)   flags.push(`all-in exceeds $${ceilPsf} ceiling`)
-    if (tax > 30000)       flags.push('high tax carry')
-    if (dom > 40)          flags.push(`${dom} DOM = leverage`)
-    if (lot < 20000)       flags.push('sub-20K lot risk')
-    if (cut > 150000)      flags.push('large cut = motivated seller')
+    if (psf < ms.psfBuyZone)          flags.push('$/SF in buy zone')
+    if (psf > ms.psfAbove)            flags.push('$/SF above threshold')
+    if (allin > ceilPsf)              flags.push(`all-in exceeds $${ceilPsf} ceiling`)
+    if (tax > ms.taxHighThresh)       flags.push('high tax carry')
+    if (dom > ms.domLeverage)         flags.push(`${dom} DOM = leverage`)
+    if (lot < 20000)                  flags.push('sub-20K lot risk')
+    if (cut > ms.largeCutThresh)      flags.push('large cut = motivated seller')
 
-    const verdict = score >= 70 && allin < ceilPsf ? 'Strong Buy'
-      : score >= 50 && allin < ceilPsf ? 'Consider' : 'Pass'
+    const verdict = score >= ms.strongBuyScore && allin < ceilPsf ? 'Strong Buy'
+      : score >= ms.considerScore && allin < ceilPsf ? 'Consider' : 'Pass'
 
     // Mortgage calculations
     const downAmt    = Math.round(price * downPct / 100)
     const loanAmt    = price - downAmt
-    const closing    = Math.round(price * 0.025)
+    const closing    = Math.round(price * ms.closingCostPct / 100)
     const cashNeeded = downAmt + reno + closing
     const monthlyPmt = calcMonthlyPayment(loanAmt, rate, term)
     const loRate     = Math.max(1, rate - 1)
@@ -189,7 +193,7 @@ export default function ScenarioTab({ comps }) {
             <div className={styles.mortCashBreak}>
               ${Math.round(out.downAmt / 1000)}K down
               {reno > 0 ? ` · $${Math.round(reno / 1000)}K reno` : ''}
-              {' '}· ${Math.round(out.closing / 1000)}K closing (est. 2.5%)
+              {' '}· ${Math.round(out.closing / 1000)}K closing (est. {ms.closingCostPct}%)
             </div>
           </div>
         </div>
