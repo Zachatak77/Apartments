@@ -4,7 +4,7 @@ import Header from '../components/Header'
 import ImportModal from '../components/ImportModal'
 import styles from './PropertiesPage.module.css'
 
-export default function PropertiesPage({ user, theme, onToggleTheme, onBack, onAddProperty, onEditProperty }) {
+export default function PropertiesPage({ user, onAddProperty, onEditProperty }) {
   const [properties, setProperties] = useState([])
   const [pools,      setPools]      = useState([])
   const [loading,    setLoading]    = useState(true)
@@ -65,10 +65,6 @@ export default function PropertiesPage({ user, theme, onToggleTheme, onBack, onA
       <Header
         title="Properties"
         eyebrow={user.email}
-        theme={theme}
-        onToggleTheme={onToggleTheme}
-        onBack={onBack}
-        backLabel="Dashboard"
       />
       <div className={styles.page}>
         <div className={styles.topRow}>

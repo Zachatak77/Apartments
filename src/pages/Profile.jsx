@@ -15,7 +15,7 @@ function Slider({ label, min, max, step, value, onChange, display }) {
   )
 }
 
-export default function Profile({ user, theme, onToggleTheme, onBack }) {
+export default function Profile({ user }) {
   const [prefs, setPrefs] = useState(loadMortgagePrefs)
   const [saved, setSaved] = useState(false)
 
@@ -35,10 +35,6 @@ export default function Profile({ user, theme, onToggleTheme, onBack }) {
       <Header
         title="Profile"
         eyebrow={user.email}
-        theme={theme}
-        onToggleTheme={onToggleTheme}
-        onBack={onBack}
-        backLabel="Dashboard"
       />
       <div className={styles.page}>
         <div className="sl">Financing defaults</div>

@@ -40,7 +40,7 @@ function NumInput({ label, value, onChange, prefix, suffix, min, max, step = 1, 
   )
 }
 
-export default function ModelSettings({ user, theme, onToggleTheme, onBack }) {
+export default function ModelSettings({ user }) {
   const [s, setS]     = useState(loadModelSettings)
   const [saved, setSaved] = useState(false)
 
@@ -70,10 +70,6 @@ export default function ModelSettings({ user, theme, onToggleTheme, onBack }) {
       <Header
         title="Model Settings"
         eyebrow={user.email}
-        theme={theme}
-        onToggleTheme={onToggleTheme}
-        onBack={onBack}
-        backLabel="Dashboard"
       />
       <div className={styles.page}>
         <div className="sl">Scoring & analysis</div>

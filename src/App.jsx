@@ -9,14 +9,18 @@ import PropertyForm from './pages/PropertyForm'
 import PropertiesPage from './pages/PropertiesPage'
 import Profile from './pages/Profile'
 import ModelSettings from './pages/ModelSettings'
+import NavBar from './components/NavBar'
+import NavDrawer from './components/NavDrawer'
 
 export default function App() {
   const { user, loading, signIn, signUp, signOut } = useAuth()
   const { theme, toggle } = useTheme()
 
-  const [view,             setView]             = useState('dashboard')
-  const [activePool,       setActivePool]       = useState(null)
-  const [editingProperty,  setEditingProperty]  = useState(null)
+  const [view,            setView]            = useState('dashboard')
+  const [activePool,      setActivePool]      = useState(null)
+  const [editingProperty, setEditingProperty] = useState(null)
+  const [activeTab,       setActiveTab]       = useState('heatmap')
+  const [navOpen,         setNavOpen]         = useState(false)
 
   if (loading) return (
     <div style={{ padding: 40, textAlign: 'center', color: 'var(--dim)', fontFamily: 'var(--font-m)', fontSize: '0.75rem', letterSpacing: '.1em' }}>
@@ -26,95 +30,100 @@ export default function App() {
 
   if (!user) return <Auth onSignIn={signIn} onSignUp={signUp} />
 
-  if (view === 'profile') {
-    return (
-      <Profile
-        user={user}
-        theme={theme}
-        onToggleTheme={toggle}
-        onBack={() => setView('dashboard')}
-      />
-    )
+  const isFormView = view === 'addProperty' || view === 'editProperty'
+
+  const formBack = () => {
+    setView(activePool ? 'pool' : 'properties')
+    setEditingProperty(null)
   }
 
-  if (view === 'modelSettings') {
-    return (
-      <ModelSettings
-        user={user}
-        theme={theme}
-        onToggleTheme={toggle}
-        onBack={() => setView('dashboard')}
-      />
-    )
-  }
-
-  if (view === 'properties') {
-    return (
-      <PropertiesPage
-        user={user}
-        theme={theme}
-        onToggleTheme={toggle}
-        onBack={() => setView('dashboard')}
-        onAddProperty={() => { setActivePool(null); setEditingProperty(null); setView('addProperty') }}
-        onEditProperty={prop => { setActivePool(null); setEditingProperty(prop); setView('editProperty') }}
-      />
-    )
-  }
-
-  if (view === 'addProperty' || view === 'editProperty') {
-    const fromPool = !!activePool && view === 'addProperty'
-    return (
-      <PropertyForm
-        user={user}
-        property={editingProperty}
-        contextLabel={activePool?.name ?? 'Properties'}
-        theme={theme}
-        onToggleTheme={toggle}
-        onBack={() => {
-          setView(activePool ? 'pool' : 'properties')
-          setEditingProperty(null)
-        }}
-        onSaved={async (property) => {
-          if (fromPool) {
-            await supabase
-              .from('pool_properties')
-              .insert({ pool_id: activePool.id, property_id: property.id })
-            await supabase
-              .from('comp_pools')
-              .update({ updated_at: new Date().toISOString() })
-              .eq('id', activePool.id)
-          }
-          setView(activePool ? 'pool' : 'properties')
-          setEditingProperty(null)
-        }}
-      />
-    )
-  }
-
-  if (view === 'pool' && activePool) {
-    return (
-      <PoolView
-        pool={activePool}
-        user={user}
-        theme={theme}
-        onToggleTheme={toggle}
-        onBack={() => { setView('dashboard'); setActivePool(null) }}
-        onAddProperty={() => { setEditingProperty(null); setView('addProperty') }}
-        onEditProperty={prop => { setEditingProperty(prop); setView('editProperty') }}
-      />
-    )
+  const navigate = (dest) => {
+    if (dest === 'dashboard') setActivePool(null)
+    setView(dest)
+    setNavOpen(false)
   }
 
   return (
-    <Dashboard
-      user={user}
-      theme={theme}
-      onToggleTheme={toggle}
-      onOpenPool={pool => { setActivePool(pool); setView('pool') }}
-      onOpenProfile={() => setView('profile')}
-      onOpenProperties={() => setView('properties')}
-      onOpenModelSettings={() => setView('modelSettings')}
-      onSignOut={signOut}
-    />
+    <>
+      <NavBar
+        onMenuOpen={() => setNavOpen(true)}
+        onBack={isFormView ? formBack : null}
+        backLabel={activePool?.name ?? 'Back'}
+        theme={theme}
+        onToggleTheme={toggle}
+      />
+
+      <NavDrawer
+        open={navOpen}
+        onClose={() => setNavOpen(false)}
+        view={view}
+        pool={activePool}
+        activeTab={activeTab}
+        onTabChange={tab => { setActiveTab(tab); setView('pool'); setNavOpen(false) }}
+        onNavigate={navigate}
+        user={user}
+        onSignOut={signOut}
+      />
+
+      {view === 'dashboard' && (
+        <Dashboard
+          user={user}
+          onOpenPool={pool => { setActivePool(pool); setActiveTab('heatmap'); setView('pool') }}
+          onOpenProfile={() => setView('profile')}
+          onOpenProperties={() => setView('properties')}
+          onOpenModelSettings={() => setView('modelSettings')}
+          onSignOut={signOut}
+        />
+      )}
+
+      {view === 'pool' && activePool && (
+        <PoolView
+          pool={activePool}
+          user={user}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onAddProperty={() => { setEditingProperty(null); setView('addProperty') }}
+          onEditProperty={prop => { setEditingProperty(prop); setView('editProperty') }}
+        />
+      )}
+
+      {view === 'properties' && (
+        <PropertiesPage
+          user={user}
+          onAddProperty={() => { setActivePool(null); setEditingProperty(null); setView('addProperty') }}
+          onEditProperty={prop => { setActivePool(null); setEditingProperty(prop); setView('editProperty') }}
+        />
+      )}
+
+      {isFormView && (
+        <PropertyForm
+          user={user}
+          property={editingProperty}
+          contextLabel={activePool?.name ?? 'Properties'}
+          onBack={formBack}
+          onSaved={async (property) => {
+            if (view === 'addProperty' && activePool) {
+              await supabase
+                .from('pool_properties')
+                .insert({ pool_id: activePool.id, property_id: property.id })
+              await supabase
+                .from('comp_pools')
+                .update({ updated_at: new Date().toISOString() })
+                .eq('id', activePool.id)
+            }
+            setView(activePool ? 'pool' : 'properties')
+            setEditingProperty(null)
+          }}
+        />
+      )}
+
+      {view === 'profile' && (
+        <Profile user={user} />
+      )}
+
+      {view === 'modelSettings' && (
+        <ModelSettings user={user} />
+      )}
+    </>
   )
 }

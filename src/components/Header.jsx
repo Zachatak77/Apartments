@@ -1,22 +1,15 @@
-import ThemeToggle from './ThemeToggle'
 import styles from './Header.module.css'
 
-export default function Header({ title, subtitle, eyebrow, stats = [], theme, onToggleTheme, onBack, backLabel }) {
+export default function Header({ title, subtitle, eyebrow, stats = [] }) {
   return (
     <header className={styles.hdr}>
       <div className={styles.inner}>
         <div className={styles.top}>
           <div className={styles.titleBlock}>
-            {onBack && (
-              <button className={styles.back} onClick={onBack}>
-                ← {backLabel || 'Back'}
-              </button>
-            )}
             {eyebrow && <div className={styles.eyebrow}>{eyebrow}</div>}
             <h1 className={styles.title} dangerouslySetInnerHTML={{ __html: title }} />
             {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
           </div>
-          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
         </div>
         {stats.length > 0 && (
           <div className={`${styles.stats} no-scrollbar`}>

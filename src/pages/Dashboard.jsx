@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
 import styles from './Dashboard.module.css'
 
-export default function Dashboard({ user, theme, onToggleTheme, onOpenPool, onOpenProfile, onOpenProperties, onOpenModelSettings, onSignOut }) {
+export default function Dashboard({ user, onOpenPool, onOpenProfile, onOpenProperties, onOpenModelSettings, onSignOut }) {
   const [pools, setPools] = useState([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
@@ -58,8 +58,6 @@ export default function Dashboard({ user, theme, onToggleTheme, onOpenPool, onOp
       <Header
         title="Comp Analysis"
         eyebrow={user.email}
-        theme={theme}
-        onToggleTheme={onToggleTheme}
       />
 
       <div className={styles.page}>

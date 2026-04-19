@@ -5,7 +5,6 @@
     radial-gradient(ellipse at 10% 80%, rgba(139,58,42,0.08) 0%, transparent 50%);
   border-bottom: 2px solid rgba(42,92,66,0.6);
   transition: background .25s;
-  padding: env(safe-area-inset-top, 0) 0 0;
 }
 
 .inner {
@@ -24,20 +23,6 @@
 
 .titleBlock { flex: 1; }
 
-.back {
-  font-family: var(--font-m);
-  font-size: 0.6rem;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: var(--hdr-dim);
-  background: none;
-  border: none;
-  padding: 0 0 10px;
-  cursor: pointer;
-  display: block;
-  transition: color .2s;
-}
-.back:hover { color: var(--hdr-text); }
 
 .eyebrow {
   font-family: var(--font-m);
@@ -124,13 +109,13 @@
     justify-content: center;
     padding: 28px 0;
     flex: 1;
-    border-right: 1px solid rgba(255,255,255,0.08);
   }
   .stats {
     flex-direction: row;
     align-items: center;
     padding: 0 0 0 40px;
     border-top: none;
+    border-left: 1px solid rgba(255,255,255,0.08);
     gap: 40px;
   }
 }

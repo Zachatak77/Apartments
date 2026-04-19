@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { poolStats } from '../lib/scoring'
 import Header from '../components/Header'
-import TabBar from '../components/TabBar'
 import ImportModal from '../components/ImportModal'
 import PropertyPicker from '../components/PropertyPicker'
 import HeatmapTab from '../components/tabs/HeatmapTab'
@@ -16,17 +15,6 @@ import CostTab from '../components/tabs/CostTab'
 import CompDetailModal from '../components/CompDetailModal'
 import styles from './PoolView.module.css'
 
-const TABS = [
-  { id: 'heatmap',  label: 'Heatmap'      },
-  { id: 'history',  label: 'History'      },
-  { id: 'offers',   label: 'Offers'       },
-  { id: 'scatter',  label: 'Correlations' },
-  { id: 'scenario', label: 'Scenario'     },
-  { id: 'findings', label: 'Findings'     },
-  { id: 'cost',     label: 'Cost'         },
-  { id: 'map',      label: 'Map'          },
-]
-
 function hydrateDom(c) {
   if (!c.list_date) return c
   const listD = new Date(c.list_date)
@@ -36,10 +24,9 @@ function hydrateDom(c) {
   return { ...c, days_on_market: Math.max(0, Math.round((endD - listD) / 86400000)) }
 }
 
-export default function PoolView({ pool, user, theme, onToggleTheme, onBack, onAddProperty, onEditProperty }) {
+export default function PoolView({ pool, user, activeTab, onTabChange, onAddProperty, onEditProperty }) {
   const [comps,        setComps]        = useState([])
   const [loading,      setLoading]      = useState(true)
-  const [activeTab,    setActiveTab]    = useState('heatmap')
   const [showImport,   setShowImport]   = useState(false)
   const [showPicker,   setShowPicker]   = useState(false)
   const [selectedComp, setSelectedComp] = useState(null)
@@ -84,7 +71,6 @@ export default function PoolView({ pool, user, theme, onToggleTheme, onBack, onA
     onEdit:   onEditProperty,
     onDelete: removeFromPool,
     onSelect: setSelectedComp,
-    theme,
   }
 
   return (
@@ -93,12 +79,7 @@ export default function PoolView({ pool, user, theme, onToggleTheme, onBack, onA
         title={pool.name}
         eyebrow={pool.location || pool.role}
         stats={headerStats}
-        theme={theme}
-        onToggleTheme={onToggleTheme}
-        onBack={onBack}
-        backLabel="All Pools"
       />
-      <TabBar tabs={TABS} active={activeTab} onChange={setActiveTab} />
 
       <div className={styles.addBar}>
         <button className={styles.addBtn} onClick={() => setShowPicker(true)}>+ Add to Pool</button>

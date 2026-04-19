@@ -44,7 +44,7 @@ const fields = [
   ]},
 ]
 
-export default function PropertyForm({ user, property, contextLabel, theme, onToggleTheme, onBack, onSaved }) {
+export default function PropertyForm({ user, property, contextLabel, onBack, onSaved }) {
   const isEdit = !!property
   const [form, setForm] = useState(() => {
     if (isEdit) {
@@ -121,10 +121,6 @@ export default function PropertyForm({ user, property, contextLabel, theme, onTo
       <Header
         title={isEdit ? 'Edit Property' : 'Add Property'}
         eyebrow={contextLabel ?? 'Properties'}
-        theme={theme}
-        onToggleTheme={onToggleTheme}
-        onBack={onBack}
-        backLabel="Back"
       />
       <div className={styles.page}>
         <form onSubmit={submit}>
