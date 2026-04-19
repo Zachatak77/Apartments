@@ -69,6 +69,25 @@
   color: var(--dim);
   margin-top: 3px;
 }
+.hdrActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.hdrEditBtn {
+  background: none;
+  border: 1px solid var(--accent);
+  font-family: var(--font-m);
+  font-size: 0.52rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 4px 9px;
+  transition: background .15s, color .15s;
+}
+.hdrEditBtn:hover { background: var(--accent); color: #fff; }
 .closeBtn {
   background: none;
   border: none;

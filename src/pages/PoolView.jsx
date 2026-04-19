@@ -129,6 +129,7 @@ export default function PoolView({ pool, user, theme, onToggleTheme, onBack, onA
           comp={selectedComp}
           comps={comps}
           onClose={() => setSelectedComp(null)}
+          onEdit={prop => { setSelectedComp(null); onEditProperty(prop) }}
         />
       )}
 

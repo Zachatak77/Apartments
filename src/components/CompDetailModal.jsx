@@ -168,7 +168,7 @@ function generateFindings(comp, allComps, s, price) {
   return findings
 }
 
-export default function CompDetailModal({ comp, comps, onClose }) {
+export default function CompDetailModal({ comp, comps, onClose, onEdit }) {
   const ctx      = useMemo(() => buildPoolContext(comps), [comps])
   const pricing  = useMemo(() => buildPricingContext(comps), [comps])
   const ceilPsf  = pricing?.ceil ?? CEIL_PSF
@@ -245,7 +245,10 @@ export default function CompDetailModal({ comp, comps, onClose }) {
               <div className={styles.address}>{comp.address}</div>
               {comp.town && <div className={styles.town}>{comp.town}</div>}
             </div>
-            <button className={styles.closeBtn} onClick={onClose}>✕</button>
+            <div className={styles.hdrActions}>
+              {onEdit && <button className={styles.hdrEditBtn} onClick={() => { onEdit(comp); onClose() }}>Edit</button>}
+              <button className={styles.closeBtn} onClick={onClose}>✕</button>
+            </div>
           </div>
           <div className={styles.hdrMeta}>
             <span className={`${styles.badge} ${statusCls}`}>{status}</span>
