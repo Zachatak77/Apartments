@@ -60,11 +60,16 @@ export default function PoolView({ pool, user, activeTab, onTabChange, onAddProp
 
   const stats = poolStats(comps)
 
+  const contracted = comps.filter(c => c.list_date && c.contract_date)
+  const avgDtc = contracted.length
+    ? Math.round(contracted.reduce((s, c) => s + Math.round((new Date(c.contract_date) - new Date(c.list_date)) / 86400000), 0) / contracted.length)
+    : null
+
   const headerStats = comps.length > 0 ? [
     { value: stats.medianPsf ? `$<em>${stats.medianPsf}</em>` : '—', label: 'Median $/SF'  },
     { value: stats.psfRange  ? `$<em>${stats.psfRange}</em>`  : '—', label: '$/SF Range'   },
     { value: `<em>${stats.closedCount}</em>/${stats.totalCount}`,     label: 'Closed Sales' },
-    { value: stats.avgCut    ? `−$<em>${Math.round(stats.avgCut / 1000)}K</em>` : '—', label: 'Avg Price Cut' },
+    { value: avgDtc != null ? `<em>${avgDtc}</em>d` : '—',           label: 'Avg Days to Contract' },
   ] : []
 
   const tabProps = {
