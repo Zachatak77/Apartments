@@ -68,10 +68,6 @@ export default function Dashboard({ user, onOpenPool, onOpenProfile, onOpenPrope
           </div>
           <div className={styles.topActions}>
             <button className={styles.newBtn} onClick={() => setShowForm(true)}>+ New Pool</button>
-            <button className={styles.signOutBtn} onClick={onOpenProperties}>Properties</button>
-            <button className={styles.signOutBtn} onClick={onOpenProfile}>Profile</button>
-            <button className={styles.signOutBtn} onClick={onOpenModelSettings}>Model</button>
-            <button className={styles.signOutBtn} onClick={onSignOut}>Sign out</button>
           </div>
         </div>
 
