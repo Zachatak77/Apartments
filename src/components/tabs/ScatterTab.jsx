@@ -288,6 +288,13 @@ export default function ScatterTab({ comps, theme }) {
       pts: comps.filter(c => c.psf && c.lot_psf).map(c => [c.psf, c.lot_psf, c]),
       formulaFn: r => `y = $${r.inter.toFixed(2)} ${sgn(r, Math.abs(r.slope).toFixed(3))} per $/SF`,
     },
+    {
+      id: 'sc7',
+      title: 'Interior % vs. $/SF',
+      xLabel: 'Interior % (sqft ÷ lot)', yLabel: '$/SF',
+      pts: comps.filter(c => c.sqft && c.lot_sqft && c.psf).map(c => [(c.sqft / c.lot_sqft) * 100, c.psf, c]),
+      formulaFn: r => `y = $${Math.round(r.inter)} ${sgn(r, Math.abs(r.slope).toFixed(1))} per 1% coverage`,
+    },
   ]
 
   return (

@@ -52,6 +52,15 @@ export default function FindingsTab({ comps }) {
   // Active-to-closed $/SF gap
   const medActivePsf = median(active.filter(c => c.psf).map(c => c.psf))
   const medClosedPsf = median(closed.filter(c => c.psf && !(c.sold_price > c.original_list_price)).map(c => c.psf))
+
+  // Land plays: below-median $/SF driven by lot size, not cheap structure
+  const medPoolPsf  = median(comps.filter(c => c.psf).map(c => c.psf))
+  const poolIntPcts = comps.filter(c => c.sqft && c.lot_sqft).map(c => c.sqft / c.lot_sqft)
+  const medIntPct   = poolIntPcts.length ? [...poolIntPcts].sort((a, b) => a - b)[Math.floor(poolIntPcts.length / 2)] : null
+  const landPlays   = active.filter(c => {
+    if (!c.psf || !c.sqft || !c.lot_sqft || !medPoolPsf || !medIntPct) return false
+    return c.psf < medPoolPsf * 0.97 && (c.sqft / c.lot_sqft) <= medIntPct
+  })
   const psfGap       = medActivePsf && medClosedPsf ? medActivePsf - medClosedPsf : null
   const psfGapPct    = psfGap && medClosedPsf ? Math.abs((psfGap / medClosedPsf) * 100).toFixed(1) : null
 
@@ -148,6 +157,20 @@ export default function FindingsTab({ comps }) {
         ? `Active median $/SF is <strong>$${medActivePsf}</strong> vs. closed median of <strong>$${medClosedPsf}</strong> — active listings are priced <strong>${absPct}% below</strong> recent closed comps. Unusually favorable entry conditions. <strong>$/SF drives more composite score variance than any other dimension — pricing at this level provides a meaningful value buffer.</strong>`
         : `Active median $/SF (<strong>$${medActivePsf}</strong>) is closely aligned with closed comps (<strong>$${medClosedPsf}</strong>). Sellers are pricing in line with evidence. <strong>$/SF is the dominant scoring variable — evaluate each listing on its own position within this range.</strong>`,
       type: psfGap > 20 ? 'r' : psfGap < -10 ? 'g' : '',
+    })
+  }
+
+  // 3b. Land plays
+  if (landPlays.length > 0 && medIntPct) {
+    const s = landPlays.length === 1
+    const title = s
+      ? `${landPlays[0].address} Looks Cheap on $/SF — Its Lot Is the Value, Not the House`
+      : `${landPlays.length} Listings Read as Value on $/SF Because of Outsized Lots, Not Low Pricing`
+    findings.push({
+      num: label('Moderate Confidence'),
+      title,
+      body: `${landPlays.map(c => `<strong>${c.address}</strong> ($${c.psf}/SF, ${(c.sqft / c.lot_sqft * 100).toFixed(1)}% interior coverage)`).join('; ')} ${s ? 'sits' : 'sit'} below the pool median of <strong>$${medPoolPsf}/SF</strong> but ${s ? 'also has' : 'also have'} below-median interior coverage — a large share of the purchase price is land, not structure. $/SF understates the true cost of the house in isolation. <strong>Evaluate these as lot plays: compare on land value and teardown/renovation potential, not $/SF alone.</strong>`,
+      type: 'b',
     })
   }
 
