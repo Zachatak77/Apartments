@@ -255,15 +255,11 @@ export default function OffersTab({ comps }) {
                         {c.town && <div className={styles.town}>{c.town}</div>}
                       </div>
                     </td>
-                    <td className={styles.num}>{fmtK(c._ask)}</td>
-                    <td className={`${styles.num} ${psfCls}`}>{c.psf ? `$${c.psf}` : '—'}</td>
-                    <td className={`${styles.num} ${lev.dom > 60 ? styles.domHot : lev.dom > 30 ? styles.domWarm : ''}`}>
-                      {lev.dom > 0 ? `${lev.dom}d` : '—'}
-                    </td>
-                    <td className={`${styles.num} ${lev.cut > 0 ? styles.cutPos : ''}`}>{cut}</td>
-                    <td className={styles.num}>
-                      <span className={`${styles.levBadge} ${cls}`}>{badge}</span>
-                    </td>
+                    <td><div className={styles.cell}>{fmtK(c._ask)}</div></td>
+                    <td><div className={`${styles.cell} ${psfCls}`}>{c.psf ? `$${c.psf}` : '—'}</div></td>
+                    <td><div className={`${styles.cell} ${lev.dom > 60 ? styles.domHot : lev.dom > 30 ? styles.domWarm : ''}`}>{lev.dom > 0 ? `${lev.dom}d` : '—'}</div></td>
+                    <td><div className={`${styles.cell} ${lev.cut > 0 ? styles.cutPos : ''}`}>{cut}</div></td>
+                    <td><div className={styles.cell}><span className={`${styles.levBadge} ${cls}`}>{badge}</span></div></td>
                   </tr>
                 )
               })}
@@ -330,10 +326,10 @@ export default function OffersTab({ comps }) {
                     {aboveCeil && <span className={styles.ceilTag}>above ceiling</span>}
                     {hasCut && <span className={styles.cutTag}>↓${Math.round((c.original_list_price - c.last_list_price) / 1000)}K cut</span>}
                   </td>
-                  <td className={styles.num}>${c._actual ? Math.round(c._actual / 1000) : '—'}K</td>
-                  <td className={`${styles.num} ${aboveCeil ? styles.psfBad : ''}`}>{c.psf ? `$${c.psf}` : '—'}</td>
-                  <td className={`${styles.num} ${styles.fairVal}`}>{c._fairPrice ? `$${c._fairPrice}K` : '—'}</td>
-                  <td className={`${styles.num} ${styles.maxOffer}`}>{c._maxOffer ? `$${c._maxOffer}K` : '—'}</td>
+                  <td><div className={styles.cell}>${c._actual ? Math.round(c._actual / 1000) : '—'}K</div></td>
+                  <td><div className={`${styles.cell} ${aboveCeil ? styles.psfBad : ''}`}>{c.psf ? `$${c.psf}` : '—'}</div></td>
+                  <td><div className={`${styles.cell} ${styles.fairVal}`}>{c._fairPrice ? `$${c._fairPrice}K` : '—'}</div></td>
+                  <td><div className={`${styles.cell} ${styles.maxOffer}`}>{c._maxOffer ? `$${c._maxOffer}K` : '—'}</div></td>
                 </tr>
               )
             })}

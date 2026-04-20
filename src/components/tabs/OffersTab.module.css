@@ -198,7 +198,7 @@
 /* ── Tables ── */
 .tableWrap {
   overflow-x: auto;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border);
   border-radius: 2px;
@@ -263,7 +263,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 10px !important;
+  padding: 4px 8px !important;
   min-width: 140px;
   max-width: 190px;
 }
@@ -286,7 +286,7 @@
 }
 .addrCellBlock {
   display: block;
-  padding: 7px 10px !important;
+  padding: 4px 8px !important;
   min-width: 140px;
   max-width: 190px;
 }
@@ -321,15 +321,21 @@
   margin-top: 2px;
 }
 
-/* ── Number cells ── */
-.num {
-  padding: 7px 10px;
-  text-align: right;
+/* ── Cell wrapper (matches heatmap) ── */
+.cell {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-m);
   font-size: 0.73rem;
   color: var(--text-2);
   white-space: nowrap;
+  padding: 0 10px;
 }
+
+/* ── Number cells (legacy — td-level, no padding) ── */
+.num { }
 
 /* ── Value colouring ── */
 .fairVal  { color: var(--accent) !important; }

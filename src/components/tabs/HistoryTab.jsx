@@ -229,10 +229,11 @@ export default function HistoryTab({ comps }) {
         <Card title="Closed — Sell to Final List">
           {closed.length === 0 && <Row addr="No closed sales" val="" cls="" />}
           {closed.map(c => {
-            const r   = c.last_list_price && c.sold_price ? (c.sold_price / c.last_list_price * 100).toFixed(1) : null
+            const listPrice = c.last_list_price ?? c.original_list_price
+            const r   = listPrice && c.sold_price ? (c.sold_price / listPrice * 100).toFixed(1) : null
             const dom = c.days_on_market != null ? `${c.days_on_market}d` : null
             const val = [r ? `${r}% · ${fmtK(c.sold_price)}` : fmtK(c.sold_price), dom].filter(Boolean).join(' · ')
-            return <Row key={c.id} addr={c.address} val={val} cls={c.sold_price >= (c.last_list_price ?? 0) ? 'pos' : 'neg'} />
+            return <Row key={c.id} addr={c.address} val={val} cls={c.sold_price >= (listPrice ?? 0) ? 'pos' : 'neg'} />
           })}
         </Card>
 
