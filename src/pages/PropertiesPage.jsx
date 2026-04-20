@@ -175,6 +175,7 @@ export default function PropertiesPage({ user, onAddProperty, onEditProperty }) 
                   <th>$/SF</th>
                   <th>Bed/Bath</th>
                   <th>Sqft</th>
+                  <th>Built</th>
                   <th>Status</th>
                   <th className={styles.thLeft}>Pools</th>
                   <th></th>
@@ -198,6 +199,7 @@ export default function PropertiesPage({ user, onAddProperty, onEditProperty }) 
                       <td className={styles.numCell}>{p.psf ? `$${p.psf}` : '—'}</td>
                       <td className={styles.numCell}>{p.beds != null ? p.beds : '—'} / {p.baths != null ? p.baths : '—'}</td>
                       <td className={styles.numCell}>{p.sqft ? p.sqft.toLocaleString() : '—'}</td>
+                      <td className={styles.numCell}>{p.year_built ?? '—'}</td>
                       <td>
                         <span className={p.is_closed ? styles.badgeClosed : styles.badgeActive}>
                           {p.is_closed ? 'Closed' : 'Active'}
