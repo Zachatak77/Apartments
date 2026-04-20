@@ -7,7 +7,10 @@ function fmt(val, type) {
   if (val == null) return '—'
   if (type === 'psf')   return `$${val}`
   if (type === 'tax')   return `$${Math.round(val / 1000)}K`
-  if (type === 'lot')   return `${Math.round(val / 1000)}K`
+  if (type === 'lot') {
+    const ac = val / 43560
+    return ac < 0.10 ? `${Math.round(val).toLocaleString()} sf` : `${ac.toFixed(2)} ac`
+  }
   if (type === 'price') return `$${Math.round(val / 1000)}K`
   return val
 }
