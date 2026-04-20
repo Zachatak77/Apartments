@@ -9,7 +9,7 @@ const EMPTY = {
   list_date: '', last_price_date: '', contract_date: '', sold_date: '',
   sqft: '', lot_sqft: '', year_built: '', beds: '', baths: '',
   taxes: '', days_on_market: '', days_to_contract: '',
-  stories: '2', is_closed: false, over_ask: false,
+  stories: '2',
   notes: '',
 }
 
@@ -100,8 +100,6 @@ export default function PropertyForm({ user, property, contextLabel, onBack, onS
       taxes:                num(form.taxes),
       days_on_market:       computedDom,
       days_to_contract:     num(form.days_to_contract),
-      is_closed:            form.is_closed,
-      over_ask:             form.over_ask,
       notes:                form.notes.trim() || null,
       psf,
       lot_psf: lotPsf,
@@ -144,20 +142,6 @@ export default function PropertyForm({ user, property, contextLabel, onBack, onS
               </div>
             </div>
           ))}
-
-          <div className={styles.section}>
-            <div className="sl">Status</div>
-            <div className={styles.checkRow}>
-              <label className={styles.checkLabel}>
-                <input type="checkbox" checked={form.is_closed} onChange={e => set('is_closed', e.target.checked)} />
-                Closed / Sold
-              </label>
-              <label className={styles.checkLabel}>
-                <input type="checkbox" checked={form.over_ask} onChange={e => set('over_ask', e.target.checked)} />
-                Sold Over Ask
-              </label>
-            </div>
-          </div>
 
           <div className={styles.section}>
             <div className="sl">Notes</div>

@@ -29,14 +29,14 @@ export default function FindingsTab({ comps }) {
   const prefs   = loadMortgagePrefs()
   const ms      = loadModelSettings()
 
-  const closed  = comps.filter(c => c.is_closed)
-  const active  = comps.filter(c => !c.is_closed)
+  const closed  = comps.filter(c => !!c.sold_date)
+  const active  = comps.filter(c => !c.sold_date)
   const cuts    = comps.filter(c => c.original_list_price && c.last_list_price && c.original_list_price > c.last_list_price)
   const overCeil = active.filter(c => c.psf && c.psf > ceilPsf)
   const highDom  = active.filter(c => (c.days_on_market ?? 0) > 45)
-  const overAsk  = closed.filter(c => c.over_ask)
+  const overAsk  = closed.filter(c => c.sold_price > c.original_list_price)
 
-  const closedFloor = [...closed.filter(c => c.psf && !c.over_ask)].sort((a, b) => a.psf - b.psf).slice(0, 2)
+  const closedFloor = [...closed.filter(c => c.psf && !(c.sold_price > c.original_list_price))].sort((a, b) => a.psf - b.psf).slice(0, 2)
 
   const avgCut = cuts.length
     ? Math.round(cuts.reduce((s, c) => s + (c.original_list_price - c.last_list_price), 0) / cuts.length)
@@ -51,7 +51,7 @@ export default function FindingsTab({ comps }) {
 
   // Active-to-closed $/SF gap
   const medActivePsf = median(active.filter(c => c.psf).map(c => c.psf))
-  const medClosedPsf = median(closed.filter(c => c.psf && !c.over_ask).map(c => c.psf))
+  const medClosedPsf = median(closed.filter(c => c.psf && !(c.sold_price > c.original_list_price)).map(c => c.psf))
   const psfGap       = medActivePsf && medClosedPsf ? medActivePsf - medClosedPsf : null
   const psfGapPct    = psfGap && medClosedPsf ? Math.abs((psfGap / medClosedPsf) * 100).toFixed(1) : null
 

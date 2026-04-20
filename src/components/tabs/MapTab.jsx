@@ -152,9 +152,9 @@ export default function MapTab({ comps }) {
               ...c,
               psf: c.psf ?? (c.last_list_price && c.sqft ? Math.round(c.last_list_price / c.sqft) : null) ?? 999,
             }, ctx)
-            const actual = (c.is_closed ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
+            const actual = (c.sold_date ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
             const dom = c.days_on_market ?? 0
-            const signal = c.is_closed ? (c.over_ask ? '▲ over ask' : '✓ closed') : dom > 0 ? `${dom}d on market` : 'active'
+            const signal = c.sold_date ? (c.sold_price > c.original_list_price ? '▲ over ask' : '✓ closed') : dom > 0 ? `${dom}d on market` : 'active'
 
             return (
               <Marker key={c.id} position={[lat, lng]} icon={makeIcon(s.comp, false)}>

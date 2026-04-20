@@ -207,7 +207,7 @@ export default function CostTab({ comps }) {
                           750K cap
                         </span>
                       )}
-                      {r.is_closed && <span className={styles.closedTag}>sold</span>}
+                      {r.sold_date && <span className={styles.closedTag}>sold</span>}
                     </div>
                   </td>
                   <td className={styles.num}>{K(r._price)}</td>

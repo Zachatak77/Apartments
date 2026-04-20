@@ -14,7 +14,7 @@ function buildDims(ms) {
     { key: 'ms', label: 'Signal',  weight: ms.wMarket,  valKey: null,         lower: false, fmt: (_, c) => {
       if (!c) return '—'
       const dom = c.days_on_market ?? 0
-      return c.over_ask ? '▲ over ask' : c.is_closed ? '✓ closed' : dom > 0 ? `${dom}d on market` : 'active'
+      return (c.sold_price > c.original_list_price) ? '▲ over ask' : c.sold_date ? '✓ closed' : dom > 0 ? `${dom}d on market` : 'active'
     }},
     ...((ms.wMonthly ?? 0) > 0 ? [{ key: 'mm', label: 'Monthly', weight: ms.wMonthly, valKey: null, lower: true, fmt: (_, c) => {
       if (!c) return '—'
@@ -85,8 +85,8 @@ function dimText(key, score, comp, allComps, ms) {
   }
   if (key === 'ms') {
     const dom = comp.days_on_market ?? 0
-    if (comp.over_ask)    return 'Sold over asking price — validated strong demand at this price point.'
-    if (comp.is_closed)   return 'Closed at or below ask — normal market transaction.'
+    if (comp.sold_price > comp.original_list_price) return 'Sold over asking price — validated strong demand at this price point.'
+    if (comp.sold_date)   return 'Closed at or below ask — normal market transaction.'
     if (dom > 50)         return `${dom} days on market — market has not validated ask price. Strong buyer negotiating position.`
     if (dom > 20)         return `${dom} days on market — moderate resistance. Some negotiating room likely.`
     if (dom > 0)          return `${dom} days on market — active and relatively fresh.`
@@ -166,14 +166,14 @@ function generateFindings(comp, allComps, s, price) {
 
   // DOM signal
   const dom = comp.days_on_market ?? 0
-  if (!comp.is_closed && dom > 60) {
+  if (!comp.sold_date && dom > 60) {
     findings.push({ type: 'pos', text: `${dom} days on market without an accepted offer. Extended DOM eliminates competing buyer pressure — aggressive negotiation is warranted.` })
-  } else if (!comp.is_closed && dom > 30) {
+  } else if (!comp.sold_date && dom > 30) {
     findings.push({ type: 'neu', text: `${dom} days on market. Moderately stale — seller likely open to offers below ask.` })
   }
 
   // Over ask
-  if (comp.is_closed && comp.over_ask) {
+  if (comp.sold_date && comp.sold_price > comp.original_list_price) {
     findings.push({ type: 'neg', text: `Closed over asking price — this comp reflects bidding-war conditions and may overstate market value for non-competitive listings.` })
   }
 
@@ -190,9 +190,9 @@ function generateFindings(comp, allComps, s, price) {
   }
 
   // Sold closed comp with sell-to-ask
-  if (comp.is_closed && comp.sold_price && comp.last_list_price) {
+  if (comp.sold_date && comp.sold_price && comp.last_list_price) {
     const ratio = (comp.sold_price / comp.last_list_price * 100).toFixed(1)
-    if (!comp.over_ask) {
+    if (!(comp.sold_price > comp.original_list_price)) {
       findings.push({ type: 'neu', text: `Closed at ${ratio}% of final list price ($${Math.round(comp.sold_price / 1000)}K of $${Math.round(comp.last_list_price / 1000)}K ask) — confirms real-world negotiating room.` })
     }
   }
@@ -218,7 +218,7 @@ export default function CompDetailModal({ comp, comps, onClose, onEdit }) {
     psf: comp.psf ?? (comp.last_list_price && comp.sqft ? Math.round(comp.last_list_price / comp.sqft) : null) ?? 999,
   }, ctx, ms), [comp, ctx, ms])
 
-  const price = (comp.is_closed ? comp.sold_price : null) ?? comp.last_list_price ?? comp.original_list_price
+  const price = (comp.sold_date ? comp.sold_price : null) ?? comp.last_list_price ?? comp.original_list_price
 
   // ── Scenario state ────────────────────────────────────────────────
   const listPrice = comp.last_list_price ?? comp.original_list_price ?? price ?? 1500000
@@ -269,8 +269,9 @@ export default function CompDetailModal({ comp, comps, onClose, onEdit }) {
   const scoreLabel = s.comp >= 70 ? 'Strong Value' : s.comp >= 50 ? 'Above Average' : s.comp >= 35 ? 'Average' : 'Weak Value'
 
   const dom = comp.days_on_market ?? 0
-  const status = comp.is_closed ? (comp.over_ask ? 'Closed Over Ask' : 'Closed') : dom > 0 ? `Active · ${dom}d` : 'Active'
-  const statusCls = comp.is_closed ? (comp.over_ask ? styles.badgeOver : styles.badgeClosed) : dom > 45 ? styles.badgeStale : styles.badgeActive
+  const overAsk = comp.sold_price > comp.original_list_price
+  const status = comp.sold_date ? (overAsk ? 'Closed Over Ask' : 'Closed') : dom > 0 ? `Active · ${dom}d` : 'Active'
+  const statusCls = comp.sold_date ? (overAsk ? styles.badgeOver : styles.badgeClosed) : dom > 45 ? styles.badgeStale : styles.badgeActive
 
   return (
     <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>

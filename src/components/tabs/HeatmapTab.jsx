@@ -30,7 +30,7 @@ export default function HeatmapTab({ comps, onEdit, onDelete, onSelect }) {
       ...c,
       psf: c.psf ?? (c.last_list_price && c.sqft ? Math.round(c.last_list_price / c.sqft) : null) ?? 999,
     }, ctx)
-    const price = (c.is_closed ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
+    const price = (c.sold_date ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
     return { ...c, _score: s.comp, _s: s, _price: price }
   }), [comps])
 

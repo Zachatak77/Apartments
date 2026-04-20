@@ -12,7 +12,7 @@ export const CEIL_PSF = 508  // fallback when pool has no closed comps
 // With 1 comp: stdDev = 0, ceil = floor = fair = that comp's psf.
 export function buildPricingContext(comps) {
   const psfs = comps
-    .filter(c => c.is_closed && c.psf && !c.over_ask)
+    .filter(c => !!c.sold_date && c.psf && !(c.sold_price > c.original_list_price))
     .map(c => c.psf)
 
   const n = psfs.length
@@ -120,7 +120,8 @@ export function scoreComp(c, ctx, weights) {
   // Market signal: validated demand (over ask) → 3, normal closed → 2,
   // stale active (50+ DOM) → 1, moderate DOM → 1.8, new active → 2.2
   const dom = c.days_on_market ?? 0
-  const ms  = c.over_ask ? 3 : c.is_closed ? 2 : dom > 50 ? 1 : dom > 20 ? 1.8 : 2.2
+  const overAsk = c.sold_price > c.original_list_price
+  const ms  = overAsk ? 3 : !!c.sold_date ? 2 : dom > 50 ? 1 : dom > 20 ? 1.8 : 2.2
 
   // Monthly carrying cost score (lower is better)
   let mm = 1.5
@@ -186,7 +187,7 @@ export function poolStats(comps) {
     const m = Math.floor(s.length / 2)
     return s.length % 2 ? s[m] : Math.round((s[m - 1] + s[m]) / 2)
   }
-  const closed = comps.filter(c => c.is_closed)
+  const closed = comps.filter(c => !!c.sold_date)
   const cuts   = comps.filter(c => c.original_list_price && c.last_list_price && c.original_list_price > c.last_list_price)
   const avgCut = cuts.length
     ? Math.round(cuts.reduce((s, c) => s + (c.original_list_price - c.last_list_price), 0) / cuts.length)

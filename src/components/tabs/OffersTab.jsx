@@ -112,7 +112,7 @@ export default function OffersTab({ comps }) {
 
   // ── Price targets table (all comps) ──────────────────────────────────────
   const enriched = useMemo(() => comps.map(c => {
-    const actual    = (c.is_closed ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
+    const actual    = (c.sold_date ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
     const fairPrice = fpsf && c.sqft ? Math.round(fpsf * c.sqft / 1000) : null
     const maxOffer  = actual && c.sqft
       ? Math.round(Math.min(actual * 0.97, ceilPsf * c.sqft) / 1000)

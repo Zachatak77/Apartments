@@ -67,8 +67,8 @@ export default function PropertiesPage({ user, onAddProperty, onEditProperty }) 
   const filtered = properties.filter(p => {
     if (search && !p.address.toLowerCase().includes(search.toLowerCase()) && !(p.town || '').toLowerCase().includes(search.toLowerCase())) return false
     if (filters.status !== 'all') {
-      if (filters.status === 'closed' && !p.is_closed) return false
-      if (filters.status === 'active' && p.is_closed) return false
+      if (filters.status === 'closed' && !p.sold_date) return false
+      if (filters.status === 'active' && !!p.sold_date) return false
     }
     if (filters.town !== 'all' && p.town !== filters.town) return false
     if (filters.minBeds && (p.beds == null || p.beds < Number(filters.minBeds))) return false
@@ -201,8 +201,8 @@ export default function PropertiesPage({ user, onAddProperty, onEditProperty }) 
                       <td className={styles.numCell}>{p.sqft ? p.sqft.toLocaleString() : '—'}</td>
                       <td className={styles.numCell}>{p.year_built ?? '—'}</td>
                       <td>
-                        <span className={p.is_closed ? styles.badgeClosed : styles.badgeActive}>
-                          {p.is_closed ? 'Closed' : 'Active'}
+                        <span className={p.sold_date ? styles.badgeClosed : styles.badgeActive}>
+                          {p.sold_date ? 'Closed' : 'Active'}
                         </span>
                       </td>
                       <td className={styles.poolsCell}>

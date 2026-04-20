@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { parseCsv, parsePaste, generateTemplate, TEMPLATE_COLUMNS } from '../lib/importParser'
 import styles from './ImportModal.module.css'
 
-const PREVIEW_COLS = ['address', 'town', 'last_list_price', 'sold_price', 'sqft', 'taxes', 'days_on_market', 'is_closed']
+const PREVIEW_COLS = ['address', 'town', 'last_list_price', 'sold_price', 'sqft', 'taxes', 'days_on_market', 'sold_date']
 
 export default function ImportModal({ pool = null, user, onClose, onImported }) {
   const [tab, setTab]         = useState('upload')
@@ -76,7 +76,7 @@ export default function ImportModal({ pool = null, user, onClose, onImported }) 
 
   const fmt = (key, val) => {
     if (val == null || val === '') return <span className={styles.empty}>—</span>
-    if (key === 'is_closed') return val ? <span className={styles.yes}>Closed</span> : <span className={styles.no}>Active</span>
+    if (key === 'sold_date') return val ? <span className={styles.yes}>Closed</span> : <span className={styles.no}>Active</span>
     if (['last_list_price','sold_price','taxes'].includes(key)) return `$${Number(val).toLocaleString()}`
     return String(val)
   }

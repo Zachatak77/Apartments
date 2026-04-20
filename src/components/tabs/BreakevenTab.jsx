@@ -10,7 +10,7 @@ export default function BreakevenTab({ comps }) {
   const ceilPsf = ctx?.ceil ?? CEIL_PSF
 
   const enriched = useMemo(() => comps.map(c => {
-    const actual    = (c.is_closed ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
+    const actual    = (c.sold_date ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
     const fairPrice = fpsf && c.sqft ? Math.round(fpsf * c.sqft / 1000) : null
     const gap       = fairPrice && actual ? Math.round(actual / 1000 - fairPrice) : null
     const maxOffer  = actual && c.sqft
@@ -64,7 +64,7 @@ export default function BreakevenTab({ comps }) {
         </div>
       ) : (
         <p className={styles.sub}>
-          Add closed comps (without over-ask) to activate fair value calculations.
+          Add closed comps to activate fair value calculations.
         </p>
       )}
 
@@ -99,8 +99,8 @@ export default function BreakevenTab({ comps }) {
               const domAtCut  = hasCut && c.list_date && c.last_price_date
                 ? Math.max(0, Math.round((new Date(c.last_price_date) - new Date(c.list_date)) / 86400000))
                 : null
-              const signal    = c.is_closed
-                ? (c.over_ask ? '▲ over' : '✓ closed')
+              const signal    = c.sold_date
+                ? (c.sold_price > c.original_list_price ? '▲ over' : '✓ closed')
                 : dom > 45 ? `●${dom}d` : dom > 0 ? `○${dom}d` : 'new'
               const cutTag = hasCut
                 ? `↓$${Math.round((c.original_list_price - c.last_list_price) / 1000)}K`
@@ -123,7 +123,7 @@ export default function BreakevenTab({ comps }) {
                   </td>
                   <td className={styles.maxOffer}>{maxOffer ? `$${maxOffer}K` : '—'}</td>
                   <td className={styles.signal}>
-                    <span className={c.is_closed ? (c.over_ask ? styles.sigOver : styles.sigClosed) : dom > 45 ? styles.sigHot : styles.sigActive}>
+                    <span className={c.sold_date ? (c.sold_price > c.original_list_price ? styles.sigOver : styles.sigClosed) : dom > 45 ? styles.sigHot : styles.sigActive}>
                       {signal}
                     </span>
                     {domAtCut !== null && <span className={styles.domCut}>cut @{domAtCut}d</span>}

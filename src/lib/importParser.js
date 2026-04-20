@@ -19,8 +19,6 @@ export const TEMPLATE_COLUMNS = [
   { key: 'taxes',               label: 'Annual Taxes',         required: false },
   { key: 'days_on_market',      label: 'Days on Market',       required: false },
   { key: 'days_to_contract',    label: 'Days to Contract',     required: false },
-  { key: 'is_closed',           label: 'Closed (true/false)',  required: false },
-  { key: 'over_ask',            label: 'Over Ask (true/false)',required: false },
   { key: 'notes',               label: 'Notes',                required: false },
 ]
 
@@ -29,7 +27,6 @@ const NUM_KEYS = new Set([
   'sqft','lot_sqft','year_built','beds','baths','stories',
   'taxes','days_on_market','days_to_contract',
 ])
-const BOOL_KEYS  = new Set(['is_closed','over_ask'])
 const DATE_KEYS  = new Set(['list_date','last_price_date','contract_date','sold_date'])
 
 function parseValue(key, raw) {
@@ -37,7 +34,6 @@ function parseValue(key, raw) {
   if (!v) return null
 
   if (NUM_KEYS.has(key))  return isNaN(Number(v.replace(/[$,]/g, ''))) ? null : Number(v.replace(/[$,]/g, ''))
-  if (BOOL_KEYS.has(key)) return /^(true|yes|1)$/i.test(v)
   if (DATE_KEYS.has(key)) {
     // Accept YYYY-MM-DD or M/D/YYYY
     if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v
@@ -84,10 +80,6 @@ function rowsToComps(headers, dataRows) {
       if (!key) return
       obj[key] = parseValue(key, row[j])
     })
-
-    // Default booleans
-    if (obj.is_closed == null) obj.is_closed = false
-    if (obj.over_ask  == null) obj.over_ask  = false
 
     if (!obj.address) {
       errors.push(`Row ${i + 2}: missing Address — skipped`)
@@ -147,7 +139,7 @@ export function generateTemplate() {
       sqft: '4475', lot_sqft: '37897', year_built: '1975',
       beds: '4', baths: '2.5', stories: '2',
       taxes: '23145', days_on_market: '45', days_to_contract: '12',
-      is_closed: 'true', over_ask: 'false', notes: 'Renovated kitchen',
+      notes: 'Renovated kitchen',
     }
     return `"${eg[c.key] ?? ''}"`
   }).join(',')

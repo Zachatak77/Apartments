@@ -242,7 +242,7 @@ function Chart({ title, pts, xLabel, yLabel, formulaFn, isDark }) {
 export default function ScatterTab({ comps, theme }) {
   const isDark    = theme === 'dark'
   const withPrice = comps.filter(c => c.last_list_price || c.original_list_price || c.sold_price)
-  const price     = c => ((c.is_closed ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price) / 1000
+  const price     = c => ((c.sold_date ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price) / 1000
   const sgn       = (r, abs) => `${r.slope >= 0 ? '+' : '−'} $${Math.abs(abs)}`
 
   const charts = [

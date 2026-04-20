@@ -90,8 +90,8 @@ export default function PropertyPicker({ pool, user, onClose, onAdded, onCreateN
                       {fmt(price) && <span>{fmt(price)}</span>}
                       {p.psf     && <span>${p.psf}/SF</span>}
                       {p.sqft    && <span>{Math.round(p.sqft).toLocaleString()} SF</span>}
-                      <span className={p.is_closed ? styles.closed : styles.active}>
-                        {p.is_closed ? 'Closed' : 'Active'}
+                      <span className={p.sold_date ? styles.closed : styles.active}>
+                        {p.sold_date ? 'Closed' : 'Active'}
                       </span>
                     </div>
                   </div>
