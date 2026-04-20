@@ -184,7 +184,13 @@ export default function CostTab({ comps }) {
               <Th  colKey="_annualIntDeductible" label="Int. Deduction /yr"     title="Deductible mortgage interest (capped at $750K loan)" />
               <Th  colKey="_annualTaxDeductible" label="Tax Deduction /yr"      title="Annual property tax (100% deductible)" />
               <Th  colKey="_taxSavingsAnnual"   label="Tax Savings /yr"         title="Total deductions × marginal tax rate" />
-              <Th  colKey="_monthlyAfterTax"    label="After-Tax /mo"           title="(Annual drag − tax savings) ÷ 12" />
+              <th
+                className={`${styles.thSortable} ${styles.netHead}`}
+                title="(Annual drag − tax savings) ÷ 12"
+                onClick={() => handleSort('_monthlyAfterTax')}
+              >
+                After-Tax /mo<SortIcon colKey="_monthlyAfterTax" />
+              </th>
             </tr>
           </thead>
           <tbody>

@@ -218,7 +218,20 @@
 
 .savingsCol { color: #1a6640; }
 
-.netCol { color: var(--accent); }
+.netCol {
+  color: var(--accent);
+  font-size: 0.84rem;
+  font-weight: 600;
+  background: var(--accent-glow);
+  border-left: 2px solid rgba(42,92,66,0.25);
+}
+
+.netHead {
+  background: var(--accent-glow) !important;
+  color: var(--accent) !important;
+  border-left: 2px solid rgba(42,92,66,0.25);
+  font-weight: 600 !important;
+}
 
 .capLost {
   font-size: 0.65rem;
