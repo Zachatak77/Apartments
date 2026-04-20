@@ -31,21 +31,31 @@ function dimCls(rank) {
 
 export default function PhysicalTab({ comps }) {
   const enriched = useMemo(() => {
-    const sqfts = comps.map(c => c.sqft).filter(Boolean)
-    const lots  = comps.map(c => lotAcres(c.lot_sqft)).filter(Boolean)
-    const baths = comps.map(c => c.baths).filter(Boolean)
-    const beds  = comps.map(c => c.beds).filter(Boolean)
-    const years = comps.map(c => c.year_built).filter(Boolean)
+    const sqfts    = comps.map(c => c.sqft).filter(Boolean)
+    const lots     = comps.map(c => lotAcres(c.lot_sqft)).filter(Boolean)
+    const baths    = comps.map(c => c.baths).filter(Boolean)
+    const beds     = comps.map(c => c.beds).filter(Boolean)
+    const years    = comps.map(c => c.year_built).filter(Boolean)
+    const sfPerBeds = comps.map(c => c.sqft && c.beds ? Math.round(c.sqft / c.beds) : null).filter(Boolean)
+    const intPcts  = comps.map(c => c.sqft && c.lot_sqft ? c.sqft / c.lot_sqft : null).filter(Boolean)
 
-    return comps.map(c => ({
-      ...c,
-      _acres:    lotAcres(c.lot_sqft),
-      _sqftRank: pctRank(c.sqft,             sqfts),
-      _lotRank:  pctRank(lotAcres(c.lot_sqft), lots),
-      _bathRank: pctRank(c.baths,            baths),
-      _bedRank:  pctRank(c.beds,             beds),
-      _yearRank: pctRank(c.year_built,       years),
-    }))
+    return comps.map(c => {
+      const sfPerBed = c.sqft && c.beds ? Math.round(c.sqft / c.beds) : null
+      const intPct   = c.sqft && c.lot_sqft ? c.sqft / c.lot_sqft : null
+      return {
+        ...c,
+        _acres:         lotAcres(c.lot_sqft),
+        _sfPerBed:      sfPerBed,
+        _intPct:        intPct,
+        _sqftRank:      pctRank(c.sqft,             sqfts),
+        _lotRank:       pctRank(lotAcres(c.lot_sqft), lots),
+        _bathRank:      pctRank(c.baths,            baths),
+        _bedRank:       pctRank(c.beds,             beds),
+        _yearRank:      pctRank(c.year_built,       years),
+        _sfPerBedRank:  pctRank(sfPerBed,           sfPerBeds),
+        _intPctRank:    intPct != null ? 1 - pctRank(intPct, intPcts) : null,
+      }
+    })
   }, [comps])
 
   const { sorted, handleSort, SortIcon } = useSortable(enriched, 'sqft', 'desc')
@@ -99,7 +109,9 @@ export default function PhysicalTab({ comps }) {
               <Th colKey="beds"       label="Beds"        />
               <Th colKey="baths"      label="Baths"       />
               <Th colKey="sqft"       label="Interior SF" />
+              <Th colKey="_sfPerBed"  label="SF / Bed"    />
               <Th colKey="_acres"     label="Lot"         />
+              <Th colKey="_intPct"    label="Interior %"  />
               <Th colKey="year_built" label="Built"       />
               <Th colKey="stories"    label="Stories"     />
             </tr>
@@ -122,7 +134,9 @@ export default function PhysicalTab({ comps }) {
                   <td><div className={`${styles.cell} ${styles.dim} ${dimCls(c._bedRank)}`}>{c.beds ?? '—'}</div></td>
                   <td><div className={`${styles.cell} ${styles.dim} ${dimCls(c._bathRank)}`}>{c.baths ?? '—'}</div></td>
                   <td><div className={`${styles.cell} ${styles.dim} ${dimCls(c._sqftRank)}`}>{c.sqft ? c.sqft.toLocaleString() : '—'}</div></td>
+                  <td><div className={`${styles.cell} ${styles.dim} ${dimCls(c._sfPerBedRank)}`}>{c._sfPerBed ? c._sfPerBed.toLocaleString() : '—'}</div></td>
                   <td><div className={`${styles.cell} ${styles.dim} ${dimCls(c._lotRank)}`}>{fmtAcres(c._acres)}</div></td>
+                  <td><div className={`${styles.cell} ${styles.dim} ${dimCls(c._intPctRank)}`}>{c._intPct != null ? `${(c._intPct * 100).toFixed(1)}%` : '—'}</div></td>
                   <td><div className={`${styles.cell} ${styles.dim} ${dimCls(c._yearRank)}`}>{c.year_built ?? '—'}</div></td>
                   <td><div className={`${styles.cell} ${styles.dim}`}>{c.stories ?? '—'}</div></td>
                 </tr>
