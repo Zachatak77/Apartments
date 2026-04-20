@@ -197,7 +197,7 @@ export default function HistoryTab({ comps }) {
 
   return (
     <div>
-      <div className="sl">Listing history</div>
+      <div className="sl">Timeline &amp; velocity</div>
       <h2 className={styles.title}>Days to Contract, DOM &amp; Sell-to-Ask</h2>
       <p className={styles.sub}>How long properties sat before going under contract reveals true market velocity and negotiating room.</p>
 
