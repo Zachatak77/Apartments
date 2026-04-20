@@ -9,9 +9,16 @@ function fmt(val, type) {
   if (type === 'tax')   return `$${Math.round(val / 1000)}K`
   if (type === 'lot') {
     const ac = val / 43560
-    return ac < 0.10 ? `${Math.round(val).toLocaleString()} sf` : `${ac.toFixed(2)} ac`
+    return ac < 0.10 ? `${Math.round(val).toLocaleString()}sf` : `${ac.toFixed(2)}ac`
   }
-  if (type === 'price') return `$${Math.round(val / 1000)}K`
+  if (type === 'price') {
+    if (val >= 1000000) {
+      const m = val / 1000000
+      const decimals = m % 1 === 0 ? 0 : m.toFixed(3).replace(/\.?0+$/, '').split('.')[1]?.length ?? 0
+      return `$${parseFloat(m.toFixed(3))}M`
+    }
+    return `$${Math.round(val / 1000)}K`
+  }
   return val
 }
 
@@ -49,10 +56,10 @@ export default function HeatmapTab({ comps, onEdit, onDelete, onSelect }) {
           <thead>
             <tr>
               <Th colKey="address"  label="Property" left />
+              <Th colKey="_price"   label="Price"    />
               <Th colKey="psf"      label="$/SF"     />
               <Th colKey="taxes"    label="Taxes"    />
               <Th colKey="lot_sqft" label="Lot"      />
-              <Th colKey="_price"   label="Price"    />
               <Th colKey="_score"   label="Score"    />
             </tr>
           </thead>
@@ -72,10 +79,10 @@ export default function HeatmapTab({ comps, onEdit, onDelete, onSelect }) {
                     {c.town && <span className={styles.town}>{c.town}</span>}
                     <span className={`${styles.statusTag} ${statusCls}`}>{status}</span>
                   </td>
+                  <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.ps, 3)}`}>{fmt(c._price, 'price')}</div></td>
                   <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.ps, 3)}`}>{fmt(c.psf, 'psf')}</div></td>
                   <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.ts, 3)}`}>{fmt(c.taxes, 'tax')}</div></td>
                   <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.ls, 3)}`}>{fmt(c.lot_sqft, 'lot')}</div></td>
-                  <td><div className={`${styles.cell} ${styles.dim} ${cellClass(s.ps, 3)}`}>{fmt(c._price, 'price')}</div></td>
                   <td>
                     <div className={`${styles.cell} ${styles.scoreCell} ${cellClass(s.comp, 100)}`}>
                       {s.comp}
