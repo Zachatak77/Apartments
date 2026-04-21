@@ -106,8 +106,17 @@ export default function OffersTab({ comps }) {
   // ── Leverage table (active) ──────────────────────────────────────────────
   const activeEnriched = useMemo(() => active.map(c => {
     const lev = leverageScore(c, medPsf)
-    return { ...c, _lev: lev.total, _levDetail: lev, _ask: c.last_list_price ?? c.original_list_price }
-  }), [active, medPsf])
+    const fv  = buildFairValue(c, comps, ms)
+    return {
+      ...c,
+      _lev:       lev.total,
+      _levDetail: lev,
+      _ask:       c.last_list_price ?? c.original_list_price,
+      _fairPrice: fv ? Math.round(fv.fairValue / 1000) : null,
+      _maxOffer:  fv ? Math.round(fv.maxPrice  / 1000) : null,
+      _fv:        fv,
+    }
+  }), [active, comps, medPsf, ms])
 
   const { sorted: sortedLev, handleSort: handleLevSort, SortIcon: LevIcon } = useSortable(activeEnriched, '_lev', 'desc')
 
@@ -234,6 +243,8 @@ export default function OffersTab({ comps }) {
                 <ThL colKey="psf"            label="$/SF"          />
                 <ThL colKey="days_on_market" label="DOM"           />
                 <th className={`${styles.th} ${styles.thRight}`}>Cut</th>
+                <ThL colKey="_fairPrice"     label="Fair Val"      />
+                <ThL colKey="_maxOffer"      label="Max Offer"     />
                 <ThL colKey="_lev"           label="Leverage"      />
               </tr>
             </thead>
@@ -259,6 +270,8 @@ export default function OffersTab({ comps }) {
                     <td><div className={`${styles.cell} ${psfCls}`}>{c.psf ? `$${c.psf}` : '—'}</div></td>
                     <td><div className={`${styles.cell} ${lev.dom > 60 ? styles.domHot : lev.dom > 30 ? styles.domWarm : ''}`}>{lev.dom > 0 ? `${lev.dom}d` : '—'}</div></td>
                     <td><div className={`${styles.cell} ${lev.cut > 0 ? styles.cutPos : ''}`}>{cut}</div></td>
+                    <td><div className={`${styles.cell} ${styles.fairVal}`}>{c._fairPrice ? `$${c._fairPrice}K` : '—'}</div></td>
+                    <td><div className={`${styles.cell} ${styles.maxOffer}`}>{c._maxOffer ? `$${c._maxOffer}K` : '—'}</div></td>
                     <td><div className={styles.cell}><span className={`${styles.levBadge} ${cls}`}>{badge}</span></div></td>
                   </tr>
                 )
