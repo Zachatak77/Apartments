@@ -393,3 +393,31 @@
   margin-top: -12px;
   margin-bottom: 24px;
 }
+
+/* ── $/SF Histogram ── */
+.histSection {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.histSvg {
+  width: 100%;
+  max-width: 520px;
+  display: block;
+  margin: 0 auto;
+}
+.histLegend {
+  display: flex;
+  gap: 18px;
+  margin-top: 8px;
+  font-family: var(--font-m);
+  font-size: 0.57rem;
+  color: var(--dim);
+  align-items: center;
+  justify-content: center;
+}
+.histLegend span { display: flex; align-items: center; gap: 5px; }
+.histSwatch { display: inline-block; width: 10px; height: 10px; border-radius: 1px; flex-shrink: 0; }
+.histSwatchActive   { background: rgba(42,92,66,0.75); }
+.histSwatchContract { background: rgba(138,112,48,0.80); }
+.histSwatchSold     { background: rgba(74,127,168,0.82); }

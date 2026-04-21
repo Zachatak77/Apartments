@@ -82,6 +82,67 @@ function velocityStats(closed) {
 
 const fmtK = v => v ? `$${Math.round(v / 1000)}K` : '—'
 
+function PsfHistogram({ comps }) {
+  const withPsf = comps.filter(c => c.psf)
+  if (withPsf.length < 2) return null
+  const psfVals = withPsf.map(c => c.psf)
+  const lo  = Math.min(...psfVals)
+  const hi  = Math.max(...psfVals)
+  if (lo === hi) return null
+
+  const step = (hi - lo) / 5
+  const buckets = Array.from({ length: 5 }, (_, i) => {
+    const bLo = lo + i * step
+    const bHi = i === 4 ? hi + 0.01 : bLo + step
+    const items = withPsf.filter(c => c.psf >= bLo && c.psf < bHi)
+    return {
+      label:    `$${Math.round(bLo)}`,
+      active:   items.filter(c => !c.contract_date && !c.sold_date).length,
+      contract: items.filter(c => !!c.contract_date && !c.sold_date).length,
+      sold:     items.filter(c => !!c.sold_date).length,
+      total:    items.length,
+    }
+  })
+
+  const maxCount = Math.max(...buckets.map(b => b.total), 1)
+  const W = 280, H = 76, chartH = 54, barW = 38, gap = 12
+  const totalW = 5 * barW + 4 * gap
+  const offX   = (W - totalW) / 2
+  const baseY  = chartH
+
+  return (
+    <div className={styles.histSection}>
+      <div className={styles.subhead}>$/SF Distribution</div>
+      <svg viewBox={`0 0 ${W} ${H}`} className={styles.histSvg}>
+        <line x1={offX - 2} y1={baseY} x2={offX + totalW + 2} y2={baseY} stroke="var(--border2)" strokeWidth="0.8" />
+        {buckets.map((b, i) => {
+          const x    = offX + i * (barW + gap)
+          const aH   = (b.active   / maxCount) * chartH
+          const cH   = (b.contract / maxCount) * chartH
+          const sH   = (b.sold     / maxCount) * chartH
+          const topY = baseY - aH - cH - sH
+          return (
+            <g key={i}>
+              {sH > 0 && <rect x={x} y={baseY - aH - cH - sH} width={barW} height={sH} fill="#4a7fa8" opacity="0.82" />}
+              {cH > 0 && <rect x={x} y={baseY - aH - cH}       width={barW} height={cH} fill="#8a7030" opacity="0.80" />}
+              {aH > 0 && <rect x={x} y={baseY - aH}            width={barW} height={aH} fill="#2A5C42" opacity="0.75" />}
+              {b.total > 0 && (
+                <text x={x + barW / 2} y={Math.max(topY - 2, 7)} textAnchor="middle" fontSize="6.5" fontFamily="var(--font-m)" fill="var(--dim)">{b.total}</text>
+              )}
+              <text x={x + barW / 2} y={H - 1} textAnchor="middle" fontSize="6.5" fontFamily="var(--font-m)" fill="var(--dim)">{b.label}</text>
+            </g>
+          )
+        })}
+      </svg>
+      <div className={styles.histLegend}>
+        <span><span className={`${styles.histSwatch} ${styles.histSwatchActive}`} />Active</span>
+        <span><span className={`${styles.histSwatch} ${styles.histSwatchContract}`} />In Contract</span>
+        <span><span className={`${styles.histSwatch} ${styles.histSwatchSold}`} />Sold</span>
+      </div>
+    </div>
+  )
+}
+
 export default function OffersTab({ comps }) {
   const ctx     = useMemo(() => buildPricingContext(comps), [comps])
   const ms      = useMemo(() => loadModelSettings(), [])
@@ -354,6 +415,8 @@ export default function OffersTab({ comps }) {
           Fair value = μ of closed $/SF · Ceiling = μ + 2σ · Max Offer = fair value less DOM discount, capped at ceiling. Add more closed comps to improve confidence.
         </p>
       )}
+
+      <PsfHistogram comps={comps} />
     </div>
   )
 }
