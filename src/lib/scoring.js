@@ -28,7 +28,7 @@ export function buildPricingContext(comps) {
     mean:   Math.round(mean),
     stdDev: Math.round(stdDev),
     fair:   Math.round(mean),
-    ceil:   Math.round(mean + stdDev),
+    ceil:   Math.round(mean + 2 * stdDev),
     floor:  Math.round(Math.max(1, mean - stdDev)),
   }
 }
@@ -90,9 +90,8 @@ export function buildFairValue(comp, comps, settings) {
     : s.maxDomDiscount * 0.2
 
   const ceilPrice  = ctx.ceil  * comp.sqft
-  const floorPrice = ctx.floor * comp.sqft
   const maxPrice   = Math.round(
-    Math.max(floorPrice, Math.min(ceilPrice, fairValue * (1 - discountPct / 100)))
+    Math.min(ceilPrice, fairValue * (1 - discountPct / 100))
   )
 
   return {
@@ -104,7 +103,7 @@ export function buildFairValue(comp, comps, settings) {
     medLotPsf:        medLotPsf ? Math.round(medLotPsf) : null,
     hasLandComponent: !!(comp.lot_sqft && medLotPsf),
     ceilPrice:        Math.round(ceilPrice),
-    floorPrice:       Math.round(floorPrice),
+    floorPrice:       Math.round(ctx.floor * comp.sqft),
     discountPct:      Math.round(discountPct * 10) / 10,
   }
 }

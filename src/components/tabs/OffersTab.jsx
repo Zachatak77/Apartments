@@ -302,7 +302,7 @@ export default function OffersTab({ comps }) {
           </div>
           <div className={styles.ctxDivider} />
           <div className={styles.ctxStat}>
-            <span className={styles.ctxLbl}>Ceiling (μ+σ)</span>
+            <span className={styles.ctxLbl}>Ceiling (μ+2σ)</span>
             <span className={styles.ctxVal} style={{ color: 'var(--red)' }}>${ctx.ceil}</span>
           </div>
           <div className={styles.ctxDivider} />
@@ -351,7 +351,7 @@ export default function OffersTab({ comps }) {
       </div>
       {ctx && ctx.n < 4 && (
         <p className={styles.note}>
-          Fair value = μ of closed $/SF · Ceiling = μ + 1σ · Max Offer = min(97% of ask, ceiling × sqft). Add more closed comps to improve confidence.
+          Fair value = μ of closed $/SF · Ceiling = μ + 2σ · Max Offer = fair value less DOM discount, capped at ceiling. Add more closed comps to improve confidence.
         </p>
       )}
     </div>

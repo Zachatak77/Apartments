@@ -151,7 +151,7 @@ function generateFindings(comp, allComps, s, price) {
 
   // $/SF vs ceiling
   if (comp.psf && comp.psf > ceilPsf) {
-    findings.push({ type: 'neg', text: `At $${comp.psf}/SF, this listing exceeds the pool ceiling of $${ceilPsf}/SF (μ + 1σ of closed sales). No closed comp supports this price per square foot.` })
+    findings.push({ type: 'neg', text: `At $${comp.psf}/SF, this listing exceeds the pool ceiling of $${ceilPsf}/SF (μ + 2σ of closed sales). No closed comp supports this price per square foot.` })
   } else if (comp.psf && medPsf && comp.psf < medPsf * 0.9) {
     findings.push({ type: 'pos', text: `$/SF of $${comp.psf} is more than 10% below pool median ($${medPsf}) — meaningful value buffer against further declines.` })
   }

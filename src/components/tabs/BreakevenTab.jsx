@@ -52,7 +52,7 @@ export default function BreakevenTab({ comps }) {
           </div>
           <div className={styles.ctxDivider} />
           <div className={styles.ctxStat}>
-            <span className={styles.ctxLbl}>Ceiling (μ+σ)</span>
+            <span className={styles.ctxLbl}>Ceiling (μ+2σ)</span>
             <span className={styles.ctxVal} style={{ color: 'var(--red)' }}>${ctx.ceil}</span>
           </div>
           <div className={styles.ctxDivider} />
