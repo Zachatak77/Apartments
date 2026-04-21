@@ -24,6 +24,11 @@ export const MODEL_DEFAULTS = {
   // Carrying cost assumptions
   closingCostPct: 2.5,
   insuranceRate:  0.5,
+
+  // Fair value formula
+  taxCapMultiple:  11,   // annual tax delta × this = capitalized value adj
+  ageAdjPerYear:    0,   // $/yr relative to pool median year_built (0 = off)
+  maxDomDiscount:  10,   // max % discount on max price for 60+ DOM listings
 }
 
 export function loadModelSettings() {

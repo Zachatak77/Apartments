@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { buildPricingContext, CEIL_PSF } from '../../lib/scoring'
+import { buildPricingContext, buildFairValue, CEIL_PSF } from '../../lib/scoring'
+import { loadModelSettings } from '../../lib/modelSettings'
 import { useSortable } from '../../hooks/useSortable.jsx'
 import styles from './OffersTab.module.css'
 
@@ -83,7 +84,7 @@ const fmtK = v => v ? `$${Math.round(v / 1000)}K` : '—'
 
 export default function OffersTab({ comps }) {
   const ctx     = useMemo(() => buildPricingContext(comps), [comps])
-  const fpsf    = ctx?.fair  ?? null
+  const ms      = useMemo(() => loadModelSettings(), [])
   const ceilPsf = ctx?.ceil  ?? CEIL_PSF
 
   const active     = comps.filter(c => !c.contract_date && !c.sold_date)
@@ -113,12 +114,11 @@ export default function OffersTab({ comps }) {
   // ── Price targets table (all comps) ──────────────────────────────────────
   const enriched = useMemo(() => comps.map(c => {
     const actual    = (c.sold_date ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
-    const fairPrice = fpsf && c.sqft ? Math.round(fpsf * c.sqft / 1000) : null
-    const maxOffer  = actual && c.sqft
-      ? Math.round(Math.min(actual * 0.97, ceilPsf * c.sqft) / 1000)
-      : null
+    const fv        = buildFairValue(c, comps, ms)
+    const fairPrice = fv ? Math.round(fv.fairValue / 1000) : null
+    const maxOffer  = fv ? Math.round(fv.maxPrice  / 1000) : null
     return { ...c, _actual: actual, _fairPrice: fairPrice, _maxOffer: maxOffer }
-  }), [comps, fpsf, ceilPsf])
+  }), [comps, ms])
 
   const { sorted, handleSort, SortIcon } = useSortable(enriched, 'psf', 'asc')
 

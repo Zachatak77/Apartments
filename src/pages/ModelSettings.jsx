@@ -151,6 +151,44 @@ export default function ModelSettings({ user }) {
           <Slider label="Closing Cost Est." min={0.5} max={5.0} step={0.25} value={s.closingCostPct} onChange={v => update('closingCostPct', v)} display={`${s.closingCostPct.toFixed(2)}%`}             hint="Title, transfer tax, attorney, lender fees" />
         </div>
 
+        {/* Fair Value Formula */}
+        <div className={styles.card}>
+          <div className={styles.cardTitle}>Fair Value Formula</div>
+          <p className={styles.cardSub}>
+            Controls the two-component model used in Breakeven and Offers tabs.
+            Fair value = (structure $/SF × sqft) blended with (lot_psf × lot sqft) weighted by interior coverage,
+            then adjusted for tax capitalization and optional age premium.
+            Max price applies a DOM leverage discount bounded by the pool floor and ceiling.
+          </p>
+
+          <Slider
+            label="Tax Cap Multiplier"
+            min={5} max={20} step={1}
+            value={s.taxCapMultiple}
+            onChange={v => update('taxCapMultiple', v)}
+            display={`${s.taxCapMultiple}×`}
+            hint={`Annual tax delta × ${s.taxCapMultiple} = value adjustment. A $10K/yr tax premium → −$${Math.round(10000 * s.taxCapMultiple / 1000)}K fair value. Higher = taxes matter more.`}
+          />
+
+          <Slider
+            label="Age Adjustment"
+            min={0} max={5000} step={250}
+            value={s.ageAdjPerYear}
+            onChange={v => update('ageAdjPerYear', v)}
+            display={s.ageAdjPerYear ? `$${s.ageAdjPerYear.toLocaleString()}/yr` : 'Off'}
+            hint="Value per year newer than pool median year built. 0 = disabled. Enable only when R² from scatter is strong."
+          />
+
+          <Slider
+            label="Max DOM Discount"
+            min={3} max={20} step={1}
+            value={s.maxDomDiscount}
+            onChange={v => update('maxDomDiscount', v)}
+            display={`${s.maxDomDiscount}%`}
+            hint={`Maximum discount applied to max price for 60+ DOM listings. Scales down to ${Math.round(s.maxDomDiscount * 0.2)}% for new listings (<14d).`}
+          />
+        </div>
+
         {/* Actions */}
         <div className={styles.actions}>
           <button className={`${styles.saveBtn} ${saved ? styles.saveDone : ''}`} onClick={save}>

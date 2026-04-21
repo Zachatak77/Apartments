@@ -34,7 +34,83 @@ export function buildPricingContext(comps) {
 }
 
 
-// ── Pool context ────────────────────────────────────────────────────────────
+// ── Fair value formula ───────────────────────────────────────────────────────
+// Two-component model (structure + land) with tax capitalization and optional
+// age adjustment. Returns null when pricing context cannot be built.
+export function buildFairValue(comp, comps, settings) {
+  const s   = settings ?? loadModelSettings()
+  const ctx = buildPricingContext(comps)
+  if (!ctx || !comp.sqft) return null
+
+  // Median closed lot_psf (exclude over-ask distortions)
+  const closedLotPsfs = comps
+    .filter(c => !!c.sold_date && c.lot_psf && !(c.sold_price > c.original_list_price))
+    .map(c => c.lot_psf)
+  const medLotPsf = closedLotPsfs.length
+    ? closedLotPsfs.reduce((a, b) => a + b, 0) / closedLotPsfs.length
+    : null
+
+  // Step 1: structure + land blend weighted by interior coverage
+  let baseValue
+  if (comp.lot_sqft && medLotPsf) {
+    const intPct = comp.sqft / comp.lot_sqft
+    const alpha  = Math.min(0.85, intPct * 3)  // structure share, 0–0.85
+    baseValue = Math.round(
+      alpha       * (ctx.fair  * comp.sqft) +
+      (1 - alpha) * (medLotPsf * comp.lot_sqft)
+    )
+  } else {
+    baseValue = Math.round(ctx.fair * comp.sqft)
+  }
+
+  // Step 2: tax capitalization — delta from pool median × multiplier
+  const poolTaxes = [...comps.filter(c => c.taxes).map(c => c.taxes)].sort((a, b) => a - b)
+  const medTax    = poolTaxes.length ? poolTaxes[Math.floor(poolTaxes.length / 2)] : null
+  const taxAdj    = comp.taxes && medTax
+    ? Math.round((medTax - comp.taxes) * s.taxCapMultiple)
+    : 0
+
+  // Step 3: age adjustment (disabled when ageAdjPerYear === 0)
+  let ageAdj = 0
+  if (s.ageAdjPerYear && comp.year_built) {
+    const poolYears = [...comps.filter(c => c.year_built).map(c => c.year_built)].sort((a, b) => a - b)
+    if (poolYears.length) {
+      const medYear = poolYears[Math.floor(poolYears.length / 2)]
+      ageAdj = Math.round((comp.year_built - medYear) * s.ageAdjPerYear)
+    }
+  }
+
+  const fairValue = baseValue + taxAdj + ageAdj
+
+  // Step 4: max price — fair value less DOM leverage discount, bounded by floor/ceil
+  const dom         = comp.days_on_market ?? 0
+  const discountPct = dom > 60 ? s.maxDomDiscount
+    : dom > 30 ? s.maxDomDiscount * 0.6
+    : dom > 14 ? s.maxDomDiscount * 0.4
+    : s.maxDomDiscount * 0.2
+
+  const ceilPrice  = ctx.ceil  * comp.sqft
+  const floorPrice = ctx.floor * comp.sqft
+  const maxPrice   = Math.round(
+    Math.max(floorPrice, Math.min(ceilPrice, fairValue * (1 - discountPct / 100)))
+  )
+
+  return {
+    fairValue,
+    maxPrice,
+    baseValue,
+    taxAdj,
+    ageAdj,
+    medLotPsf:        medLotPsf ? Math.round(medLotPsf) : null,
+    hasLandComponent: !!(comp.lot_sqft && medLotPsf),
+    ceilPrice:        Math.round(ceilPrice),
+    floorPrice:       Math.round(floorPrice),
+    discountPct:      Math.round(discountPct * 10) / 10,
+  }
+}
+
+
+
 // Call once per render with the full comps array; pass result to scoreComp.
 // Returns null-safe percentile objects — null when < 3 data points exist.
 export function buildPoolContext(comps) {
