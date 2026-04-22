@@ -394,32 +394,33 @@
   margin-bottom: 24px;
 }
 
-/* ── Predicted close cell ── */
-.predCell {
+/* ── Likely outcome cell ── */
+.outcomeCell {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 10px;
-  gap: 1px;
+  align-items: flex-start;
+  padding: 5px 10px;
+  gap: 3px;
 }
-.predVal {
+.outcomeBadge {
+  display: inline-block;
   font-family: var(--font-m);
-  font-size: 0.73rem;
-  color: var(--text);
+  font-size: 0.46rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
   white-space: nowrap;
 }
-.predDown {
+.outcome_over_ask      { background: rgba(42,92,66,0.22);   color: #1e6640; }
+.outcome_near_ask      { background: rgba(42,92,66,0.10);   color: var(--accent); }
+.outcome_under_ask     { background: rgba(180,150,60,0.15); color: #8a7030; }
+.outcome_price_cut     { background: rgba(180,100,30,0.15); color: #9a5520; }
+.outcome_remain_active { background: rgba(139,58,42,0.10);  color: var(--red); }
+.outcomeCnf {
   font-family: var(--font-m);
-  font-size: 0.48rem;
-  color: var(--accent);
-  white-space: nowrap;
-}
-.predUp {
-  font-family: var(--font-m);
-  font-size: 0.48rem;
-  color: var(--red);
-  white-space: nowrap;
+  font-size: 0.40rem;
+  color: var(--dim);
+  letter-spacing: .05em;
 }
 
 /* ── $/SF Histogram ── */

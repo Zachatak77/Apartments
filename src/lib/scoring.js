@@ -236,52 +236,66 @@ export function calcLotPsf(comp) {
   return +(price / comp.lot_sqft).toFixed(2)
 }
 
-// ── Predicted closing price ──────────────────────────────────────────────────
-// Blends the fair value model with the pool's observed sale-to-list ratio,
-// adjusted for DOM pressure and price-cut signal. Returns null when there is
-// not enough data to compute a fair value.
+// ── Outcome prediction ───────────────────────────────────────────────────────
+// Classifies the most likely next event for an active listing into one of:
+//   over_ask | near_ask | under_ask | price_cut | remain_active
 //
-// alpha (fair-value weight) rises as ask drifts above fair value so that
-// overpriced listings are pulled harder back toward intrinsic worth.
-export function buildPrediction(comp, comps, settings) {
-  const s  = settings ?? loadModelSettings()
-  const fv = buildFairValue(comp, comps, s)
-  if (!fv) return null
-
+// Combines five independent signals into a single pessimism score.
+// Higher score → worse outcome for the seller / more buyer leverage.
+// Zone boundaries: ≤−3 → over_ask, −2..0 → near_ask, 1..3 → under_ask,
+//   4..6 → price_cut, ≥7 → remain_active.
+// Confidence is derived from how far the score sits from the nearest
+// zone boundary.
+export function predictOutcome(comp, comps, velocityLabel, medPsf) {
   const ask = comp.last_list_price ?? comp.original_list_price
   if (!ask) return null
 
-  // Pool median sale-to-list from normal closed sales (exclude over-ask outliers)
-  const closedNormal = comps.filter(c =>
-    c.sold_date && c.sold_price &&
-    (c.last_list_price ?? c.original_list_price) &&
-    !(c.sold_price > c.original_list_price)
-  )
-  const ratios = closedNormal.map(c => c.sold_price / (c.last_list_price ?? c.original_list_price))
-  const medStl = ratios.length >= 2
-    ? ratios.reduce((a, b) => a + b, 0) / ratios.length
-    : 0.97
+  const ms  = loadModelSettings()
+  const fv  = buildFairValue(comp, comps, ms)
+  const dom = comp.days_on_market ?? 0
+  const hasCut = !!(comp.original_list_price && comp.last_list_price &&
+                    comp.original_list_price > comp.last_list_price)
 
-  // DOM and cut pressure
-  const dom     = comp.days_on_market ?? 0
-  const hasCut  = !!(comp.original_list_price && comp.last_list_price && comp.original_list_price > comp.last_list_price)
-  const domFactor = dom > 60 ? 0.94 : dom > 30 ? 0.96 : dom > 14 ? 0.98 : 1.00
-  const cutFactor = hasCut ? 0.985 : 1.0
-  const askModel  = ask * medStl * domFactor * cutFactor
+  let score = 0
 
-  // Blend weight: more fair-value when ask >> fair (overpriced)
-  const askToFair = ask / fv.fairValue
-  const alpha     = Math.min(0.80, Math.max(0.40, 0.55 + (askToFair - 1.0) * 0.5))
-
-  const predicted = Math.round(alpha * fv.fairValue + (1 - alpha) * askModel)
-  const vsAsk     = predicted - ask
-
-  return {
-    predicted,
-    vsAsk,
-    vsAskPct: Math.round((vsAsk / ask) * 1000) / 10,
-    medStl:   Math.round(medStl * 1000) / 1000,
+  // Signal 1: ask vs fair value  (±3, primary driver)
+  if (fv) {
+    const r = ask / fv.fairValue
+    score += r < 0.90 ? -3 : r < 0.95 ? -2 : r < 1.00 ? -1 : r < 1.05 ? 1 : r < 1.12 ? 2 : 3
   }
+
+  // Signal 2: days on market (−1 .. +3)
+  score += dom < 7 ? -1 : dom < 14 ? 0 : dom < 30 ? 1 : dom < 60 ? 2 : 3
+
+  // Signal 3: $/SF vs pool median  (±2)
+  if (medPsf && comp.psf) {
+    const r = comp.psf / medPsf
+    score += r < 0.93 ? -2 : r < 0.97 ? -1 : r < 1.03 ? 0 : r < 1.08 ? 1 : 2
+  }
+
+  // Signal 4: market velocity  (−2 .. +1)
+  score += velocityLabel === 'Highly Competitive' ? -2
+    : velocityLabel === 'Active' ? -1
+    : velocityLabel === 'Cooling' ? 1
+    : 0
+
+  // Signal 5: prior price cut adds one pessimism point
+  if (hasCut) score += 1
+
+  // Zone mapping
+  const outcome =
+    score <= -3 ? 'over_ask'
+    : score <= 0  ? 'near_ask'
+    : score <= 3  ? 'under_ask'
+    : score <= 6  ? 'price_cut'
+    : 'remain_active'
+
+  // Confidence: distance from nearest zone boundary
+  const edges = [-2.5, 0.5, 3.5, 6.5]
+  const distFromEdge = Math.min(...edges.map(b => Math.abs(score - b)))
+  const confidence = distFromEdge >= 1.5 ? 'high' : distFromEdge >= 0.5 ? 'med' : 'low'
+
+  return { outcome, confidence, score }
 }
 
 export function offerRange(comp, settings) {
