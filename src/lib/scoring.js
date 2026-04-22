@@ -236,6 +236,54 @@ export function calcLotPsf(comp) {
   return +(price / comp.lot_sqft).toFixed(2)
 }
 
+// ── Predicted closing price ──────────────────────────────────────────────────
+// Blends the fair value model with the pool's observed sale-to-list ratio,
+// adjusted for DOM pressure and price-cut signal. Returns null when there is
+// not enough data to compute a fair value.
+//
+// alpha (fair-value weight) rises as ask drifts above fair value so that
+// overpriced listings are pulled harder back toward intrinsic worth.
+export function buildPrediction(comp, comps, settings) {
+  const s  = settings ?? loadModelSettings()
+  const fv = buildFairValue(comp, comps, s)
+  if (!fv) return null
+
+  const ask = comp.last_list_price ?? comp.original_list_price
+  if (!ask) return null
+
+  // Pool median sale-to-list from normal closed sales (exclude over-ask outliers)
+  const closedNormal = comps.filter(c =>
+    c.sold_date && c.sold_price &&
+    (c.last_list_price ?? c.original_list_price) &&
+    !(c.sold_price > c.original_list_price)
+  )
+  const ratios = closedNormal.map(c => c.sold_price / (c.last_list_price ?? c.original_list_price))
+  const medStl = ratios.length >= 2
+    ? ratios.reduce((a, b) => a + b, 0) / ratios.length
+    : 0.97
+
+  // DOM and cut pressure
+  const dom     = comp.days_on_market ?? 0
+  const hasCut  = !!(comp.original_list_price && comp.last_list_price && comp.original_list_price > comp.last_list_price)
+  const domFactor = dom > 60 ? 0.94 : dom > 30 ? 0.96 : dom > 14 ? 0.98 : 1.00
+  const cutFactor = hasCut ? 0.985 : 1.0
+  const askModel  = ask * medStl * domFactor * cutFactor
+
+  // Blend weight: more fair-value when ask >> fair (overpriced)
+  const askToFair = ask / fv.fairValue
+  const alpha     = Math.min(0.80, Math.max(0.40, 0.55 + (askToFair - 1.0) * 0.5))
+
+  const predicted = Math.round(alpha * fv.fairValue + (1 - alpha) * askModel)
+  const vsAsk     = predicted - ask
+
+  return {
+    predicted,
+    vsAsk,
+    vsAskPct: Math.round((vsAsk / ask) * 1000) / 10,
+    medStl:   Math.round(medStl * 1000) / 1000,
+  }
+}
+
 export function offerRange(comp, settings) {
   const price = comp.last_list_price ?? comp.original_list_price
   if (!price) return null

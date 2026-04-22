@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { buildPricingContext, buildFairValue, CEIL_PSF } from '../../lib/scoring'
+import { buildPricingContext, buildFairValue, buildPrediction, CEIL_PSF } from '../../lib/scoring'
 import { loadModelSettings } from '../../lib/modelSettings'
 import { useSortable } from '../../hooks/useSortable.jsx'
 import styles from './OffersTab.module.css'
@@ -166,16 +166,21 @@ export default function OffersTab({ comps }) {
 
   // ── Leverage table (active) ──────────────────────────────────────────────
   const activeEnriched = useMemo(() => active.map(c => {
-    const lev = leverageScore(c, medPsf)
-    const fv  = buildFairValue(c, comps, ms)
+    const lev  = leverageScore(c, medPsf)
+    const fv   = buildFairValue(c, comps, ms)
+    const pred = buildPrediction(c, comps, ms)
     return {
       ...c,
-      _lev:       lev.total,
-      _levDetail: lev,
-      _ask:       c.last_list_price ?? c.original_list_price,
-      _fairPrice: fv ? Math.round(fv.fairValue / 1000) : null,
-      _maxOffer:  fv ? Math.round(fv.maxPrice  / 1000) : null,
-      _fv:        fv,
+      _lev:        lev.total,
+      _levDetail:  lev,
+      _ask:        c.last_list_price ?? c.original_list_price,
+      _fairPrice:  fv   ? Math.round(fv.fairValue   / 1000) : null,
+      _maxOffer:   fv   ? Math.round(fv.maxPrice     / 1000) : null,
+      _fv:         fv,
+      _predicted:  pred ? Math.round(pred.predicted  / 1000) : null,
+      _vsAsk:      pred ? Math.round(pred.vsAsk      / 1000) : null,
+      _vsAskPct:   pred ? pred.vsAskPct : null,
+      _pred:       pred,
     }
   }), [active, comps, medPsf, ms])
 
@@ -306,6 +311,7 @@ export default function OffersTab({ comps }) {
                 <th className={`${styles.th} ${styles.thRight}`}>Cut</th>
                 <ThL colKey="_fairPrice"     label="Fair Val"      />
                 <ThL colKey="_maxOffer"      label="Max Offer"     />
+                <ThL colKey="_predicted"     label="Pred. Close"   />
                 <ThL colKey="_lev"           label="Leverage"      />
               </tr>
             </thead>
@@ -333,6 +339,16 @@ export default function OffersTab({ comps }) {
                     <td><div className={`${styles.cell} ${lev.cut > 0 ? styles.cutPos : ''}`}>{cut}</div></td>
                     <td><div className={`${styles.cell} ${styles.fairVal}`}>{c._fairPrice ? `$${c._fairPrice}K` : '—'}</div></td>
                     <td><div className={`${styles.cell} ${styles.maxOffer}`}>{c._maxOffer ? `$${c._maxOffer}K` : '—'}</div></td>
+                    <td>
+                      <div className={styles.predCell}>
+                        <span className={styles.predVal}>{c._predicted ? `$${c._predicted}K` : '—'}</span>
+                        {c._vsAsk != null && c._predicted && (
+                          <span className={c._vsAsk < 0 ? styles.predDown : styles.predUp}>
+                            {c._vsAsk >= 0 ? '+' : ''}{c._vsAsk}K vs ask
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td><div className={styles.cell}><span className={`${styles.levBadge} ${cls}`}>{badge}</span></div></td>
                   </tr>
                 )
