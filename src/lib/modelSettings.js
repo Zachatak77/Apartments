@@ -25,10 +25,20 @@ export const MODEL_DEFAULTS = {
   closingCostPct: 2.5,
   insuranceRate:  0.5,
 
-  // Fair value formula
-  taxCapMultiple:  11,   // annual tax delta × this = capitalized value adj
-  ageAdjPerYear:    0,   // $/yr relative to pool median year_built (0 = off)
-  maxDomDiscount:  10,   // max % discount on max price for 60+ DOM listings
+  // Fair value internals (used by buildFairValue; not surfaced in UI)
+  taxCapMultiple:  11,
+  ageAdjPerYear:    0,
+  maxDomDiscount:  10,
+
+  // Predicted close
+  predFvWeight:    55,   // base % weight of fair value in blended prediction (30–80)
+  predDomDiscount:  6,   // extra % discount on predicted close for 60+ DOM listings
+  predCutDiscount:  1.5, // extra % discount when seller has already cut price
+
+  // Likely outcome classifier
+  outcomeHotDom:        7,  // DOM below this = bullish fresh-to-market signal
+  outcomeStallDom:     30,  // DOM above this = bearish stalling signal
+  outcomeOverpricedPct: 5,  // ask X% above fair value starts triggering bearish signals
 }
 
 export function loadModelSettings() {

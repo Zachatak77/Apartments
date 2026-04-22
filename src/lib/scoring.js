@@ -259,9 +259,17 @@ export function buildPrediction(comp, comps, settings) {
 
   const dom    = comp.days_on_market ?? 0
   const hasCut = !!(comp.original_list_price && comp.last_list_price && comp.original_list_price > comp.last_list_price)
-  const askModel = ask * medStl * (dom > 60 ? 0.94 : dom > 30 ? 0.96 : dom > 14 ? 0.98 : 1.00) * (hasCut ? 0.985 : 1.0)
 
-  const alpha     = Math.min(0.80, Math.max(0.40, 0.55 + (ask / fv.fairValue - 1.0) * 0.5))
+  const domDisc  = (s.predDomDiscount ?? 6) / 100
+  const domFactor = dom > 60 ? (1 - domDisc)
+    : dom > 30 ? (1 - domDisc * 0.667)
+    : dom > 14 ? (1 - domDisc * 0.333)
+    : 1.00
+  const cutFactor = hasCut ? (1 - (s.predCutDiscount ?? 1.5) / 100) : 1.0
+  const askModel  = ask * medStl * domFactor * cutFactor
+
+  const alphaBase = (s.predFvWeight ?? 55) / 100
+  const alpha     = Math.min(0.80, Math.max(0.40, alphaBase + (ask / fv.fairValue - 1.0) * 0.5))
   const predicted = Math.round(alpha * fv.fairValue + (1 - alpha) * askModel)
 
   return { predicted, vsAsk: predicted - ask }
@@ -287,16 +295,23 @@ export function predictOutcome(comp, comps, velocityLabel, medPsf) {
   const hasCut = !!(comp.original_list_price && comp.last_list_price &&
                     comp.original_list_price > comp.last_list_price)
 
+  const hotDom        = ms.outcomeHotDom        ?? 7
+  const stallDom      = ms.outcomeStallDom       ?? 30
+  const overpricedPct = ms.outcomeOverpricedPct  ?? 5
+
   let score = 0
 
   // Signal 1: ask vs fair value  (±3, primary driver)
   if (fv) {
     const r = ask / fv.fairValue
-    score += r < 0.90 ? -3 : r < 0.95 ? -2 : r < 1.00 ? -1 : r < 1.05 ? 1 : r < 1.12 ? 2 : 3
+    const t1 = 1 + overpricedPct / 100
+    const t2 = 1 + (overpricedPct + 7) / 100
+    score += r < 0.90 ? -3 : r < 0.95 ? -2 : r < 1.00 ? -1 : r < t1 ? 1 : r < t2 ? 2 : 3
   }
 
   // Signal 2: days on market (−1 .. +3)
-  score += dom < 7 ? -1 : dom < 14 ? 0 : dom < 30 ? 1 : dom < 60 ? 2 : 3
+  const midDom = Math.min(hotDom * 2, stallDom - 1)
+  score += dom < hotDom ? -1 : dom < midDom ? 0 : dom < stallDom ? 1 : dom < 60 ? 2 : 3
 
   // Signal 3: $/SF vs pool median  (±2)
   if (medPsf && comp.psf) {

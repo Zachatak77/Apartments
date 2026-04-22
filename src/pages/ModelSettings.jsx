@@ -151,41 +151,75 @@ export default function ModelSettings({ user }) {
           <Slider label="Closing Cost Est." min={0.5} max={5.0} step={0.25} value={s.closingCostPct} onChange={v => update('closingCostPct', v)} display={`${s.closingCostPct.toFixed(2)}%`}             hint="Title, transfer tax, attorney, lender fees" />
         </div>
 
-        {/* Fair Value Formula */}
+        {/* Predicted Close */}
         <div className={styles.card}>
-          <div className={styles.cardTitle}>Fair Value Formula</div>
+          <div className={styles.cardTitle}>Predicted Close</div>
           <p className={styles.cardSub}>
-            Controls the two-component model used in Breakeven and Offers tabs.
-            Fair value = (structure $/SF × sqft) blended with (lot_psf × lot sqft) weighted by interior coverage,
-            then adjusted for tax capitalization and optional age premium.
-            Max price applies a DOM leverage discount bounded by the pool floor and ceiling.
+            Controls how the predicted closing price is calculated from fair value and observed sale-to-list ratios.
+            Higher fair value weight anchors the prediction to intrinsic value; lower weight follows the market ask.
           </p>
 
           <Slider
-            label="Tax Cap Multiplier"
-            min={5} max={20} step={1}
-            value={s.taxCapMultiple}
-            onChange={v => update('taxCapMultiple', v)}
-            display={`${s.taxCapMultiple}×`}
-            hint={`Annual tax delta × ${s.taxCapMultiple} = value adjustment. A $10K/yr tax premium → −$${Math.round(10000 * s.taxCapMultiple / 1000)}K fair value. Higher = taxes matter more.`}
+            label="Fair Value Anchor Weight"
+            min={30} max={80} step={5}
+            value={s.predFvWeight ?? 55}
+            onChange={v => update('predFvWeight', v)}
+            display={`${s.predFvWeight ?? 55}%`}
+            hint="Base weight of fair value in the blended prediction. Higher = fair value dominates; lower = market ask anchors the result."
           />
 
           <Slider
-            label="Age Adjustment"
-            min={0} max={5000} step={250}
-            value={s.ageAdjPerYear}
-            onChange={v => update('ageAdjPerYear', v)}
-            display={s.ageAdjPerYear ? `$${s.ageAdjPerYear.toLocaleString()}/yr` : 'Off'}
-            hint="Value per year newer than pool median year built. 0 = disabled. Enable only when R² from scatter is strong."
+            label="Stale Listing Discount (60+ DOM)"
+            min={0} max={15} step={0.5}
+            value={s.predDomDiscount ?? 6}
+            onChange={v => update('predDomDiscount', v)}
+            display={`${(s.predDomDiscount ?? 6).toFixed(1)}%`}
+            hint={`Extra discount applied to predicted close when DOM > 60. Scales to ${((s.predDomDiscount ?? 6) * 0.667).toFixed(1)}% for 30–60 DOM and ${((s.predDomDiscount ?? 6) * 0.333).toFixed(1)}% for 14–30 DOM.`}
           />
 
           <Slider
-            label="Max DOM Discount"
-            min={3} max={20} step={1}
-            value={s.maxDomDiscount}
-            onChange={v => update('maxDomDiscount', v)}
-            display={`${s.maxDomDiscount}%`}
-            hint={`Maximum discount applied to max price for 60+ DOM listings. Scales down to ${Math.round(s.maxDomDiscount * 0.2)}% for new listings (<14d).`}
+            label="Price Cut Penalty"
+            min={0} max={5} step={0.5}
+            value={s.predCutDiscount ?? 1.5}
+            onChange={v => update('predCutDiscount', v)}
+            display={`${(s.predCutDiscount ?? 1.5).toFixed(1)}%`}
+            hint="Additional haircut to predicted close when the seller has already reduced the listing price."
+          />
+        </div>
+
+        {/* Likely Outcome Classifier */}
+        <div className={styles.card}>
+          <div className={styles.cardTitle}>Likely Outcome Classifier</div>
+          <p className={styles.cardSub}>
+            Calibrates the five-signal pessimism model that predicts whether a listing goes
+            over ask, near ask, under ask, cuts price, or remains active.
+          </p>
+
+          <Slider
+            label="Fresh Listing Threshold"
+            min={3} max={14} step={1}
+            value={s.outcomeHotDom ?? 7}
+            onChange={v => update('outcomeHotDom', v)}
+            display={`${s.outcomeHotDom ?? 7} days`}
+            hint={`Listings with DOM below ${s.outcomeHotDom ?? 7} get a bullish signal. DOM up to ${(s.outcomeHotDom ?? 7) * 2} days is treated as neutral.`}
+          />
+
+          <Slider
+            label="Market Stall Threshold"
+            min={15} max={60} step={5}
+            value={s.outcomeStallDom ?? 30}
+            onChange={v => update('outcomeStallDom', v)}
+            display={`${s.outcomeStallDom ?? 30} days`}
+            hint="DOM above this triggers a bearish signal. Above 60 days adds maximum pessimism toward price cut or remain active."
+          />
+
+          <Slider
+            label="Overpriced Ask Threshold"
+            min={2} max={15} step={1}
+            value={s.outcomeOverpricedPct ?? 5}
+            onChange={v => update('outcomeOverpricedPct', v)}
+            display={`${s.outcomeOverpricedPct ?? 5}%`}
+            hint={`Ask more than ${s.outcomeOverpricedPct ?? 5}% above fair value shifts outcome toward under ask. ${(s.outcomeOverpricedPct ?? 5) + 7}%+ above fair value triggers price cut / remain active signals.`}
           />
         </div>
 
