@@ -124,6 +124,7 @@ export default function PoolView({ pool, user, activeTab, onTabChange, onAddProp
           comps={comps}
           onClose={() => setSelectedComp(null)}
           onEdit={prop => { setSelectedComp(null); onEditProperty(prop) }}
+          onDelete={id => { setSelectedComp(null); removeFromPool(id) }}
         />
       )}
 

@@ -88,6 +88,19 @@
   transition: background .15s, color .15s;
 }
 .hdrEditBtn:hover { background: var(--accent); color: #fff; }
+.hdrRemoveBtn {
+  background: none;
+  border: 1px solid var(--border);
+  font-family: var(--font-m);
+  font-size: 0.52rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--dim);
+  cursor: pointer;
+  padding: 4px 9px;
+  transition: border-color .15s, color .15s;
+}
+.hdrRemoveBtn:hover { border-color: var(--red); color: var(--red); }
 .closeBtn {
   background: none;
   border: none;
