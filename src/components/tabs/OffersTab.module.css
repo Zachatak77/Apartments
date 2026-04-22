@@ -394,6 +394,34 @@
   margin-bottom: 24px;
 }
 
+/* ── Predicted close cell ── */
+.predCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  gap: 1px;
+}
+.predVal {
+  font-family: var(--font-m);
+  font-size: 0.73rem;
+  color: var(--text);
+  white-space: nowrap;
+}
+.predDown {
+  font-family: var(--font-m);
+  font-size: 0.48rem;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.predUp {
+  font-family: var(--font-m);
+  font-size: 0.48rem;
+  color: var(--red);
+  white-space: nowrap;
+}
+
 /* ── Likely outcome cell ── */
 .outcomeCell {
   display: flex;

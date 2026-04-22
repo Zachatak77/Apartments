@@ -236,6 +236,37 @@ export function calcLotPsf(comp) {
   return +(price / comp.lot_sqft).toFixed(2)
 }
 
+// ── Predicted closing price ──────────────────────────────────────────────────
+// Blends the fair value model with the pool's observed sale-to-list ratio,
+// adjusted for DOM pressure and price-cut signal.
+export function buildPrediction(comp, comps, settings) {
+  const s  = settings ?? loadModelSettings()
+  const fv = buildFairValue(comp, comps, s)
+  if (!fv) return null
+
+  const ask = comp.last_list_price ?? comp.original_list_price
+  if (!ask) return null
+
+  const closedNormal = comps.filter(c =>
+    c.sold_date && c.sold_price &&
+    (c.last_list_price ?? c.original_list_price) &&
+    !(c.sold_price > c.original_list_price)
+  )
+  const ratios = closedNormal.map(c => c.sold_price / (c.last_list_price ?? c.original_list_price))
+  const medStl = ratios.length >= 2
+    ? ratios.reduce((a, b) => a + b, 0) / ratios.length
+    : 0.97
+
+  const dom    = comp.days_on_market ?? 0
+  const hasCut = !!(comp.original_list_price && comp.last_list_price && comp.original_list_price > comp.last_list_price)
+  const askModel = ask * medStl * (dom > 60 ? 0.94 : dom > 30 ? 0.96 : dom > 14 ? 0.98 : 1.00) * (hasCut ? 0.985 : 1.0)
+
+  const alpha     = Math.min(0.80, Math.max(0.40, 0.55 + (ask / fv.fairValue - 1.0) * 0.5))
+  const predicted = Math.round(alpha * fv.fairValue + (1 - alpha) * askModel)
+
+  return { predicted, vsAsk: predicted - ask }
+}
+
 // ── Outcome prediction ───────────────────────────────────────────────────────
 // Classifies the most likely next event for an active listing into one of:
 //   over_ask | near_ask | under_ask | price_cut | remain_active
