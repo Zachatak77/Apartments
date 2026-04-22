@@ -61,7 +61,6 @@ export default function HeatmapTab({ comps, onEdit, onDelete, onSelect }) {
               <Th colKey="taxes"    label="Taxes"    />
               <Th colKey="lot_sqft" label="Lot"      />
               <Th colKey="_score"   label="Score"    />
-              <th className={styles.thAct} />
             </tr>
           </thead>
           <tbody>
@@ -88,10 +87,6 @@ export default function HeatmapTab({ comps, onEdit, onDelete, onSelect }) {
                     <div className={`${styles.cell} ${styles.scoreCell} ${cellClass(s.comp, 100)}`}>
                       {s.comp}
                     </div>
-                  </td>
-                  <td className={styles.actCell} onClick={e => e.stopPropagation()}>
-                    {onEdit   && <button className={styles.editBtn} onClick={() => onEdit(c)}>Edit</button>}
-                    {onDelete && <button className={styles.delBtn}  onClick={() => onDelete(c.id)}>Remove</button>}
                   </td>
                 </tr>
               )
