@@ -1,7 +1,9 @@
 # dependencies
 node_modules/
 
-# build output
+# Next.js build output
+.next/
+out/
 dist/
 
 # env files (contain secrets)
@@ -9,6 +11,13 @@ dist/
 .env.local
 .env.*.local
 
-# editor
+# editor / OS
 .DS_Store
 *.local
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel
+.vercel
