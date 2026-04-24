@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Nunito } from 'next/font/google'
+import { Toaster } from 'sonner'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -19,6 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${nunito.variable} font-sans`}>
         {children}
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   )

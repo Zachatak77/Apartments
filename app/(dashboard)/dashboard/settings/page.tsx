@@ -1,59 +1,61 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Settings } from 'lucide-react'
+import {
+  ProfileForm,
+  PasswordForm,
+  NotificationPreferences,
+} from '@/components/dashboard/settings-forms'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, email, role')
-    .eq('id', user!.id)
+    .select('full_name, role')
+    .eq('id', user.id)
     .single()
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-[#2D5016] mb-1">Settings</h1>
-      <p className="text-sm text-muted-foreground mb-8">
-        Manage your account and application settings.
-      </p>
+    <div className="max-w-2xl space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+        <p className="text-sm text-gray-500 mt-0.5">Manage your account and preferences</p>
+      </div>
 
-      <Card className="border-[#2D5016]/15 max-w-lg">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Settings className="w-4 h-4 text-[#2D5016]" />
-            <CardTitle className="text-sm font-medium text-[#2D5016]">
-              Account
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      {/* Profile */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 className="font-semibold text-gray-800 mb-1">Profile</h2>
+        <p className="text-sm text-gray-500 mb-5">Update your display name</p>
+
+        <div className="space-y-4 mb-6">
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Name</p>
-            <p className="text-sm font-medium text-[#2D5016]">
-              {profile?.full_name ?? '—'}
-            </p>
+            <p className="text-xs font-medium text-gray-500 mb-1">Email</p>
+            <p className="text-sm text-gray-800">{user.email}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Email</p>
-            <p className="text-sm font-medium text-[#2D5016]">
-              {profile?.email ?? user?.email ?? '—'}
-            </p>
+            <p className="text-xs font-medium text-gray-500 mb-1">Role</p>
+            <p className="text-sm text-gray-800 capitalize">{profile?.role ?? '—'}</p>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Role</p>
-            <p className="text-sm font-medium text-[#2D5016] capitalize">
-              {profile?.role ?? '—'}
-            </p>
-          </div>
-          <p className="text-xs text-muted-foreground pt-2">
-            Full settings management will be available in Phase 2.
-          </p>
-        </CardContent>
-      </Card>
+        </div>
+
+        <ProfileForm initialName={profile?.full_name ?? ''} />
+      </div>
+
+      {/* Password */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 className="font-semibold text-gray-800 mb-1">Password</h2>
+        <p className="text-sm text-gray-500 mb-5">Change your account password</p>
+        <PasswordForm />
+      </div>
+
+      {/* Notifications */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 className="font-semibold text-gray-800 mb-1">Notification Preferences</h2>
+        <p className="text-sm text-gray-500 mb-5">Choose what you want to be notified about</p>
+        <NotificationPreferences />
+      </div>
     </div>
   )
 }

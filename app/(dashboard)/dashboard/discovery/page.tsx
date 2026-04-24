@@ -1,28 +1,26 @@
-import { Card, CardContent, CardTitle } from '@/components/ui/card'
-import { PhoneCall } from 'lucide-react'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { DiscoveryTable } from '@/components/dashboard/discovery-table'
 
-export default function DiscoveryCallsPage() {
+export default async function DiscoveryCallsPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: calls } = await supabase
+    .from('discovery_calls')
+    .select('id, name, email, phone, child_ages, main_concern, how_they_heard, submitted_at, status, notes')
+    .order('submitted_at', { ascending: false })
+
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-[#2D5016] mb-1">
-        Discovery Calls
-      </h1>
-      <p className="text-sm text-muted-foreground mb-8">
-        Prospective clients who have submitted a discovery call request.
-      </p>
-
-      <Card className="border-[#2D5016]/15 border-dashed">
-        <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-          <PhoneCall className="w-10 h-10 text-[#2D5016]/30 mb-4" />
-          <CardTitle className="text-base text-[#2D5016]/50 font-medium mb-2">
-            No discovery calls yet
-          </CardTitle>
-          <p className="text-sm text-muted-foreground max-w-xs">
-            Discovery call submissions will appear here once the public booking
-            form is live in Phase 2.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Discovery Calls</h1>
+        <p className="text-sm text-gray-500 mt-0.5">
+          Leads who have submitted the booking form
+        </p>
+      </div>
+      <DiscoveryTable calls={(calls ?? []) as any[]} />
     </div>
   )
 }
