@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Nunito } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const nunito = Nunito({ subsets: ['latin'], variable: '--font-nunito' })
 
 export const metadata: Metadata = {
   title: 'Parent Coaching with Marissa',
@@ -16,7 +17,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.variable} ${nunito.variable} font-sans`}>
+        {children}
+      </body>
     </html>
   )
 }
