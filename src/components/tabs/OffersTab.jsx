@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
-import { buildPricingContext, buildFairValue, buildPrediction, predictOutcome, CEIL_PSF } from '../../lib/scoring'
+import { buildPricingContext, buildPrediction, predictOutcome, CEIL_PSF } from '../../lib/scoring'
 import { loadModelSettings } from '../../lib/modelSettings'
+import { loadMortgagePrefs, calcMonthlyPayment } from '../../lib/mortgage'
 import { useSortable } from '../../hooks/useSortable.jsx'
 import styles from './OffersTab.module.css'
 
@@ -152,8 +153,9 @@ function PsfHistogram({ comps }) {
 }
 
 export default function OffersTab({ comps }) {
-  const ctx     = useMemo(() => buildPricingContext(comps), [comps])
-  const ms      = useMemo(() => loadModelSettings(), [])
+  const ctx      = useMemo(() => buildPricingContext(comps), [comps])
+  const ms       = useMemo(() => loadModelSettings(), [])
+  const morPrefs = useMemo(() => loadMortgagePrefs(), [])
   const ceilPsf = ctx?.ceil  ?? CEIL_PSF
 
   const active     = comps.filter(c => !c.contract_date && !c.sold_date)
@@ -190,14 +192,25 @@ export default function OffersTab({ comps }) {
 
   const { sorted: sortedLev, handleSort: handleLevSort, SortIcon: LevIcon } = useSortable(activeEnriched, '_lev', 'desc')
 
-  // ── Price targets table (all comps) ──────────────────────────────────────
-  const enriched = useMemo(() => comps.map(c => {
-    const actual    = (c.sold_date ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
-    const fv        = buildFairValue(c, comps, ms)
-    const fairPrice = fv ? Math.round(fv.fairValue / 1000) : null
-    const maxOffer  = fv ? Math.round(fv.maxPrice  / 1000) : null
-    return { ...c, _actual: actual, _fairPrice: fairPrice, _maxOffer: maxOffer }
-  }), [comps, ms])
+  // ── Price targets table (sold + in-contract only) ────────────────────────
+  const enriched = useMemo(() => {
+    const target = comps.filter(c => c.sold_date || c.contract_date)
+    return target.map(c => {
+      const actual = (c.sold_date ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price
+      const pred   = buildPrediction(c, comps, ms)
+      const mo     = actual
+        ? calcMonthlyPayment(actual * (1 - morPrefs.downPct / 100), morPrefs.rate, morPrefs.term)
+          + (c.taxes ? c.taxes / 12 : 0)
+          + actual * (ms.insuranceRate / 100) / 12
+        : null
+      return {
+        ...c,
+        _actual:    actual,
+        _predicted: pred ? Math.round(pred.predicted / 1000) : null,
+        _monthly:   mo   ? Math.round(mo)                   : null,
+      }
+    })
+  }, [comps, ms, morPrefs])
 
   const { sorted, handleSort, SortIcon } = useSortable(enriched, 'psf', 'asc')
 
@@ -405,45 +418,58 @@ export default function OffersTab({ comps }) {
         <p className={styles.noCtx}>Add closed comps to activate fair value calculations.</p>
       )}
 
-      <div className={styles.subhead}>Price Targets</div>
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <Th colKey="address"    label="Property"  left />
-              <Th colKey="_actual"    label="Ask / Sold"      />
-              <Th colKey="psf"        label="$/SF"            />
-              <Th colKey="_fairPrice" label="Fair Val"        />
-              <Th colKey="_maxOffer"  label="Max Offer"       />
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map(c => {
-              const aboveCeil = c.psf && c.psf > ceilPsf
-              const hasCut    = c.original_list_price && c.last_list_price && c.original_list_price > c.last_list_price
-              return (
-                <tr key={c.id} className={aboveCeil ? styles.rowAboveCeil : ''}>
-                  <td className={styles.addrCellBlock}>
-                    <span className={styles.addrLine}>{c.address}</span>
-                    {c.town && <span className={styles.town}>{c.town}</span>}
-                    {aboveCeil && <span className={styles.ceilTag}>above ceiling</span>}
-                    {hasCut && <span className={styles.cutTag}>↓${Math.round((c.original_list_price - c.last_list_price) / 1000)}K cut</span>}
-                  </td>
-                  <td><div className={styles.cell}>${c._actual ? Math.round(c._actual / 1000) : '—'}K</div></td>
-                  <td><div className={`${styles.cell} ${aboveCeil ? styles.psfBad : ''}`}>{c.psf ? `$${c.psf}` : '—'}</div></td>
-                  <td><div className={`${styles.cell} ${styles.fairVal}`}>{c._fairPrice ? `$${c._fairPrice}K` : '—'}</div></td>
-                  <td><div className={`${styles.cell} ${styles.maxOffer}`}>{c._maxOffer ? `$${c._maxOffer}K` : '—'}</div></td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-      {ctx && ctx.n < 4 && (
-        <p className={styles.note}>
-          Fair value = μ of closed $/SF · Ceiling = μ + 2σ · Max Offer = fair value less DOM discount, capped at ceiling. Add more closed comps to improve confidence.
-        </p>
+      <div className={styles.subhead}>Price Targets — Sold &amp; In Contract</div>
+      {enriched.length === 0 ? (
+        <div className={styles.empty}>No sold or in-contract properties in this pool.</div>
+      ) : (
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <Th colKey="address"    label="Property"    left />
+                <Th colKey="_actual"    label="Ask / Sold"       />
+                <Th colKey="psf"        label="$/SF"             />
+                <Th colKey="_predicted" label="Pred. Close"      />
+                <Th colKey="taxes"      label="Taxes"            />
+                <Th colKey="beds"       label="Beds"             />
+                <Th colKey="baths"      label="Baths"            />
+                <Th colKey="_monthly"   label="Total /mo"        />
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map(c => {
+                const aboveCeil = c.psf && c.psf > ceilPsf
+                return (
+                  <tr key={c.id} className={`${styles.row} ${aboveCeil ? styles.rowAboveCeil : ''}`}>
+                    <td className={styles.addrCellBlock}>
+                      <span className={styles.addrLine}>{c.address}</span>
+                      {c.town && <span className={styles.town}>{c.town}</span>}
+                      <div className={styles.tagRow}>
+                        {c.sold_date
+                          ? <span className={styles.soldTag}>sold</span>
+                          : <span className={styles.contractTag}>in contract</span>
+                        }
+                        {aboveCeil && <span className={styles.ceilTag}>above ceiling</span>}
+                      </div>
+                    </td>
+                    <td><div className={styles.cell}>{c._actual ? fmtK(c._actual) : '—'}</div></td>
+                    <td><div className={`${styles.cell} ${aboveCeil ? styles.psfBad : ''}`}>{c.psf ? `$${c.psf}` : '—'}</div></td>
+                    <td><div className={`${styles.cell} ${styles.predVal}`}>{c._predicted ? `$${c._predicted}K` : '—'}</div></td>
+                    <td><div className={styles.cell}>{c.taxes ? `$${Math.round(c.taxes / 1000)}K` : '—'}</div></td>
+                    <td><div className={styles.cell}>{c.beds ?? '—'}</div></td>
+                    <td><div className={styles.cell}>{c.baths ?? '—'}</div></td>
+                    <td><div className={styles.cell}>{c._monthly ? `$${(c._monthly / 1000).toFixed(1)}K` : '—'}</div></td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
+      <p className={styles.note}>
+        Pred. Close blends fair value with pool sale-to-list ratio — add closed comps to improve accuracy.
+        Total /mo = P&amp;I ({morPrefs.rate}%, {morPrefs.downPct}% down, {morPrefs.term}yr) + taxes + insurance ({ms.insuranceRate}% of price/yr).
+      </p>
 
       <PsfHistogram comps={comps} />
     </div>

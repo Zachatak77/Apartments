@@ -320,6 +320,32 @@
   padding: 1px 5px;
   margin-top: 2px;
 }
+.tagRow {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.soldTag {
+  display: inline-block;
+  font-family: var(--font-m);
+  font-size: 0.44rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #4a7fa8;
+  background: rgba(74,127,168,0.12);
+  padding: 1px 5px;
+}
+.contractTag {
+  display: inline-block;
+  font-family: var(--font-m);
+  font-size: 0.44rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #8a7030;
+  background: rgba(180,150,60,0.12);
+  padding: 1px 5px;
+}
 
 /* ── Cell wrapper (matches heatmap) ── */
 .cell {
