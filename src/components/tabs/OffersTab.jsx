@@ -390,7 +390,7 @@ export default function OffersTab({ comps }) {
       {ctx ? (
         <div className={styles.ctxBar}>
           <div className={styles.ctxStat}>
-            <span className={styles.ctxLbl}>Fair $/SF</span>
+            <span className={styles.ctxLbl}>Median $/SF</span>
             <span className={styles.ctxVal}>${ctx.fair}</span>
           </div>
           <div className={styles.ctxDivider} />
