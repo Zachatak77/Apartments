@@ -4,6 +4,21 @@ import { loadMortgagePrefs, calcMonthlyPayment } from './mortgage'
 export const MED_PSF  = 449  // fallback when pool has no closed comps
 export const CEIL_PSF = 508  // fallback when pool has no closed comps
 
+function medianOf(arr) {
+  if (!arr.length) return null
+  const s = [...arr].sort((a, b) => a - b)
+  const m = Math.floor(s.length / 2)
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2
+}
+
+// Decimal encodes half-bath count: 2.1 = 2 full + 1 half = 2.5 effective
+export function effectiveBaths(baths) {
+  if (baths == null) return null
+  const full = Math.floor(baths)
+  const half = Math.round((baths % 1) * 10)
+  return full + half * 0.5
+}
+
 // ── Pricing context (replaces hardcoded CEIL_PSF / fairPsf) ─────────────────
 // Derives fair value, ceiling, and floor from the pool's own closed-sale
 // distribution using mean ± 1 sample std dev. Re-run whenever comps change.
@@ -42,10 +57,11 @@ export function buildFairValue(comp, comps, settings) {
   const ctx = buildPricingContext(comps)
   if (!ctx || !comp.sqft) return null
 
+  // Shared closed-comp base (non-over-ask) — reused for lot, rooms
+  const closedBase = comps.filter(c => !!c.sold_date && c.psf && !(c.sold_price > c.original_list_price))
+
   // Median closed lot_psf (exclude over-ask distortions)
-  const closedLotPsfs = comps
-    .filter(c => !!c.sold_date && c.lot_psf && !(c.sold_price > c.original_list_price))
-    .map(c => c.lot_psf)
+  const closedLotPsfs = closedBase.filter(c => c.lot_psf).map(c => c.lot_psf)
   const medLotPsf = closedLotPsfs.length
     ? closedLotPsfs.reduce((a, b) => a + b, 0) / closedLotPsfs.length
     : null
@@ -80,9 +96,37 @@ export function buildFairValue(comp, comps, settings) {
     }
   }
 
-  const fairValue = baseValue + taxAdj + ageAdj
+  // Step 4: beds/baths stratified $/SF adjustment
+  // For each dimension, compare the median $/SF of closed comps sharing the
+  // same tier as this comp against the pool median. Delta × sqft = dollar adj.
+  let roomAdj = 0
+  if (comp.beds != null || comp.baths != null) {
+    let bedAdj = 0
+    let bathAdj = 0
 
-  // Step 4: max price — fair value less DOM leverage discount, bounded by floor/ceil
+    if (comp.beds != null) {
+      const tierPsfs = closedBase.filter(c => c.beds === comp.beds).map(c => c.psf)
+      if (tierPsfs.length >= 2) {
+        bedAdj = (medianOf(tierPsfs) - ctx.fair) * comp.sqft
+      }
+    }
+
+    if (comp.baths != null) {
+      const compEff = effectiveBaths(comp.baths)
+      const tierPsfs = closedBase
+        .filter(c => c.baths != null && effectiveBaths(c.baths) === compEff)
+        .map(c => c.psf)
+      if (tierPsfs.length >= 2) {
+        bathAdj = (medianOf(tierPsfs) - ctx.fair) * comp.sqft
+      }
+    }
+
+    roomAdj = Math.round(Math.max(-75000, Math.min(75000, bedAdj + bathAdj)))
+  }
+
+  const fairValue = baseValue + taxAdj + ageAdj + roomAdj
+
+  // Step 5: max price — fair value less DOM leverage discount, bounded by floor/ceil
   const dom         = comp.days_on_market ?? 0
   const discountPct = dom > 60 ? s.maxDomDiscount
     : dom > 30 ? s.maxDomDiscount * 0.6
@@ -100,6 +144,7 @@ export function buildFairValue(comp, comps, settings) {
     baseValue,
     taxAdj,
     ageAdj,
+    roomAdj,
     medLotPsf:        medLotPsf ? Math.round(medLotPsf) : null,
     hasLandComponent: !!(comp.lot_sqft && medLotPsf),
     ceilPrice:        Math.round(ceilPrice),
