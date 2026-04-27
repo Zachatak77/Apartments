@@ -410,8 +410,13 @@ export default function OffersTab({ comps }) {
           </div>
           <div className={styles.ctxDivider} />
           <div className={styles.ctxStat}>
-            <span className={styles.ctxLbl}>From</span>
-            <span className={styles.ctxVal}>{ctx.n} closed sale{ctx.n !== 1 ? 's' : ''}</span>
+            <span className={styles.ctxLbl}>Closed ($/SF source)</span>
+            <span className={styles.ctxVal}>{ctx.n}</span>
+          </div>
+          <div className={styles.ctxDivider} />
+          <div className={styles.ctxStat}>
+            <span className={styles.ctxLbl}>In Contract</span>
+            <span className={styles.ctxVal}>{inContract.length}</span>
           </div>
         </div>
       ) : (
