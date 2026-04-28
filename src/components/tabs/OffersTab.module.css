@@ -489,6 +489,39 @@
   display: block;
   margin: 0 auto;
 }
+.variantGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.variantCard {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 12px 14px 10px;
+}
+
+.variantMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.variantLabel {
+  font-family: var(--font-m);
+  font-size: 0.52rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.variantDesc {
+  font-family: var(--font-m);
+  font-size: 0.6rem;
+  color: var(--dim);
+}
+
 .histLegend {
   display: flex;
   gap: 18px;
