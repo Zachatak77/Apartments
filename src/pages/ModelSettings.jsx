@@ -1,5 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { loadModelSettings, saveModelSettings, MODEL_DEFAULTS } from '../lib/modelSettings'
+import {
+  fetchCalibrationSummary,
+  fetchAllPoolDatasets,
+  gridSearch,
+} from '../lib/calibration'
+import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
 import styles from './ModelSettings.module.css'
 
@@ -43,6 +49,39 @@ function NumInput({ label, value, onChange, prefix, suffix, min, max, step = 1, 
 export default function ModelSettings({ user }) {
   const [s, setS]     = useState(loadModelSettings)
   const [saved, setSaved] = useState(false)
+
+  const [calibSummary, setCalibSummary] = useState(null)
+  const [calibRunning, setCalibRunning] = useState(false)
+  const [calibResult,  setCalibResult]  = useState(null)
+
+  useEffect(() => {
+    fetchCalibrationSummary(supabase, user.id).then(setCalibSummary)
+  }, [user.id])
+
+  async function runCalibration() {
+    setCalibRunning(true)
+    setCalibResult(null)
+    const datasets = await fetchAllPoolDatasets(supabase, user.id)
+    await new Promise(r => setTimeout(r, 0))
+    const result = gridSearch(datasets, s)
+    setCalibResult(result)
+    setCalibRunning(false)
+  }
+
+  function applyCalibration() {
+    const { candidate } = calibResult.best
+    const updated = {
+      ...s,
+      predFvWeight:    candidate.predFvWeight,
+      taxCapMultiple:  candidate.taxCapMultiple,
+      predDomDiscount: candidate.predDomDiscount,
+    }
+    setS(updated)
+    saveModelSettings(updated)
+    setCalibResult(null)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2500)
+  }
 
   function update(key, val) {
     setS(p => ({ ...p, [key]: val }))
@@ -221,6 +260,104 @@ export default function ModelSettings({ user }) {
             display={`${s.outcomeOverpricedPct ?? 5}%`}
             hint={`Ask more than ${s.outcomeOverpricedPct ?? 5}% above fair value shifts outcome toward under ask. ${(s.outcomeOverpricedPct ?? 5) + 7}%+ above fair value triggers price cut / remain active signals.`}
           />
+        </div>
+
+        {/* Calibration */}
+        <div className={styles.calibCard}>
+          <div className={styles.cardTitle}>Auto-Calibrate from Your Data</div>
+          <p className={styles.cardSub}>
+            Runs leave-one-out cross-validation across all your closed comps to find the
+            Fair Value Weight, Tax Cap Multiple, and Stale DOM Discount that minimize
+            prediction error. Requires at least one pool with 4+ closed sales.
+          </p>
+
+          {calibSummary && (
+            <div className={styles.calibSummary}>
+              {calibSummary.qualifyingPools === 0
+                ? `No qualifying pools yet — add at least 4 closed comps to a pool to enable calibration.`
+                : `${calibSummary.totalClosed} closed comp${calibSummary.totalClosed !== 1 ? 's' : ''} across ${calibSummary.qualifyingPools} qualifying pool${calibSummary.qualifyingPools !== 1 ? 's' : ''}`
+              }
+            </div>
+          )}
+
+          {!calibRunning && !calibResult && (
+            <button
+              className={styles.calibBtn}
+              onClick={runCalibration}
+              disabled={!calibSummary || calibSummary.qualifyingPools === 0}
+            >
+              Calibrate Model
+            </button>
+          )}
+
+          {calibRunning && (
+            <div className={styles.calibProgress}>
+              <span className={styles.calibSpinner} />
+              Evaluating 384 parameter combinations…
+            </div>
+          )}
+
+          {calibResult && (() => {
+            const { best, currentResult } = calibResult
+            const improved = best && best.result.mape < (currentResult?.mape ?? Infinity)
+            const mapeImprovement = currentResult && best
+              ? (currentResult.mape - best.result.mape).toFixed(2)
+              : null
+
+            return (
+              <div className={styles.calibResults}>
+                <div className={styles.calibMapeRow}>
+                  <span className={styles.calibMapeLabel}>Current</span>
+                  <span className={styles.calibMapeVal}>
+                    {currentResult ? `${currentResult.mape.toFixed(1)}% avg error · $${currentResult.mae.toLocaleString()} MAE` : '—'}
+                  </span>
+                </div>
+                {improved && (
+                  <div className={`${styles.calibMapeRow} ${styles.calibMapeImproved}`}>
+                    <span className={styles.calibMapeLabel}>Calibrated</span>
+                    <span className={styles.calibMapeVal}>
+                      {best.result.mape.toFixed(1)}% avg error · ${best.result.mae.toLocaleString()} MAE
+                      {mapeImprovement > 0 && <span className={styles.calibDelta}>↓{mapeImprovement} pp</span>}
+                    </span>
+                  </div>
+                )}
+
+                {improved ? (
+                  <>
+                    <div className={styles.calibParamTable}>
+                      {[
+                        ['Fair Value Weight',   `${s.predFvWeight ?? 55}%`,            `${best.candidate.predFvWeight}%`],
+                        ['Tax Cap Multiple',    `${s.taxCapMultiple ?? 11}×`,           `${best.candidate.taxCapMultiple}×`],
+                        ['Stale DOM Discount',  `${(s.predDomDiscount ?? 6).toFixed(1)}%`, `${best.candidate.predDomDiscount.toFixed(1)}%`],
+                      ].map(([label, before, after]) => (
+                        <div key={label} className={styles.calibParamRow}>
+                          <span className={styles.calibParamLabel}>{label}</span>
+                          <span className={styles.calibParamBefore}>{before}</span>
+                          <span className={styles.calibParamArrow}>→</span>
+                          <span className={styles.calibParamAfter}>{after}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className={styles.calibActions}>
+                      <button className={styles.calibApplyBtn} onClick={applyCalibration}>
+                        Apply Calibrated Settings
+                      </button>
+                      <button className={styles.calibDismissBtn} onClick={() => setCalibResult(null)}>
+                        Dismiss
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className={styles.calibNoGain}>
+                    Current settings are already well-calibrated — no improvement found.
+                    <button className={styles.calibDismissBtn} onClick={() => setCalibResult(null)}>
+                      Dismiss
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
+          })()}
         </div>
 
         {/* Actions */}
