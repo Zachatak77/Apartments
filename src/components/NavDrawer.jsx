@@ -1,16 +1,5 @@
+import { POOL_TABS } from '../lib/tabs'
 import styles from './NavDrawer.module.css'
-
-const POOL_TABS = [
-  { id: 'heatmap',  label: 'Heatmap'      },
-  { id: 'history',  label: 'History'      },
-  { id: 'offers',   label: 'Offers'       },
-  { id: 'scatter',  label: 'Correlations' },
-  { id: 'scenario', label: 'Scenario'     },
-  { id: 'findings', label: 'Findings'     },
-  { id: 'cost',     label: 'Cost'         },
-  { id: 'map',      label: 'Map'          },
-  { id: 'physical', label: 'Physical'     },
-]
 
 const APP_NAV = [
   { id: 'dashboard',     label: 'Dashboard'      },
@@ -19,7 +8,7 @@ const APP_NAV = [
   { id: 'profile',       label: 'Profile'        },
 ]
 
-export default function NavDrawer({ open, onClose, view, pool, activeTab, onTabChange, onNavigate, user, onSignOut }) {
+export default function NavDrawer({ open, onClose, view, pool, activeTab, onTabChange, onOpenCompare, onNavigate, user, onSignOut }) {
   return (
     <>
       <div
@@ -46,6 +35,17 @@ export default function NavDrawer({ open, onClose, view, pool, activeTab, onTabC
                 </svg>
                 {pool.name}
               </div>
+              <button
+                className={`${styles.item} ${styles.compareItem} ${view === 'compare' ? styles.active : ''}`}
+                onClick={() => { onOpenCompare?.(); onClose() }}
+              >
+                ⚖ Compare &amp; Decide
+                {view === 'compare' && (
+                  <svg viewBox="0 0 8 8" fill="currentColor" width="5" height="5" className={styles.activeDot}>
+                    <circle cx="4" cy="4" r="4" />
+                  </svg>
+                )}
+              </button>
               {POOL_TABS.map(tab => (
                 <button
                   key={tab.id}

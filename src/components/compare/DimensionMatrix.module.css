@@ -1,0 +1,70 @@
+.wrap { margin-top: 28px; }
+
+.subhead {
+  font-family: var(--font-m);
+  font-size: 0.6rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: 12px;
+}
+
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 460px;
+}
+
+.dimHead, .candHead {
+  font-family: var(--font-m);
+  font-size: 0.54rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--dim);
+  font-weight: 500;
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.candHead { text-align: center; white-space: nowrap; }
+
+.dimCell {
+  font-family: var(--font-m);
+  font-size: 0.6rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  padding: 7px 10px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+.valCell {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+  min-width: 80px;
+}
+
+.barTrack {
+  height: 6px;
+  background: var(--surface);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.barFill {
+  height: 100%;
+  background: var(--border2);
+  border-radius: 3px;
+  transition: width .25s;
+}
+.barBest { background: var(--accent); }
+
+.totalRow .dimCell, .totalRow .valCell { border-bottom: none; }
+.scoreTag {
+  display: inline-block;
+  font-family: var(--font-d);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+}

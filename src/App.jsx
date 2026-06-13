@@ -5,6 +5,7 @@ import { supabase } from './lib/supabase'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
 import PoolView from './pages/PoolView'
+import CompareView from './pages/CompareView'
 import PropertyForm from './pages/PropertyForm'
 import PropertiesPage from './pages/PropertiesPage'
 import Profile from './pages/Profile'
@@ -37,6 +38,10 @@ export default function App() {
     setEditingProperty(null)
   }
 
+  const backHandler = isFormView ? formBack
+    : view === 'compare' ? () => setView('pool')
+    : null
+
   const navigate = (dest) => {
     if (dest === 'dashboard') setActivePool(null)
     setView(dest)
@@ -47,7 +52,7 @@ export default function App() {
     <>
       <NavBar
         onMenuOpen={() => setNavOpen(true)}
-        onBack={isFormView ? formBack : null}
+        onBack={backHandler}
         backLabel={activePool?.name ?? 'Back'}
         theme={theme}
         onToggleTheme={toggle}
@@ -60,6 +65,7 @@ export default function App() {
         pool={activePool}
         activeTab={activeTab}
         onTabChange={tab => { setActiveTab(tab); setView('pool'); setNavOpen(false) }}
+        onOpenCompare={() => { setView('compare'); setNavOpen(false) }}
         onNavigate={navigate}
         user={user}
         onSignOut={signOut}
@@ -83,6 +89,15 @@ export default function App() {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           onAddProperty={() => { setEditingProperty(null); setView('addProperty') }}
+          onEditProperty={prop => { setEditingProperty(prop); setView('editProperty') }}
+          onOpenCompare={() => setView('compare')}
+        />
+      )}
+
+      {view === 'compare' && activePool && (
+        <CompareView
+          pool={activePool}
+          onBack={() => setView('pool')}
           onEditProperty={prop => { setEditingProperty(prop); setView('editProperty') }}
         />
       )}

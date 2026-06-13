@@ -1,0 +1,39 @@
+.panel {
+  padding: 28px 20px 64px;
+  animation: fadeUp .28s ease both;
+}
+
+.state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--dim);
+}
+.stateTitle {
+  font-family: var(--font-d);
+  font-size: 1.2rem;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.stateSub { font-size: 0.9rem; max-width: 440px; margin: 0 auto; line-height: 1.6; }
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin: 18px 0 8px;
+}
+
+.note {
+  font-size: 0.78rem;
+  color: var(--dim);
+  line-height: 1.6;
+  margin-top: 20px;
+  font-style: italic;
+}
+
+@media (min-width: 640px) {
+  .panel { padding: 36px 32px 72px; }
+}
+@media (min-width: 900px) {
+  .panel { padding: 44px 40px 80px; }
+}
