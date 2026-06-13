@@ -130,7 +130,7 @@
 }
 
 /* ── Above-ceiling rows ── */
-.rowAboveCeil td { background: rgba(139,58,42,0.04) !important; }
+.rowAboveCeil td { background: rgba(220, 38, 38,0.04) !important; }
 
 .cutTag {
   display: inline-block;
@@ -142,7 +142,7 @@
   padding: 1px 5px;
   margin-top: 3px;
   margin-left: 4px;
-  background: rgba(42,92,66,0.08);
+  background: rgba(22, 163, 74,0.08);
 }
 
 .ceilTag {
@@ -152,7 +152,7 @@
   letter-spacing: .08em;
   text-transform: uppercase;
   color: var(--red);
-  border: 1px solid rgba(139,58,42,.3);
+  border: 1px solid rgba(220, 38, 38,.3);
   padding: 1px 5px;
   margin-top: 3px;
 }

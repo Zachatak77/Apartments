@@ -1,68 +1,105 @@
-/* ══ DESIGN TOKENS — Forest + Warm Cream palette ══ */
+/* ══ DESIGN TOKENS — Tech-forward: neutral surfaces, sharp green accent ══ */
 :root {
-  /* Primary accent — deep forest green */
-  --accent:      #2A5C42;
-  --accent-glow: rgba(42, 92, 66, 0.10);
-  --accent-dim:  #B8D4C4;
+  /* Primary accent — sharp signal green (reserved for emphasis, not brand fill) */
+  --accent:      #16A34A;
+  --accent-glow: rgba(22, 163, 74, 0.14);
+  --accent-dim:  #A7E0BD;
 
-  /* Semantic colors — warmer, less saturated */
-  --green:       #1F5C35;
-  --green-bg:    #EAF4EE;
-  --red:         #8B3A2A;
-  --red-bg:      #F5EAE7;
-  --amber:       #7A5200;
-  --amber-bg:    #FBF0DC;
-  --blue-bg:     #EAF0EB;   /* green-tinted info background */
+  /* Semantic colors */
+  --green:       #16A34A;
+  --green-bg:    #E7F6ED;
+  --red:         #DC2626;
+  --red-bg:      #FBEAEA;
+  --amber:       #D97706;
+  --amber-bg:    #FCF1E2;
+  --blue-bg:     #E9F1FB;   /* cool info background */
 
-  /* Heatmap — forest green (strong) → warm terracotta (weak) */
-  --h5: rgba(42, 92, 66, 0.88);
-  --h4: rgba(42, 92, 66, 0.42);
-  --h3: rgba(140, 128, 108, 0.20);
-  --h2: rgba(139, 58, 42, 0.32);
-  --h1: rgba(139, 58, 42, 0.80);
+  /* Heatmap — sharp green (strong) → cool red (weak), neutral mid */
+  --h5: rgba(22, 163, 74, 0.85);
+  --h4: rgba(22, 163, 74, 0.38);
+  --h3: rgba(125, 130, 140, 0.18);
+  --h2: rgba(220, 38, 38, 0.30);
+  --h1: rgba(220, 38, 38, 0.74);
 
-  /* Typography */
-  --font-d: 'Playfair Display', Georgia, serif;
-  --font-b: 'Source Serif 4', Georgia, serif;
-  --font-m: 'JetBrains Mono', monospace;
+  /* Typography — geometric sans + mono data */
+  --font-d: 'Space Grotesk', 'Inter', system-ui, sans-serif;   /* display / headlines / stat numerals */
+  --font-b: 'Inter', system-ui, -apple-system, sans-serif;     /* body / UI / dense data */
+  --font-m: 'JetBrains Mono', ui-monospace, monospace;         /* labels / metadata / code */
+
+  /* Radius scale — crisp, small */
+  --r-sm: 3px;
+  --r-md: 6px;
+  --r-lg: 10px;
+
+  /* Spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
 }
 
 [data-theme="light"] {
-  --bg:       #FDFCF8;   /* warm cream white */
-  --surface:  #F4F0E8;   /* warm linen */
-  --panel:    #F9F7F2;   /* soft cream */
-  --border:   #E2D8C8;   /* warm tan */
-  --border2:  #CFC4AE;   /* deeper tan */
-  --text:     #1C1917;   /* warm near-black */
-  --text-2:   #3A2E24;   /* warm dark brown */
-  --dim:      #8B7B68;   /* warm mid-gray */
-  --hdr-bg:   #1A2B1E;   /* deep forest */
-  --hdr-text: #F5F2EC;   /* warm off-white */
-  --hdr-dim:  rgba(245, 242, 236, 0.48);
-  --tab-bg:   #F4F0E8;
-  --ctxt-dk:  #F5F2EC;
-  --ctxt-lt:  #1C1917;
+  --bg:       #FBFBFC;   /* near-white, faint cool */
+  --surface:  #F1F2F4;   /* light neutral */
+  --panel:    #FFFFFF;   /* cards pop above bg */
+  --border:   #E3E5E9;   /* cool light gray */
+  --border2:  #CDD0D6;   /* deeper gray */
+  --text:     #0F1115;   /* near-black neutral */
+  --text-2:   #3A3D44;   /* dark gray */
+  --dim:      #888D96;   /* mid gray */
+  --hdr-bg:   #0F1115;   /* near-black header */
+  --hdr-text: #F4F5F7;   /* off-white */
+  --hdr-dim:  rgba(244, 245, 247, 0.50);
+  --tab-bg:   #F1F2F4;
+  --ctxt-dk:  #FFFFFF;   /* text on strong/dark cells */
+  --ctxt-lt:  #0F1115;   /* text on light cells */
+
+  --overlay:    rgba(15, 17, 21, 0.55);
+  --shadow-sm:  0 1px 2px rgba(15, 17, 21, 0.06), 0 1px 3px rgba(15, 17, 21, 0.08);
+  --shadow-md:  0 4px 12px rgba(15, 17, 21, 0.10), 0 2px 4px rgba(15, 17, 21, 0.06);
+
+  /* Listing status — active = decision surface, closed = muted context */
+  --status-active:      #16A34A;
+  --status-active-bg:   #E7F6ED;
+  --status-contract:    #D97706;
+  --status-contract-bg: #FCF1E2;
+  --status-closed:      #6B7280;
+  --status-closed-bg:   #EEF0F2;
 }
 
 [data-theme="dark"] {
-  --bg:       #111210;   /* warm near-black */
-  --surface:  #191D1A;   /* dark forest-tinted */
-  --panel:    #1F2421;   /* slightly lighter */
-  --border:   #2A3330;   /* dark warm green-gray */
-  --border2:  #354038;
-  --text:     #E8E4DC;   /* warm off-white */
-  --text-2:   #B8B0A4;   /* warm light gray */
-  --dim:      #6E6860;   /* warm mid-dim */
-  --hdr-bg:   #0D1510;   /* deepest forest */
-  --hdr-text: #EEE8DE;   /* warm cream */
-  --hdr-dim:  rgba(238, 232, 222, 0.42);
-  --tab-bg:   #191D1A;
-  --ctxt-dk:  #EEE8DE;
-  --ctxt-lt:  #E8E4DC;
-  --accent-dim:  #1E3528;
-  --accent-glow: rgba(42, 92, 66, 0.18);
-  --green-bg:    #0F2018;
-  --red-bg:      #261510;
-  --amber-bg:    #241A08;
-  --blue-bg:     #0F2018;
+  --bg:       #0B0C0E;   /* near-black neutral */
+  --surface:  #16181B;   /* dark neutral */
+  --panel:    #1B1E22;   /* card surface */
+  --border:   #2A2E34;   /* dark gray */
+  --border2:  #3A3F47;
+  --text:     #ECEEF1;   /* off-white */
+  --text-2:   #B4B8C0;   /* light gray */
+  --dim:      #6E737C;   /* mid-dim */
+  --hdr-bg:   #08090B;   /* deepest neutral */
+  --hdr-text: #ECEEF1;
+  --hdr-dim:  rgba(236, 238, 241, 0.45);
+  --tab-bg:   #16181B;
+  --ctxt-dk:  #FFFFFF;
+  --ctxt-lt:  #ECEEF1;
+
+  --accent-dim:  #1C3A28;
+  --accent-glow: rgba(22, 163, 74, 0.22);
+  --green-bg:    #0E2419;
+  --red-bg:      #2A1414;
+  --amber-bg:    #2A1D0A;
+  --blue-bg:     #0F1C2A;
+
+  --overlay:    rgba(0, 0, 0, 0.66);
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.40), 0 1px 3px rgba(0, 0, 0, 0.30);
+  --shadow-md:  0 4px 14px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.35);
+
+  --status-active:      #22C55E;
+  --status-active-bg:   #0E2419;
+  --status-contract:    #F59E0B;
+  --status-contract-bg: #2A1D0A;
+  --status-closed:      #9AA0A8;
+  --status-closed-bg:   #20242A;
 }

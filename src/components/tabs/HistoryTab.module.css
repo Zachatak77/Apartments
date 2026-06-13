@@ -216,7 +216,7 @@
   transform: translate(-50%, -50%) rotate(45deg);
   width: 10px;
   height: 10px;
-  background: #1F5C35;
+  background: #16A34A;
   border: 1.5px solid rgba(255, 255, 255, 0.55);
   z-index: 3;
   pointer-events: none;
@@ -225,7 +225,7 @@
 .legendDiamond {
   width: 9px;
   height: 9px;
-  background: #1F5C35;
+  background: #16A34A;
   transform: rotate(45deg);
   flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.4);
@@ -234,7 +234,7 @@
 .legendCutSwatch {
   width: 16px;
   height: 8px;
-  background: #2A5C42;
+  background: #16A34A;
   border-radius: 2px;
   position: relative;
   flex-shrink: 0;

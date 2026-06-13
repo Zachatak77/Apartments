@@ -135,9 +135,9 @@
   padding: 3px 8px;
 }
 
-.levStrong  { background: rgba(42,92,66,0.15);  color: #2A5C42; }
-.levHigh    { background: rgba(42,92,66,0.08);  color: var(--accent); }
-.levMod     { background: rgba(180,150,60,0.12); color: #8a7030; }
+.levStrong  { background: rgba(22, 163, 74,0.15);  color: #16A34A; }
+.levHigh    { background: rgba(22, 163, 74,0.08);  color: var(--accent); }
+.levMod     { background: rgba(217, 119, 6,0.12); color: #D97706; }
 .levLow     { background: var(--surface); color: var(--dim); border: 1px solid var(--border); }
 
 /* ── Subhead + note ── */

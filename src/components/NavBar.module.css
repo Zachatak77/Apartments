@@ -8,7 +8,7 @@
   padding: env(safe-area-inset-top, 0) 12px 0;
   height: calc(44px + env(safe-area-inset-top, 0));
   background: var(--hdr-bg);
-  border-bottom: 1px solid rgba(42, 92, 66, 0.35);
+  border-bottom: 1px solid rgba(22, 163, 74, 0.35);
   transition: background .25s;
 }
 

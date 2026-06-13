@@ -102,7 +102,7 @@
   text-overflow: ellipsis;
 }
 
-.savingsGreen { color: #1a6640; }
+.savingsGreen { color: #16A34A; }
 
 /* ── Table ── */
 .tableWrap {
@@ -216,20 +216,20 @@
 
 .dragCol { color: var(--text) !important; font-weight: 600; }
 
-.savingsCol { color: #1a6640; }
+.savingsCol { color: #16A34A; }
 
 .netCol {
   color: var(--accent);
   font-size: 0.84rem;
   font-weight: 600;
   background: var(--accent-glow);
-  border-left: 2px solid rgba(42,92,66,0.25);
+  border-left: 2px solid rgba(22, 163, 74,0.25);
 }
 
 .netHead {
   background: var(--accent-glow) !important;
   color: var(--accent) !important;
-  border-left: 2px solid rgba(42,92,66,0.25);
+  border-left: 2px solid rgba(22, 163, 74,0.25);
   font-weight: 600 !important;
 }
 
