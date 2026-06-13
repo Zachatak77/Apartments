@@ -73,16 +73,8 @@
 }
 
 /* Composite score */
-.scoreRow { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px 10px; }
-.scoreNum {
-  font-family: var(--font-d);
-  font-size: 2.1rem;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--accent);
-  grid-row: span 1;
-}
-.scoreMeta { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
+.scoreRow { display: flex; align-items: center; gap: 14px; }
+.scoreMeta { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
 .verdict {
   font-family: var(--font-m);
   font-size: 0.52rem;

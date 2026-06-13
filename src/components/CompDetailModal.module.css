@@ -190,7 +190,16 @@
   line-height: 1;
   flex-shrink: 0;
 }
-.scoreRight { flex: 1; }
+.scoreRight { flex: 1; min-width: 0; }
+.psfStrip { margin-top: 10px; }
+.psfStripLbl {
+  font-family: var(--font-m);
+  font-size: 0.5rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 2px;
+}
 .scoreLabel {
   font-family: var(--font-m);
   font-size: 0.72rem;

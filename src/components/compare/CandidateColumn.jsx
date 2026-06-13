@@ -1,3 +1,4 @@
+import ScoreGauge from '../charts/ScoreGauge'
 import { DIMENSIONS, OUTCOME_LABEL, fmtPrice, fmtSigned, fmtPct } from './compareUtils'
 import styles from './CandidateColumn.module.css'
 
@@ -27,13 +28,10 @@ export default function CandidateColumn({ data, rank, recommended, decided, onDe
 
       {/* Composite score */}
       <div className={styles.scoreRow}>
-        <div className={styles.scoreNum}>{score}</div>
+        <ScoreGauge score={score} size={84} label="Composite" />
         <div className={styles.scoreMeta}>
           <span className={`${styles.verdict} ${v.cls}`}>{v.label}</span>
-          <span className={styles.scoreLbl}>Composite</span>
-        </div>
-        <div className={styles.scoreBar}>
-          <div className={styles.scoreFill} style={{ width: `${score}%` }} />
+          <span className={styles.scoreLbl}>weighted score</span>
         </div>
       </div>
 

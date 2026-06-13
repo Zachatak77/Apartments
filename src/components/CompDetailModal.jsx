@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react'
 import { scoreComp, buildPoolContext, buildPricingContext, CEIL_PSF, offerRange } from '../lib/scoring'
 import { loadMortgagePrefs, calcMonthlyPayment, MORTGAGE_DEDUCTION_CAP } from '../lib/mortgage'
 import { loadModelSettings } from '../lib/modelSettings'
+import ScoreGauge from './charts/ScoreGauge'
+import DistributionStrip from './charts/DistributionStrip'
 import styles from './CompDetailModal.module.css'
 
 function buildDims(ms) {
@@ -265,8 +267,10 @@ export default function CompDetailModal({ comp, comps, onClose, onEdit, onDelete
   }, [scenPrice, scenDom, scenReno, comp, ctx, prefs, ms, ceilPsf])
   const findings = useMemo(() => generateFindings(comp, comps, s, price), [comp, comps, s])
 
-  const scoreColor = s.comp >= 70 ? '#2A5C42' : s.comp >= 50 ? '#7A9E8A' : s.comp >= 35 ? '#B8A87A' : '#8B3A2A'
+  const scoreColor = s.comp >= 70 ? 'var(--green)' : s.comp >= 50 ? 'var(--accent)' : s.comp >= 35 ? 'var(--amber)' : 'var(--red)'
   const scoreLabel = s.comp >= 70 ? 'Strong Value' : s.comp >= 50 ? 'Above Average' : s.comp >= 35 ? 'Average' : 'Weak Value'
+
+  const poolPsfs = comps.map(c => c.psf).filter(Boolean)
 
   const dom = comp.days_on_market ?? 0
   const overAsk = comp.sold_price > comp.original_list_price
@@ -305,13 +309,16 @@ export default function CompDetailModal({ comp, comps, onClose, onEdit, onDelete
           {/* Composite Score */}
           <section className={styles.section}>
             <div className={styles.scoreHero}>
-              <div className={styles.scoreNum} style={{ color: scoreColor }}>{s.comp}</div>
+              <ScoreGauge score={s.comp} size={104} />
               <div className={styles.scoreRight}>
                 <div className={styles.scoreLabel} style={{ color: scoreColor }}>{scoreLabel}</div>
                 <div className={styles.scoreDesc}>Weighted composite out of 100</div>
-                <div className={styles.scoreBar}>
-                  <div className={styles.scoreBarFill} style={{ width: `${s.comp}%`, background: scoreColor }} />
-                </div>
+                {comp.psf && poolPsfs.length >= 2 && (
+                  <div className={styles.psfStrip}>
+                    <div className={styles.psfStripLbl}>$/SF position in pool</div>
+                    <DistributionStrip values={poolPsfs} value={comp.psf} height={40} />
+                  </div>
+                )}
               </div>
             </div>
           </section>
