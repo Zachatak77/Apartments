@@ -4,9 +4,9 @@ import styles from './HistoryTab.module.css'
 function fmtK(v) { return v ? `$${Math.round(v / 1000)}K` : '—' }
 
 const TODAY    = new Date()
-const GREEN    = '#2A5C42'   // var(--accent)
-const AMBER    = '#7A5200'   // var(--amber)
-const SOLD_CLR = '#1F5C35'   // var(--green)
+const GREEN    = 'var(--accent)'   // active phase
+const AMBER    = 'var(--amber)'    // under-contract phase
+const SOLD_CLR = 'var(--green)'    // closed
 
 function endDateOf(c) {
   if (c.sold_date)     return new Date(c.sold_date)

@@ -1,8 +1,13 @@
 import { useMemo } from 'react'
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine, Cell, Tooltip, ResponsiveContainer,
+} from 'recharts'
 import { buildPricingContext, buildPrediction, predictOutcome, CEIL_PSF } from '../../lib/scoring'
 import { loadModelSettings } from '../../lib/modelSettings'
 import { loadMortgagePrefs, calcMonthlyPayment } from '../../lib/mortgage'
 import { useSortable } from '../../hooks/useSortable.jsx'
+import { useChartColors, CHART_FONT } from '../charts/chartTheme'
+import Sparkline from '../charts/Sparkline'
 import styles from './OffersTab.module.css'
 
 function median(arr) {
@@ -91,212 +96,77 @@ const OUTCOME_LABEL = {
   remain_active: '● Remains active',
 }
 
-// ── Version A: Strip / dot plot ───────────────────────────────────────────────
-// Each property as a circle on a $/SF axis. Circles stack upward on overlap.
-function PsfStripPlot({ comps, ctx }) {
-  const withPsf = comps.filter(c => c.psf)
-  if (withPsf.length < 2) return null
-
-  const W = 460, padX = 30, r = 5.5, spacing = r * 2.5
-  const psfs  = withPsf.map(c => c.psf)
-  const rawLo = Math.min(...psfs), rawHi = Math.max(...psfs)
-  const span  = rawHi - rawLo || 50
-  const domLo = rawLo - span * 0.08, domHi = rawHi + span * 0.08
-  const xOf   = v => padX + ((v - domLo) / (domHi - domLo)) * (W - 2 * padX)
-
-  const sorted = [...withPsf].sort((a, b) => a.psf - b.psf)
-  const placed = []
-  for (const c of sorted) {
-    const x = xOf(c.psf)
-    let row = 0
-    while (placed.filter(p => p.row === row).some(p => Math.abs(p.x - x) < spacing * 2)) row++
-    placed.push({ c, x, row })
-  }
-  const maxRow = Math.max(...placed.map(p => p.row), 0)
-  const H      = Math.max(80, (maxRow + 2) * spacing + 36)
-  const axisY  = H - 18
-  const yOf    = row => axisY - r - 2 - row * spacing
-
-  const dotFill = c => c.sold_date ? '#4a7fa8' : c.contract_date ? '#8a7030' : '#2A5C42'
-  const refs    = ctx ? [
-    { v: ctx.floor, label: `$${ctx.floor}`, color: 'var(--accent)' },
-    { v: ctx.fair,  label: `$${ctx.fair}`,  color: 'var(--dim)'    },
-    { v: ctx.ceil,  label: `$${ctx.ceil}`,  color: 'var(--red)'    },
-  ] : []
-
+// ── $/SF distribution — ranked horizontal bars (Recharts) ─────────────────────
+// One bar per property sorted $/SF low → high, colored by listing status, with
+// floor / median / ceiling reference lines from the pricing context.
+function PsfDistTip({ active, payload, colors }) {
+  if (!active || !payload?.length) return null
+  const d = payload[0].payload
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className={styles.histSvg}>
-      {ctx && (
-        <rect x={xOf(ctx.floor)} y={10} width={xOf(ctx.ceil) - xOf(ctx.floor)} height={axisY - 10}
-          fill="rgba(42,92,66,0.04)" />
-      )}
-      <line x1={padX} y1={axisY} x2={W - padX} y2={axisY} stroke="var(--border2)" strokeWidth="0.7" />
-      {refs.map(({ v, label, color }) => (
-        <g key={v}>
-          <line x1={xOf(v)} y1={14} x2={xOf(v)} y2={axisY}
-            stroke={color} strokeWidth="0.7" strokeDasharray="2.5,2" />
-          <text x={xOf(v)} y={H - 4} textAnchor="middle"
-            fontSize="5.5" fontFamily="var(--font-m)" fill={color}>{label}</text>
-        </g>
-      ))}
-      {placed.map(({ c, x, row }, i) => (
-        <circle key={i} cx={x} cy={yOf(row)} r={r} fill={dotFill(c)} opacity="0.82" />
-      ))}
-    </svg>
+    <div style={{
+      background: colors.panel, border: `1px solid ${colors.border}`, borderRadius: 6,
+      padding: '7px 10px', fontFamily: CHART_FONT, fontSize: 11, color: colors.text,
+    }}>
+      <div style={{ fontWeight: 600, marginBottom: 2 }}>{d.address}</div>
+      <div style={{ color: colors.text2 }}>${d.psf}/SF · {d.statusLabel}</div>
+    </div>
   )
 }
 
-// ── Version B: Zone track ─────────────────────────────────────────────────────
-// A horizontal band divided into floor / sweet-zone / above-ceiling regions.
-// Each property is a tick + dot above the track.
-function PsfZoneTrack({ comps, ctx }) {
+function PsfDistributionChart({ comps, ctx }) {
+  const colors  = useChartColors()
   const withPsf = comps.filter(c => c.psf)
   if (withPsf.length < 2) return null
 
-  const W = 460, H = 76, padX = 30
-  const psfs  = withPsf.map(c => c.psf)
-  const rawLo = Math.min(...psfs), rawHi = Math.max(...psfs)
-  const span  = rawHi - rawLo || 50
-  const domLo = rawLo - span * 0.1, domHi = rawHi + span * 0.1
-  const xOf   = v => padX + ((v - domLo) / (domHi - domLo)) * (W - 2 * padX)
+  const statusOf = c => c.sold_date ? 'sold' : c.contract_date ? 'contract' : 'active'
+  const labelOf  = s => s === 'sold' ? 'Sold' : s === 'contract' ? 'In Contract' : 'Active'
+  const colorOf  = s => s === 'sold' ? colors.statusClosed : s === 'contract' ? colors.statusContract : colors.statusActive
 
-  const trackY = 36, trackH = 12
-  const zones = ctx ? [
-    { lo: domLo,     hi: ctx.floor, fill: 'rgba(42,92,66,0.07)'    },
-    { lo: ctx.floor, hi: ctx.ceil,  fill: 'rgba(42,92,66,0.18)'    },
-    { lo: ctx.ceil,  hi: domHi,     fill: 'rgba(139,58,42,0.08)'   },
-  ] : []
-  const refs = ctx ? [
-    { v: ctx.floor, label: `Floor $${ctx.floor}`,   color: 'var(--accent)' },
-    { v: ctx.fair,  label: `Median $${ctx.fair}`,   color: 'var(--dim)'    },
-    { v: ctx.ceil,  label: `Ceiling $${ctx.ceil}`,  color: 'var(--red)'    },
-  ] : []
+  const data = [...withPsf].sort((a, b) => a.psf - b.psf).map(c => {
+    const st = statusOf(c)
+    return {
+      name: (c.address ?? '').split(' ')[0],
+      psf: c.psf, status: st, statusLabel: labelOf(st), address: c.address,
+    }
+  })
+  const height = data.length * 26 + 34
+  const maxX = ctx ? Math.max(ctx.ceil * 1.05, ...data.map(d => d.psf)) : Math.max(...data.map(d => d.psf)) * 1.08
 
-  const tickFill = c => c.sold_date ? '#4a7fa8' : c.contract_date ? '#8a7030' : '#2A5C42'
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className={styles.histSvg}>
-      <rect x={padX} y={trackY} width={W - 2 * padX} height={trackH}
-        fill="var(--surface)" stroke="var(--border)" strokeWidth="0.6" />
-      {zones.map((z, i) => {
-        const x1 = Math.max(padX, xOf(z.lo))
-        const x2 = Math.min(W - padX, xOf(z.hi))
-        if (x2 <= x1) return null
-        return <rect key={i} x={x1} y={trackY} width={x2 - x1} height={trackH} fill={z.fill} />
-      })}
-      {refs.map(({ v, color }) => (
-        <line key={v} x1={xOf(v)} y1={trackY} x2={xOf(v)} y2={trackY + trackH}
-          stroke={color} strokeWidth="0.8" />
-      ))}
-      {withPsf.map((c, i) => (
-        <g key={i}>
-          <line x1={xOf(c.psf)} y1={trackY - 14} x2={xOf(c.psf)} y2={trackY - 2}
-            stroke={tickFill(c)} strokeWidth="1.8" opacity="0.85" />
-          <circle cx={xOf(c.psf)} cy={trackY - 17} r="3.5" fill={tickFill(c)} opacity="0.85" />
-        </g>
-      ))}
-      {refs.map(({ v, label, color }) => (
-        <text key={v} x={xOf(v)} y={H - 2} textAnchor="middle"
-          fontSize="5.2" fontFamily="var(--font-m)" fill={color}>{label}</text>
-      ))}
-    </svg>
-  )
-}
-
-// ── Version C: Ranked horizontal bars ────────────────────────────────────────
-// One bar per property sorted $/SF low → high. Street number as row label.
-function PsfRankBars({ comps, ctx }) {
-  const withPsf = comps.filter(c => c.psf)
-  if (withPsf.length < 2) return null
-
-  const sorted  = [...withPsf].sort((a, b) => a.psf - b.psf)
-  const maxDom  = ctx ? ctx.ceil * 1.08 : Math.max(...sorted.map(c => c.psf)) * 1.08
-  const W = 460, rowH = 16, padX = 44, padY = 8, padR = 44
-  const barMaxW = W - padX - padR
-  const H       = sorted.length * rowH + padY * 2 + 14
-
-  const bw      = psf => Math.min((psf / maxDom) * barMaxW, barMaxW)
-  const barFill = c => c.sold_date
-    ? 'rgba(74,127,168,0.72)' : c.contract_date
-    ? 'rgba(138,112,48,0.72)' : 'rgba(42,92,66,0.72)'
-
-  const medX  = ctx ? padX + (ctx.fair / maxDom) * barMaxW : null
-  const ceilX = ctx ? padX + (ctx.ceil / maxDom) * barMaxW : null
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className={styles.histSvg}>
-      {medX && <>
-        <line x1={medX} y1={padY} x2={medX} y2={H - 14}
-          stroke="var(--dim)" strokeWidth="0.6" strokeDasharray="2,2" opacity="0.5" />
-        <text x={medX} y={H - 2} textAnchor="middle"
-          fontSize="5" fontFamily="var(--font-m)" fill="var(--dim)">Med ${ctx.fair}</text>
-      </>}
-      {ceilX && <>
-        <line x1={ceilX} y1={padY} x2={ceilX} y2={H - 14}
-          stroke="var(--red)" strokeWidth="0.6" strokeDasharray="2,2" opacity="0.5" />
-        <text x={ceilX} y={H - 2} textAnchor="middle"
-          fontSize="5" fontFamily="var(--font-m)" fill="var(--red)">Ceil ${ctx.ceil}</text>
-      </>}
-      {sorted.map((c, i) => {
-        const y   = padY + i * rowH
-        const num = (c.address ?? '').split(' ')[0]
-        const w   = bw(c.psf)
-        const over = ctx && c.psf > ctx.ceil
-        return (
-          <g key={c.id ?? i}>
-            <text x={padX - 5} y={y + rowH * 0.72} textAnchor="end"
-              fontSize="5.5" fontFamily="var(--font-m)" fill="var(--dim)">{num}</text>
-            <rect x={padX} y={y + 3} width={w} height={rowH - 6}
-              fill={barFill(c)} rx="1.5"
-              stroke={over ? 'var(--red)' : 'none'} strokeWidth="0.6" />
-            <text x={padX + w + 4} y={y + rowH * 0.72}
-              fontSize="5.5" fontFamily="var(--font-m)" fill={over ? 'var(--red)' : 'var(--dim)'}>
-              ${c.psf}
-            </text>
-          </g>
-        )
-      })}
-    </svg>
-  )
-}
-
-function PsfHistogramVariants({ comps, ctx }) {
-  const variants = [
-    {
-      id: 'a', label: 'A · Strip Plot',
-      desc: 'Each property as a dot on a $/SF axis — stacks on overlap.',
-      chart: <PsfStripPlot comps={comps} ctx={ctx} />,
-    },
-    {
-      id: 'b', label: 'B · Price Zone Track',
-      desc: 'Properties as ticks above a track divided into floor / sweet-zone / above-ceiling bands.',
-      chart: <PsfZoneTrack comps={comps} ctx={ctx} />,
-    },
-    {
-      id: 'c', label: 'C · Ranked Bars',
-      desc: 'One bar per property sorted low → high. Street number as label.',
-      chart: <PsfRankBars comps={comps} ctx={ctx} />,
-    },
-  ]
+  const refLabel = (txt, color) => ({
+    value: txt, position: 'top', fill: color, fontFamily: CHART_FONT, fontSize: 9,
+  })
 
   return (
     <div className={styles.histSection}>
       <div className={styles.subhead}>$/SF Distribution</div>
-      <div className={styles.variantGrid}>
-        {variants.map(v => (
-          <div key={v.id} className={styles.variantCard}>
-            <div className={styles.variantMeta}>
-              <span className={styles.variantLabel}>{v.label}</span>
-              <span className={styles.variantDesc}>{v.desc}</span>
-            </div>
-            {v.chart}
-            <div className={styles.histLegend}>
-              <span><span className={`${styles.histSwatch} ${styles.histSwatchActive}`} />Active</span>
-              <span><span className={`${styles.histSwatch} ${styles.histSwatchContract}`} />In Contract</span>
-              <span><span className={`${styles.histSwatch} ${styles.histSwatchSold}`} />Sold</span>
-            </div>
-          </div>
-        ))}
+      <ResponsiveContainer width="100%" height={height}>
+        <BarChart data={data} layout="vertical" margin={{ top: 18, right: 44, bottom: 6, left: 6 }}>
+          <CartesianGrid horizontal={false} stroke={colors.border} strokeDasharray="2 4" />
+          <XAxis
+            type="number" domain={[0, maxX]}
+            tick={{ fill: colors.dim, fontFamily: CHART_FONT, fontSize: 9 }}
+            tickLine={false} axisLine={{ stroke: colors.border }}
+            tickFormatter={v => `$${v}`}
+          />
+          <YAxis
+            type="category" dataKey="name" width={46}
+            tick={{ fill: colors.dim, fontFamily: CHART_FONT, fontSize: 9 }}
+            tickLine={false} axisLine={false}
+          />
+          <Tooltip cursor={{ fill: colors.surface }} content={props => <PsfDistTip {...props} colors={colors} />} />
+          {ctx && <ReferenceLine x={ctx.floor} stroke={colors.accent} strokeDasharray="4 3" label={refLabel(`Floor $${ctx.floor}`, colors.accent)} />}
+          {ctx && <ReferenceLine x={ctx.fair}  stroke={colors.dim}    strokeDasharray="4 3" label={refLabel(`Median $${ctx.fair}`, colors.dim)} />}
+          {ctx && <ReferenceLine x={ctx.ceil}  stroke={colors.red}    strokeDasharray="4 3" label={refLabel(`Ceiling $${ctx.ceil}`, colors.red)} />}
+          <Bar dataKey="psf" radius={[0, 2, 2, 0]} isAnimationActive={false}
+            label={{ position: 'right', fill: colors.dim, fontFamily: CHART_FONT, fontSize: 9, formatter: v => `$${v}` }}>
+            {data.map((d, i) => <Cell key={i} fill={colorOf(d.status)} fillOpacity={0.82} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+      <div className={styles.histLegend}>
+        <span><span className={styles.histSwatch} style={{ background: colors.statusActive }} />Active</span>
+        <span><span className={styles.histSwatch} style={{ background: colors.statusContract }} />In Contract</span>
+        <span><span className={styles.histSwatch} style={{ background: colors.statusClosed }} />Sold</span>
       </div>
     </div>
   )
@@ -364,9 +234,6 @@ export default function OffersTab({ comps }) {
 
   const { sorted, handleSort, SortIcon } = useSortable(enriched, 'psf', 'asc')
 
-  const maxDom = velocity ? Math.max(...velocity.timeline.map(c => c.days_on_market), 1) : 1
-  const recentIds = new Set((velocity?.recent ?? []).map(c => c.id))
-
   const ThL = ({ colKey, label, left }) => (
     <th className={`${styles.th} ${styles.thSortable} ${left ? styles.thLeft : ''}`}
       onClick={() => handleLevSort(colKey)}>
@@ -419,20 +286,10 @@ export default function OffersTab({ comps }) {
           {velocity.timeline.length > 1 && (
             <div className={styles.velRight}>
               <div className={styles.sparkLabel}>DOM over time (oldest → newest)</div>
-              <div className={styles.spark}>
-                {velocity.timeline.map((c, i) => (
-                  <div
-                    key={c.id ?? i}
-                    className={`${styles.sparkBar} ${recentIds.has(c.id) ? styles.sparkBarRecent : ''}`}
-                    style={{ height: `${Math.max(4, Math.round((c.days_on_market / maxDom) * 44))}px` }}
-                    title={`${c.address}: ${c.days_on_market}d${c.sold_date ? ' · ' + c.sold_date : ''}`}
-                  />
-                ))}
-              </div>
+              <Sparkline data={velocity.timeline.map(c => c.days_on_market)} height={44} />
               {velocity.recent.length > 0 && (
                 <div className={styles.sparkLegend}>
-                  <span className={styles.sparkDotRecent} /> last 90d
-                  <span className={styles.sparkDotOld} /> older
+                  median {velocity.medAll}d · {velocity.recent.length} in last 90d
                 </div>
               )}
             </div>
@@ -626,7 +483,7 @@ export default function OffersTab({ comps }) {
         Total /mo = P&amp;I ({morPrefs.rate}%, {morPrefs.downPct}% down, {morPrefs.term}yr) + taxes + insurance ({ms.insuranceRate}% of price/yr).
       </p>
 
-      <PsfHistogramVariants comps={comps} ctx={ctx} />
+      <PsfDistributionChart comps={comps} ctx={ctx} />
     </div>
   )
 }
