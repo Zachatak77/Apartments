@@ -41,7 +41,7 @@ function TipContent({ active, payload, xLabel, yLabel, colors }) {
 }
 
 // ── Chart component ───────────────────────────────────────────────────────────
-function Chart({ title, pts, xLabel, yLabel, formulaFn }) {
+function Chart({ title, pts, xLabel, yLabel, formulaFn, onSelect }) {
   const colors = useChartColors()
   const data = pts.map(p => ({ x: p[0], y: p[1], comp: p[2] }))
   const reg  = linReg(pts)
@@ -108,6 +108,11 @@ function Chart({ title, pts, xLabel, yLabel, formulaFn }) {
             <Scatter
               data={data} fill={colors.accent} fillOpacity={0.6}
               stroke={colors.panel} strokeWidth={1.2} isAnimationActive={false}
+              cursor={onSelect ? 'pointer' : undefined}
+              onClick={node => {
+                const c = node?.payload?.comp ?? node?.comp
+                if (c) onSelect?.(c)
+              }}
             />
           </ScatterChart>
         </ResponsiveContainer>
@@ -117,7 +122,7 @@ function Chart({ title, pts, xLabel, yLabel, formulaFn }) {
 }
 
 // ── Tab ───────────────────────────────────────────────────────────────────────
-export default function ScatterTab({ comps }) {
+export default function ScatterTab({ comps, onSelect }) {
   const withPrice = comps.filter(c => c.last_list_price || c.original_list_price || c.sold_price)
   const price     = c => ((c.sold_date ? c.sold_price : null) ?? c.last_list_price ?? c.original_list_price) / 1000
   const sgn       = (r, abs) => `${r.slope >= 0 ? '+' : '−'} $${Math.abs(abs)}`
@@ -184,7 +189,7 @@ export default function ScatterTab({ comps }) {
 
       <div className={styles.grid}>
         {charts.map(c => (
-          <Chart key={c.id} {...c} />
+          <Chart key={c.id} {...c} onSelect={onSelect} />
         ))}
       </div>
 

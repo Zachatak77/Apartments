@@ -65,6 +65,24 @@
 .popupGrid span:nth-child(odd) { color: var(--dim); }
 .popupGrid span:nth-child(even) { color: var(--text); text-align: right; }
 
+.popupBtn {
+  display: block;
+  width: calc(100% - 28px);
+  margin: 0 14px 12px;
+  padding: 6px 10px;
+  background: var(--accent);
+  color: var(--ctxt-dk);
+  border: none;
+  border-radius: var(--r-sm);
+  font-family: var(--font-m);
+  font-size: 0.6rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.popupBtn:hover { opacity: .88; }
+
 .legend {
   display: flex;
   flex-wrap: wrap;

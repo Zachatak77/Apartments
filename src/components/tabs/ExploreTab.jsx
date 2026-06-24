@@ -10,13 +10,13 @@ const VIEWS = [
   { id: 'map',          label: 'Map'          },
 ]
 
-export default function ExploreTab({ comps }) {
+export default function ExploreTab({ comps, onSelect }) {
   const [view, setView] = useState('correlations')
   return (
     <div>
       <SubNav tabs={VIEWS} active={view} onChange={setView} />
-      {view === 'correlations' && <ScatterTab comps={comps} />}
-      {view === 'map'          && <MapTab comps={comps} />}
+      {view === 'correlations' && <ScatterTab comps={comps} onSelect={onSelect} />}
+      {view === 'map'          && <MapTab comps={comps} onSelect={onSelect} />}
     </div>
   )
 }

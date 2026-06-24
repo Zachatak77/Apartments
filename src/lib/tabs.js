@@ -3,7 +3,6 @@
 export const POOL_TABS = [
   { id: 'comps',    label: 'Comps'    },
   { id: 'offers',   label: 'Offers'   },
-  { id: 'timeline', label: 'Timeline' },
   { id: 'explore',  label: 'Explore'  },
   { id: 'findings', label: 'Findings' },
 ]

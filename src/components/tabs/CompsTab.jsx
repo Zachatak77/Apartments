@@ -17,8 +17,8 @@ export default function CompsTab(props) {
     <div>
       <SubNav tabs={VIEWS} active={view} onChange={setView} />
       {view === 'valuation' && <HeatmapTab {...props} />}
-      {view === 'costs'     && <CostTab comps={props.comps} />}
-      {view === 'physical'  && <PhysicalTab comps={props.comps} />}
+      {view === 'costs'     && <CostTab comps={props.comps} onSelect={props.onSelect} />}
+      {view === 'physical'  && <PhysicalTab comps={props.comps} onSelect={props.onSelect} />}
     </div>
   )
 }

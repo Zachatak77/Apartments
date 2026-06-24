@@ -71,7 +71,7 @@ async function geocodeAddress(address, town) {
   return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
 }
 
-export default function MapTab({ comps }) {
+export default function MapTab({ comps, onSelect }) {
   const [points, setPoints] = useState([]) // { comp, lat, lng }
   const [status, setStatus] = useState('idle') // idle | loading | done | error
   const [progress, setProgress] = useState({ done: 0, total: 0 })
@@ -168,6 +168,11 @@ export default function MapTab({ comps }) {
                     <span>Score</span><span style={{ color: scoreColor(s.comp), fontWeight: 600 }}>{s.comp}</span>
                     <span>Signal</span><span>{signal}</span>
                   </div>
+                  {onSelect && (
+                    <button className={styles.popupBtn} onClick={() => onSelect(c)}>
+                      Full details →
+                    </button>
+                  )}
                 </Popup>
               </Marker>
             )

@@ -63,7 +63,7 @@ function computeRow(comp, prefs, insRate) {
 const K = v => `$${Math.round(v / 1000)}K`
 const Mo = v => `$${Math.round(v).toLocaleString()}`
 
-export default function CostTab({ comps }) {
+export default function CostTab({ comps, onSelect }) {
   const prefs    = useMemo(() => loadMortgagePrefs(), [])
   const modelSettings = useMemo(() => loadModelSettings(), [])
 
@@ -197,7 +197,12 @@ export default function CostTab({ comps }) {
             {sorted.map(r => {
               const noTax = !r._hasTaxData
               return (
-                <tr key={r.id} className={r._isCapped ? styles.rowCapped : ''}>
+                <tr
+                  key={r.id}
+                  className={r._isCapped ? styles.rowCapped : ''}
+                  onClick={() => onSelect?.(r)}
+                  style={onSelect ? { cursor: 'pointer' } : undefined}
+                >
                   <td className={styles.addrCell}>
                     <span className={styles.addr}>{r.address}</span>
                     {r.town && <span className={styles.town}>{r.town}</span>}

@@ -172,7 +172,7 @@ function PsfDistributionChart({ comps, ctx }) {
   )
 }
 
-export default function OffersTab({ comps }) {
+export default function OffersStrategy({ comps, onSelect }) {
   const ctx      = useMemo(() => buildPricingContext(comps), [comps])
   const ms       = useMemo(() => loadModelSettings(), [])
   const morPrefs = useMemo(() => loadMortgagePrefs(), [])
@@ -348,7 +348,12 @@ export default function OffersTab({ comps }) {
                   : ''
                 const cut = lev.cut > 0 ? `−${fmtK(lev.cut)}` : '—'
                 return (
-                  <tr key={c.id} className={styles.row}>
+                  <tr
+                    key={c.id}
+                    className={styles.row}
+                    onClick={() => onSelect?.(c)}
+                    style={onSelect ? { cursor: 'pointer' } : undefined}
+                  >
                     <td className={styles.addrCell}>
                       <span className={styles.rank}>#{i + 1}</span>
                       <div>
@@ -452,7 +457,12 @@ export default function OffersTab({ comps }) {
               {sorted.map(c => {
                 const aboveCeil = c.psf && c.psf > ceilPsf
                 return (
-                  <tr key={c.id} className={`${styles.row} ${aboveCeil ? styles.rowAboveCeil : ''}`}>
+                  <tr
+                    key={c.id}
+                    className={`${styles.row} ${aboveCeil ? styles.rowAboveCeil : ''}`}
+                    onClick={() => onSelect?.(c)}
+                    style={onSelect ? { cursor: 'pointer' } : undefined}
+                  >
                     <td className={styles.addrCellBlock}>
                       <span className={styles.addrLine}>{c.address}</span>
                       {c.town && <span className={styles.town}>{c.town}</span>}

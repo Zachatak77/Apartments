@@ -29,7 +29,7 @@ function dimCls(rank) {
   return styles.c1
 }
 
-export default function PhysicalTab({ comps }) {
+export default function PhysicalTab({ comps, onSelect }) {
   const enriched = useMemo(() => {
     const sqfts    = comps.map(c => c.sqft).filter(Boolean)
     const lots     = comps.map(c => lotAcres(c.lot_sqft)).filter(Boolean)
@@ -125,7 +125,12 @@ export default function PhysicalTab({ comps }) {
                 : status === 'In Contract' ? styles.tagContract
                 : styles.tagActive
               return (
-                <tr key={c.id} className={styles.row}>
+                <tr
+                  key={c.id}
+                  className={styles.row}
+                  onClick={() => onSelect?.(c)}
+                  style={onSelect ? { cursor: 'pointer' } : undefined}
+                >
                   <td className={styles.addrCell}>
                     <span className={styles.addr}>{c.address}</span>
                     {c.town && <span className={styles.town}>{c.town}</span>}

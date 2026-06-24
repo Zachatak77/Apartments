@@ -9,7 +9,6 @@ import ImportModal from '../components/ImportModal'
 import PropertyPicker from '../components/PropertyPicker'
 import CompsTab from '../components/tabs/CompsTab'
 import OffersTab from '../components/tabs/OffersTab'
-import HistoryTab from '../components/tabs/HistoryTab'
 import ExploreTab from '../components/tabs/ExploreTab'
 import FindingsTab from '../components/tabs/FindingsTab'
 import CompDetailModal from '../components/CompDetailModal'
@@ -97,9 +96,8 @@ export default function PoolView({ pool, user, activeTab, onTabChange, onAddProp
       ) : (
         <div className={styles.panel}>
           {activeTab === 'comps'    && <CompsTab    {...tabProps} />}
-          {activeTab === 'offers'   && <OffersTab   comps={comps} />}
-          {activeTab === 'timeline' && <HistoryTab  {...tabProps} />}
-          {activeTab === 'explore'  && <ExploreTab  comps={comps} />}
+          {activeTab === 'offers'   && <OffersTab   {...tabProps} />}
+          {activeTab === 'explore'  && <ExploreTab  {...tabProps} />}
           {activeTab === 'findings' && <FindingsTab {...tabProps} />}
         </div>
       )}
