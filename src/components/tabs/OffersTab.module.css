@@ -61,10 +61,10 @@
   padding: 2px 7px;
   align-self: flex-start;
 }
-.velBadgeHighlyCompetitive { background: rgba(220, 38, 38,0.12); color: var(--red); }
-.velBadgeActive            { background: rgba(217, 119, 6,0.12); color: #D97706;   }
-.velBadgeModerate          { background: rgba(22, 163, 74,0.08);  color: var(--accent); }
-.velBadgeCooling           { background: rgba(22, 163, 74,0.14);  color: var(--accent); font-weight: 600; }
+.velBadgeHighlyCompetitive { background: rgba(139,58,42,0.12); color: var(--red); }
+.velBadgeActive            { background: rgba(180,150,60,0.12); color: #8a7030;   }
+.velBadgeModerate          { background: rgba(42,92,66,0.08);  color: var(--accent); }
+.velBadgeCooling           { background: rgba(42,92,66,0.14);  color: var(--accent); font-weight: 600; }
 
 .velDivider { width: 1px; background: var(--border); flex-shrink: 0; }
 
@@ -256,7 +256,7 @@
 .row { transition: background .1s; }
 .row:hover td { background: var(--accent-glow); }
 .row:hover td:first-child { background: var(--panel); }
-.rowAboveCeil td { background: rgba(220, 38, 38,0.04) !important; }
+.rowAboveCeil td { background: rgba(139,58,42,0.04) !important; }
 
 /* ── Address cells ── */
 .addrCell {
@@ -307,7 +307,7 @@
   color: var(--accent);
   padding: 1px 5px;
   margin-top: 2px;
-  background: rgba(22, 163, 74,0.08);
+  background: rgba(42,92,66,0.08);
 }
 .ceilTag {
   display: inline-block;
@@ -316,7 +316,7 @@
   letter-spacing: .08em;
   text-transform: uppercase;
   color: var(--red);
-  border: 1px solid rgba(220, 38, 38,.3);
+  border: 1px solid rgba(139,58,42,.3);
   padding: 1px 5px;
   margin-top: 2px;
 }
@@ -342,8 +342,8 @@
   font-size: 0.44rem;
   letter-spacing: .08em;
   text-transform: uppercase;
-  color: #D97706;
-  background: rgba(217, 119, 6,0.12);
+  color: #8a7030;
+  background: rgba(180,150,60,0.12);
   padding: 1px 5px;
 }
 
@@ -381,9 +381,9 @@
   text-transform: uppercase;
   padding: 3px 8px;
 }
-.levStrong { background: rgba(22, 163, 74,0.15);  color: #16A34A; }
-.levHigh   { background: rgba(22, 163, 74,0.08);  color: var(--accent); }
-.levMod    { background: rgba(217, 119, 6,0.12); color: #D97706; }
+.levStrong { background: rgba(42,92,66,0.15);  color: #2A5C42; }
+.levHigh   { background: rgba(42,92,66,0.08);  color: var(--accent); }
+.levMod    { background: rgba(180,150,60,0.12); color: #8a7030; }
 .levLow    { background: var(--surface); color: var(--dim); border: 1px solid var(--border); }
 
 /* ── Fair value context bar ── */
@@ -465,11 +465,11 @@
   padding: 2px 7px;
   white-space: nowrap;
 }
-.outcome_over_ask      { background: rgba(22, 163, 74,0.22);   color: #16A34A; }
-.outcome_near_ask      { background: rgba(22, 163, 74,0.10);   color: var(--accent); }
-.outcome_under_ask     { background: rgba(217, 119, 6,0.15); color: #D97706; }
-.outcome_price_cut     { background: rgba(217, 119, 6,0.15); color: #D97706; }
-.outcome_remain_active { background: rgba(220, 38, 38,0.10);  color: var(--red); }
+.outcome_over_ask      { background: rgba(42,92,66,0.22);   color: #1e6640; }
+.outcome_near_ask      { background: rgba(42,92,66,0.10);   color: var(--accent); }
+.outcome_under_ask     { background: rgba(180,150,60,0.15); color: #8a7030; }
+.outcome_price_cut     { background: rgba(180,100,30,0.15); color: #9a5520; }
+.outcome_remain_active { background: rgba(139,58,42,0.10);  color: var(--red); }
 .outcomeCnf {
   font-family: var(--font-m);
   font-size: 0.40rem;
@@ -534,6 +534,6 @@
 }
 .histLegend span { display: flex; align-items: center; gap: 5px; }
 .histSwatch { display: inline-block; width: 10px; height: 10px; border-radius: 1px; flex-shrink: 0; }
-.histSwatchActive   { background: rgba(22, 163, 74,0.75); }
+.histSwatchActive   { background: rgba(42,92,66,0.75); }
 .histSwatchContract { background: rgba(138,112,48,0.80); }
 .histSwatchSold     { background: rgba(74,127,168,0.82); }

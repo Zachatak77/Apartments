@@ -1,9 +1,9 @@
 .hdr {
   background: var(--hdr-bg);
   background-image:
-    radial-gradient(ellipse at 80% 50%, rgba(22, 163, 74,0.18) 0%, transparent 60%),
-    radial-gradient(ellipse at 10% 80%, rgba(220, 38, 38,0.08) 0%, transparent 50%);
-  border-bottom: 2px solid rgba(22, 163, 74,0.6);
+    radial-gradient(ellipse at 80% 50%, rgba(42,92,66,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse at 10% 80%, rgba(139,58,42,0.08) 0%, transparent 50%);
+  border-bottom: 2px solid rgba(42,92,66,0.6);
   transition: background .25s;
 }
 
@@ -40,7 +40,7 @@
   display: inline-block;
   width: 14px;
   height: 2px;
-  background: linear-gradient(90deg, #16A34A, rgba(22, 163, 74,0.3));
+  background: linear-gradient(90deg, #7ABD9A, rgba(122,189,154,0.3));
   flex-shrink: 0;
 }
 

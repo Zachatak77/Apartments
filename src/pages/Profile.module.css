@@ -109,7 +109,7 @@
   flex-shrink: 0;
 }
 .saveBtn:hover { opacity: .88; }
-.saveDone { background: #16A34A !important; }
+.saveDone { background: #1a6640 !important; }
 
 .savedNote {
   font-family: var(--font-m);
