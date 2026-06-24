@@ -20,7 +20,7 @@ export default function App() {
   const [view,            setView]            = useState('dashboard')
   const [activePool,      setActivePool]      = useState(null)
   const [editingProperty, setEditingProperty] = useState(null)
-  const [activeTab,       setActiveTab]       = useState('heatmap')
+  const [activeTab,       setActiveTab]       = useState('comps')
   const [navOpen,         setNavOpen]         = useState(false)
 
   if (loading) return (
@@ -74,7 +74,7 @@ export default function App() {
       {view === 'dashboard' && (
         <Dashboard
           user={user}
-          onOpenPool={pool => { setActivePool(pool); setActiveTab('heatmap'); setView('pool') }}
+          onOpenPool={pool => { setActivePool(pool); setActiveTab('comps'); setView('pool') }}
           onOpenProfile={() => setView('profile')}
           onOpenProperties={() => setView('properties')}
           onOpenModelSettings={() => setView('modelSettings')}
