@@ -162,6 +162,10 @@ export default function ModelSettings({ user, theme, onToggleTheme }) {
 
           <Slider label="Insurance Rate"    min={0.1} max={2.0} step={0.1} value={s.insuranceRate}  onChange={v => update('insuranceRate', v)}  display={`${s.insuranceRate.toFixed(1)}% of price/yr`} hint="Annual homeowner's insurance as % of purchase price" />
           <Slider label="Closing Cost Est." min={0.5} max={5.0} step={0.25} value={s.closingCostPct} onChange={v => update('closingCostPct', v)} display={`${s.closingCostPct.toFixed(2)}%`}             hint="Title, transfer tax, attorney, lender fees" />
+
+          <div className={styles.fieldGrid}>
+            <NumInput label="SALT deduction cap" value={s.saltCap ?? 40000} onChange={v => update('saltCap', v)} prefix="$" suffix="/yr" min={0} max={100000} step={5000} hint="Max deductible property tax in the Annual Cost tab's after-tax math" />
+          </div>
         </div>
 
         {/* Predicted Close */}

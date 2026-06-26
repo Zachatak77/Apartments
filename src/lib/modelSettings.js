@@ -24,6 +24,7 @@ export const MODEL_DEFAULTS = {
   // Carrying cost assumptions
   closingCostPct: 2.5,
   insuranceRate:  0.5,
+  saltCap:        40000,  // deductible property-tax cap (SALT) for after-tax carrying cost
 
   // Fair value internals (used by buildFairValue; not surfaced in UI)
   taxCapMultiple:  11,
