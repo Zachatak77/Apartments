@@ -12,13 +12,14 @@
 .tab {
   font-family: var(--font-m);
   font-size: 0.6rem;
-  letter-spacing: .12em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--dim);
-  padding: 14px 16px;
+  padding: 12px 11px;
   cursor: pointer;
   border-bottom: 2px solid transparent;
   white-space: nowrap;
+  text-align: center;
   transition: color .2s, border-color .2s;
   background: none;
   border-top: none;
@@ -34,10 +35,11 @@
   font-weight: 500;
 }
 
+/* On wider screens, let the tabs share the row evenly so they never overflow */
 @media (min-width: 640px) {
-  .tab { padding: 15px 20px; }
+  .bar { padding: 0; }
+  .tab { flex: 1; padding: 13px 6px; }
 }
 @media (min-width: 900px) {
-  .bar { padding: 0 12px; }
-  .tab { font-size: 0.62rem; padding: 16px 22px; }
+  .tab { font-size: 0.62rem; padding: 15px 8px; }
 }
