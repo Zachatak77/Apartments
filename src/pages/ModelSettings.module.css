@@ -65,6 +65,13 @@
   color: var(--text-2);
 }
 
+.themeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .sliderVal {
   font-family: var(--font-m);
   font-size: 0.78rem;

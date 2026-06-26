@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { loadModelSettings, saveModelSettings, MODEL_DEFAULTS } from '../lib/modelSettings'
 import Header from '../components/Header'
+import ThemeToggle from '../components/ThemeToggle'
 import styles from './ModelSettings.module.css'
 
 function Slider({ label, min, max, step = 1, value, onChange, display, hint }) {
@@ -40,7 +41,7 @@ function NumInput({ label, value, onChange, prefix, suffix, min, max, step = 1, 
   )
 }
 
-export default function ModelSettings({ user }) {
+export default function ModelSettings({ user, theme, onToggleTheme }) {
   const [s, setS]     = useState(loadModelSettings)
   const [saved, setSaved] = useState(false)
 
@@ -78,6 +79,18 @@ export default function ModelSettings({ user }) {
           Override the weights and thresholds that drive scores, verdicts, flags, and carrying-cost estimates.
           Changes take effect immediately on your next pool view.
         </p>
+
+        {/* Appearance */}
+        {onToggleTheme && (
+          <div className={styles.card}>
+            <div className={styles.cardTitle}>Appearance</div>
+            <p className={styles.cardSub}>Switch between light and dark mode.</p>
+            <div className={styles.themeRow}>
+              <span className={styles.sliderLabel}>Theme</span>
+              <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+            </div>
+          </div>
+        )}
 
         {/* Scoring weights */}
         <div className={styles.card}>

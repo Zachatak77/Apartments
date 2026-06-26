@@ -54,8 +54,6 @@ export default function App() {
         onMenuOpen={() => setNavOpen(true)}
         onBack={backHandler}
         backLabel={activePool?.name ?? 'Back'}
-        theme={theme}
-        onToggleTheme={toggle}
       />
 
       <NavDrawer
@@ -90,7 +88,6 @@ export default function App() {
           onTabChange={setActiveTab}
           onAddProperty={() => { setEditingProperty(null); setView('addProperty') }}
           onEditProperty={prop => { setEditingProperty(prop); setView('editProperty') }}
-          onOpenCompare={() => setView('compare')}
         />
       )}
 
@@ -137,7 +134,7 @@ export default function App() {
       )}
 
       {view === 'modelSettings' && (
-        <ModelSettings user={user} />
+        <ModelSettings user={user} theme={theme} onToggleTheme={toggle} />
       )}
     </>
   )

@@ -108,27 +108,35 @@
 .tableWrap {
   overflow-x: auto;
   border: 1px solid var(--border);
+  border-radius: 2px;
   margin-bottom: 20px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8rem;
+  font-size: 0.68rem;
   white-space: nowrap;
+  min-width: 640px;
 }
 
 .table thead th {
   background: var(--surface);
-  border-bottom: 2px solid var(--border);
-  padding: 10px 12px;
+  border-bottom: 1px solid var(--border2);
+  padding: 6px 8px;
   font-family: var(--font-m);
-  font-size: 0.5rem;
-  letter-spacing: .1em;
+  font-size: 0.54rem;
+  letter-spacing: .11em;
   text-transform: uppercase;
   color: var(--dim);
   text-align: right;
+  white-space: nowrap;
+  font-weight: 400;
   user-select: none;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .thSortable {
@@ -144,22 +152,23 @@
   transition: background .12s;
 }
 .table tbody tr:last-child { border-bottom: none; }
-.table tbody tr:hover { background: var(--surface); }
+.table tbody tr:hover { background: var(--accent-glow); }
 
 .rowCapped { background: color-mix(in srgb, var(--amber) 5%, transparent); }
 
 /* ── Cells ── */
 .addrCell {
-  padding: 10px 14px;
-  min-width: 160px;
-  max-width: 220px;
+  padding: 4px 8px;
+  min-width: 110px;
+  max-width: 160px;
 }
 
 .addr {
   display: block;
-  font-size: 0.8rem;
+  font-family: var(--font-b);
+  font-size: 0.78rem;
   color: var(--text);
-  font-weight: 500;
+  font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -167,7 +176,8 @@
 
 .town {
   display: block;
-  font-size: 0.7rem;
+  font-family: var(--font-m);
+  font-size: 0.55rem;
   color: var(--dim);
   margin-top: 1px;
 }
@@ -205,10 +215,10 @@
 }
 
 .num {
-  padding: 10px 12px;
+  padding: 4px 8px;
   text-align: right;
   font-family: var(--font-m);
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   color: var(--text-2);
 }
 
@@ -220,7 +230,7 @@
 
 .netCol {
   color: var(--accent);
-  font-size: 0.84rem;
+  font-size: 0.72rem;
   font-weight: 600;
   background: var(--accent-glow);
   border-left: 2px solid rgba(42,92,66,0.25);

@@ -3,28 +3,28 @@
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 22px;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background .2s;
+  transition: background .2s, border-color .2s;
   min-height: 44px;
 }
-.toggle:hover { background: rgba(255,255,255,0.14); }
+.toggle:hover { background: var(--accent-glow); border-color: var(--border2); }
 
 .label {
   font-family: var(--font-m);
   font-size: 0.57rem;
   letter-spacing: .1em;
   text-transform: uppercase;
-  color: var(--hdr-dim);
+  color: var(--dim);
 }
 
 .pip {
   width: 34px;
   height: 19px;
-  background: rgba(255,255,255,0.15);
+  background: var(--border2);
   border-radius: 10px;
   position: relative;
   transition: background .2s;
