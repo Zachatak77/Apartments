@@ -1,0 +1,30 @@
+.bar {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  margin-bottom: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.btn {
+  font-family: var(--font-m);
+  font-size: 0.6rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  background: none;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: color .15s, background .15s;
+  white-space: nowrap;
+}
+.btn:hover { color: var(--text); }
+.active {
+  color: var(--ctxt-dk);
+  background: var(--accent);
+  font-weight: 500;
+}

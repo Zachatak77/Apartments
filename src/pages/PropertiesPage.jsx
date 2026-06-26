@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
 import ImportModal from '../components/ImportModal'
+import CompDetailModal from '../components/CompDetailModal'
 import styles from './PropertiesPage.module.css'
 
 const EMPTY_FILTERS = { status: 'all', town: 'all', minBeds: '', minBaths: '', minSqft: '', builtAfter: '' }
@@ -14,6 +15,7 @@ export default function PropertiesPage({ user, onAddProperty, onEditProperty }) 
   const [search,     setSearch]     = useState('')
   const [showImport, setShowImport] = useState(false)
   const [filters,    setFilters]    = useState(EMPTY_FILTERS)
+  const [selected,   setSelected]   = useState(null)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -191,7 +193,12 @@ export default function PropertiesPage({ user, onAddProperty, onEditProperty }) 
 
                   return (
                     <tr key={p.id}>
-                      <td className={styles.addrCell}>
+                      <td
+                        className={styles.addrCell}
+                        onClick={() => setSelected(p)}
+                        style={{ cursor: 'pointer' }}
+                        title="View details"
+                      >
                         <div className={styles.addr}>{p.address}</div>
                         {p.town && <div className={styles.town}>{p.town}</div>}
                       </td>
@@ -264,6 +271,19 @@ export default function PropertiesPage({ user, onAddProperty, onEditProperty }) 
           user={user}
           onClose={() => setShowImport(false)}
           onImported={() => { fetchData(); setShowImport(false) }}
+        />
+      )}
+      {selected && (
+        <CompDetailModal
+          comp={selected}
+          comps={properties}
+          onClose={() => setSelected(null)}
+          onEdit={prop => { setSelected(null); onEditProperty(prop) }}
+          onDelete={id => {
+            const prop = properties.find(x => x.id === id)
+            setSelected(null)
+            deleteProperty(id, prop?.pool_properties?.length ?? 0)
+          }}
         />
       )}
     </div>

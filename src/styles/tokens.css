@@ -25,6 +25,19 @@
   --font-d: 'Playfair Display', Georgia, serif;
   --font-b: 'Source Serif 4', Georgia, serif;
   --font-m: 'JetBrains Mono', monospace;
+
+  /* Radius scale — kept from redesign (structure, not color) */
+  --r-sm: 3px;
+  --r-md: 6px;
+  --r-lg: 10px;
+
+  /* Spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
 }
 
 [data-theme="light"] {
@@ -42,6 +55,19 @@
   --tab-bg:   #F4F0E8;
   --ctxt-dk:  #F5F2EC;
   --ctxt-lt:  #1C1917;
+
+  /* Structural tokens (kept), warm-tuned */
+  --overlay:    rgba(28, 25, 23, 0.55);
+  --shadow-sm:  0 1px 2px rgba(28, 25, 23, 0.06), 0 1px 3px rgba(28, 25, 23, 0.08);
+  --shadow-md:  0 4px 12px rgba(28, 25, 23, 0.10), 0 2px 4px rgba(28, 25, 23, 0.06);
+
+  /* Listing status — active = decision surface, closed = muted context */
+  --status-active:      #2A5C42;
+  --status-active-bg:   #EAF4EE;
+  --status-contract:    #7A5200;
+  --status-contract-bg: #FBF0DC;
+  --status-closed:      #8B7B68;
+  --status-closed-bg:   #EFEAE2;
 }
 
 [data-theme="dark"] {
@@ -65,4 +91,15 @@
   --red-bg:      #261510;
   --amber-bg:    #241A08;
   --blue-bg:     #0F2018;
+
+  --overlay:    rgba(0, 0, 0, 0.66);
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.40), 0 1px 3px rgba(0, 0, 0, 0.30);
+  --shadow-md:  0 4px 14px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.35);
+
+  --status-active:      #4E8A66;
+  --status-active-bg:   #0F2018;
+  --status-contract:    #B8862E;
+  --status-contract-bg: #241A08;
+  --status-closed:      #8E8478;
+  --status-closed-bg:   #20242A;
 }

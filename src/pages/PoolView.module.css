@@ -35,6 +35,44 @@
 }
 .importBtn:hover { background: var(--accent-glow); }
 
+.compareBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 8px 16px;
+  font-family: var(--font-m);
+  font-size: 0.6rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity .2s, background .2s;
+  box-shadow: var(--shadow-sm);
+}
+.compareBtn:hover:not(:disabled) { opacity: .9; }
+.compareBtn:disabled {
+  background: var(--surface);
+  color: var(--dim);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.compareCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 0.62rem;
+  font-weight: 600;
+}
+
 .emptyActions { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
 
 .compCount {

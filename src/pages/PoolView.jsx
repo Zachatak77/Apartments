@@ -1,49 +1,24 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { poolStats } from '../lib/scoring'
+import { usePoolComps, isActive } from '../hooks/usePoolComps'
+import { POOL_TABS } from '../lib/tabs'
 import Header from '../components/Header'
+import TabBar from '../components/TabBar'
 import ImportModal from '../components/ImportModal'
 import PropertyPicker from '../components/PropertyPicker'
-import HeatmapTab from '../components/tabs/HeatmapTab'
-import HistoryTab from '../components/tabs/HistoryTab'
+import CompsTab from '../components/tabs/CompsTab'
 import OffersTab from '../components/tabs/OffersTab'
-import ScatterTab from '../components/tabs/ScatterTab'
-import ScenarioTab from '../components/tabs/ScenarioTab'
+import ExploreTab from '../components/tabs/ExploreTab'
 import FindingsTab from '../components/tabs/FindingsTab'
-import MapTab from '../components/tabs/MapTab'
-import CostTab from '../components/tabs/CostTab'
-import PhysicalTab from '../components/tabs/PhysicalTab'
 import CompDetailModal from '../components/CompDetailModal'
 import styles from './PoolView.module.css'
 
-function hydrateDom(c) {
-  if (!c.list_date) return c
-  const listD = new Date(c.list_date)
-  const endD  = c.contract_date ? new Date(c.contract_date)
-              : c.sold_date     ? new Date(c.sold_date)
-              : new Date()
-  return { ...c, days_on_market: Math.max(0, Math.round((endD - listD) / 86400000)) }
-}
-
-export default function PoolView({ pool, user, activeTab, onTabChange, onAddProperty, onEditProperty }) {
-  const [comps,        setComps]        = useState([])
-  const [loading,      setLoading]      = useState(true)
+export default function PoolView({ pool, user, activeTab, onTabChange, onAddProperty, onEditProperty, onOpenCompare }) {
+  const { comps, setComps, loading, refetch } = usePoolComps(pool.id)
   const [showImport,   setShowImport]   = useState(false)
   const [showPicker,   setShowPicker]   = useState(false)
   const [selectedComp, setSelectedComp] = useState(null)
-
-  useEffect(() => { fetchComps() }, [pool.id])
-
-  async function fetchComps() {
-    setLoading(true)
-    const { data } = await supabase
-      .from('pool_properties')
-      .select('properties(*)')
-      .eq('pool_id', pool.id)
-      .order('added_at', { ascending: true })
-    setComps((data || []).map(r => r.properties).filter(Boolean).map(hydrateDom))
-    setLoading(false)
-  }
 
   async function removeFromPool(propertyId) {
     if (!confirm('Remove this property from the pool? It stays in your property library.')) return
@@ -59,6 +34,7 @@ export default function PoolView({ pool, user, activeTab, onTabChange, onAddProp
   }
 
   const stats = poolStats(comps)
+  const activeCount = comps.filter(isActive).length
 
   const contracted = comps.filter(c => c.list_date && c.contract_date)
   const avgDtc = contracted.length
@@ -90,8 +66,21 @@ export default function PoolView({ pool, user, activeTab, onTabChange, onAddProp
       <div className={styles.addBar}>
         <button className={styles.addBtn} onClick={() => setShowPicker(true)}>+ Add to Pool</button>
         <button className={styles.importBtn} onClick={() => setShowImport(true)}>↑ Import</button>
+        <button
+          className={styles.compareBtn}
+          onClick={onOpenCompare}
+          disabled={activeCount === 0}
+          title={activeCount === 0 ? 'No active listings to compare' : 'Compare active candidates'}
+        >
+          ⚖ Compare &amp; Decide
+          {activeCount > 0 && <span className={styles.compareCount}>{activeCount}</span>}
+        </button>
         <span className={styles.compCount}>{comps.length} propert{comps.length !== 1 ? 'ies' : 'y'}</span>
       </div>
+
+      {comps.length > 0 && (
+        <TabBar tabs={POOL_TABS} active={activeTab} onChange={onTabChange} />
+      )}
 
       {loading ? (
         <div className={styles.loading}>Loading…</div>
@@ -106,15 +95,10 @@ export default function PoolView({ pool, user, activeTab, onTabChange, onAddProp
         </div>
       ) : (
         <div className={styles.panel}>
-          {activeTab === 'heatmap'  && <HeatmapTab  {...tabProps} />}
-          {activeTab === 'history'  && <HistoryTab  {...tabProps} />}
-          {activeTab === 'offers'   && <OffersTab   comps={comps} />}
-          {activeTab === 'scatter'  && <ScatterTab  {...tabProps} />}
-          {activeTab === 'scenario' && <ScenarioTab {...tabProps} />}
+          {activeTab === 'comps'    && <CompsTab    {...tabProps} />}
+          {activeTab === 'offers'   && <OffersTab   {...tabProps} />}
+          {activeTab === 'explore'  && <ExploreTab  {...tabProps} />}
           {activeTab === 'findings' && <FindingsTab {...tabProps} />}
-          {activeTab === 'cost'      && <CostTab      comps={comps} />}
-          {activeTab === 'map'       && <MapTab       comps={comps} />}
-          {activeTab === 'physical'  && <PhysicalTab  comps={comps} />}
         </div>
       )}
 
@@ -133,7 +117,7 @@ export default function PoolView({ pool, user, activeTab, onTabChange, onAddProp
           pool={pool}
           user={user}
           onClose={() => setShowPicker(false)}
-          onAdded={fetchComps}
+          onAdded={refetch}
           onCreateNew={() => { setShowPicker(false); onAddProperty() }}
         />
       )}
@@ -143,7 +127,7 @@ export default function PoolView({ pool, user, activeTab, onTabChange, onAddProp
           pool={pool}
           user={user}
           onClose={() => setShowImport(false)}
-          onImported={fetchComps}
+          onImported={refetch}
         />
       )}
     </div>

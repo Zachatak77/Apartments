@@ -4,9 +4,9 @@ import styles from './HistoryTab.module.css'
 function fmtK(v) { return v ? `$${Math.round(v / 1000)}K` : '—' }
 
 const TODAY    = new Date()
-const GREEN    = '#2A5C42'   // var(--accent)
-const AMBER    = '#7A5200'   // var(--amber)
-const SOLD_CLR = '#1F5C35'   // var(--green)
+const GREEN    = 'var(--accent)'   // active phase
+const AMBER    = 'var(--amber)'    // under-contract phase
+const SOLD_CLR = 'var(--green)'    // closed
 
 function endDateOf(c) {
   if (c.sold_date)     return new Date(c.sold_date)
@@ -22,7 +22,7 @@ function fmtShortDate(str) {
   return new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-function TimelineChart({ comps }) {
+function TimelineChart({ comps, onSelect }) {
   const [hoveredId, setHoveredId] = useState(null)
 
   const dated    = comps.filter(c => c.list_date)
@@ -95,6 +95,8 @@ function TimelineChart({ comps }) {
             className={styles.chartRow}
             onMouseEnter={() => setHoveredId(c.id)}
             onMouseLeave={() => setHoveredId(null)}
+            onClick={() => onSelect?.(c)}
+            style={onSelect ? { cursor: 'pointer' } : undefined}
           >
             <div className={styles.rowLabel} title={c.address}>
               {c.address.split(',')[0]}
@@ -174,7 +176,7 @@ function TimelineChart({ comps }) {
   )
 }
 
-export default function HistoryTab({ comps }) {
+export default function HistoryTab({ comps, onSelect }) {
   const closed     = comps.filter(c => !!c.sold_date)
     .sort((a, b) => (b.sold_price / b.last_list_price ?? 0) - (a.sold_price / a.last_list_price ?? 0))
   const inContract = comps.filter(c => !!c.contract_date && !c.sold_date)
@@ -223,7 +225,7 @@ export default function HistoryTab({ comps }) {
       </div>
 
       <div className="sl">Market timeline</div>
-      <TimelineChart comps={comps} />
+      <TimelineChart comps={comps} onSelect={onSelect} />
 
       <div className={styles.domGrid}>
         <Card title="Closed — Sell to Final List">
@@ -233,7 +235,7 @@ export default function HistoryTab({ comps }) {
             const r   = listPrice && c.sold_price ? (c.sold_price / listPrice * 100).toFixed(1) : null
             const dom = c.days_on_market != null ? `${c.days_on_market}d` : null
             const val = [r ? `${r}% · ${fmtK(c.sold_price)}` : fmtK(c.sold_price), dom].filter(Boolean).join(' · ')
-            return <Row key={c.id} addr={c.address} val={val} cls={c.sold_price >= (listPrice ?? 0) ? 'pos' : 'neg'} />
+            return <Row key={c.id} addr={c.address} val={val} cls={c.sold_price >= (listPrice ?? 0) ? 'pos' : 'neg'} onClick={() => onSelect?.(c)} />
           })}
         </Card>
 
@@ -245,6 +247,7 @@ export default function HistoryTab({ comps }) {
               addr={c.address}
               val={c.days_on_market != null ? `${c.days_on_market}d` : '—'}
               cls={c.days_on_market > 50 ? 'neg' : c.days_on_market > 25 ? 'neu' : 'pos'}
+              onClick={() => onSelect?.(c)}
             />
           ))}
         </Card>
@@ -257,6 +260,7 @@ export default function HistoryTab({ comps }) {
               addr={c.address}
               val={c.days_on_market != null ? `${c.days_on_market}d` : '—'}
               cls={c.days_on_market > 50 ? 'neg' : c.days_on_market > 25 ? 'neu' : 'pos'}
+              onClick={() => onSelect?.(c)}
             />
           ))}
         </Card>
@@ -269,6 +273,7 @@ export default function HistoryTab({ comps }) {
               addr={c.address}
               val={`−$${Math.round((c.original_list_price - c.last_list_price) / 1000)}K (−${((c.original_list_price - c.last_list_price) / c.original_list_price * 100).toFixed(1)}%)`}
               cls="neg"
+              onClick={() => onSelect?.(c)}
             />
           ))}
         </Card>
@@ -286,9 +291,13 @@ function Card({ title, children }) {
   )
 }
 
-function Row({ addr, val, cls }) {
+function Row({ addr, val, cls, onClick }) {
   return (
-    <div className={styles.row}>
+    <div
+      className={styles.row}
+      onClick={onClick}
+      style={onClick ? { cursor: 'pointer' } : undefined}
+    >
       <span className={styles.rowAddr}>{addr}</span>
       <span className={`${styles.rowVal} ${cls}`}>{val}</span>
     </div>
