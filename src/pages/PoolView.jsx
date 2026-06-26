@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { poolStats } from '../lib/scoring'
-import { usePoolComps, isActive } from '../hooks/usePoolComps'
+import { usePoolComps } from '../hooks/usePoolComps'
 import { POOL_TABS } from '../lib/tabs'
 import Header from '../components/Header'
 import TabBar from '../components/TabBar'
@@ -14,7 +14,7 @@ import FindingsTab from '../components/tabs/FindingsTab'
 import CompDetailModal from '../components/CompDetailModal'
 import styles from './PoolView.module.css'
 
-export default function PoolView({ pool, user, activeTab, onTabChange, onAddProperty, onEditProperty, onOpenCompare }) {
+export default function PoolView({ pool, user, activeTab, onTabChange, onAddProperty, onEditProperty }) {
   const { comps, setComps, loading, refetch } = usePoolComps(pool.id)
   const [showImport,   setShowImport]   = useState(false)
   const [showPicker,   setShowPicker]   = useState(false)
@@ -34,7 +34,6 @@ export default function PoolView({ pool, user, activeTab, onTabChange, onAddProp
   }
 
   const stats = poolStats(comps)
-  const activeCount = comps.filter(isActive).length
 
   const contracted = comps.filter(c => c.list_date && c.contract_date)
   const avgDtc = contracted.length
@@ -62,21 +61,6 @@ export default function PoolView({ pool, user, activeTab, onTabChange, onAddProp
         eyebrow={pool.location || pool.role}
         stats={headerStats}
       />
-
-      <div className={styles.addBar}>
-        <button className={styles.addBtn} onClick={() => setShowPicker(true)}>+ Add to Pool</button>
-        <button className={styles.importBtn} onClick={() => setShowImport(true)}>↑ Import</button>
-        <button
-          className={styles.compareBtn}
-          onClick={onOpenCompare}
-          disabled={activeCount === 0}
-          title={activeCount === 0 ? 'No active listings to compare' : 'Compare active candidates'}
-        >
-          ⚖ Compare &amp; Decide
-          {activeCount > 0 && <span className={styles.compareCount}>{activeCount}</span>}
-        </button>
-        <span className={styles.compCount}>{comps.length} propert{comps.length !== 1 ? 'ies' : 'y'}</span>
-      </div>
 
       {comps.length > 0 && (
         <TabBar tabs={POOL_TABS} active={activeTab} onChange={onTabChange} />

@@ -1,7 +1,6 @@
-import ThemeToggle from './ThemeToggle'
 import styles from './NavBar.module.css'
 
-export default function NavBar({ onMenuOpen, onBack, backLabel, theme, onToggleTheme }) {
+export default function NavBar({ onMenuOpen, onBack, backLabel }) {
   return (
     <div className={styles.bar}>
       {onBack ? (
@@ -18,7 +17,6 @@ export default function NavBar({ onMenuOpen, onBack, backLabel, theme, onToggleT
           <span className={styles.line} />
         </button>
       )}
-      <ThemeToggle theme={theme} onToggle={onToggleTheme} />
     </div>
   )
 }
