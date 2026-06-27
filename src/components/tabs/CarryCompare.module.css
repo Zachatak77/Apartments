@@ -94,7 +94,6 @@
 .table {
   border-collapse: collapse;
   width: 100%;
-  min-width: 460px;
 }
 
 .cornerHead {
@@ -234,3 +233,15 @@
 .rankMo { font-family: var(--font-m); font-size: 0.6rem; color: var(--dim); margin-top: 3px; }
 
 .note { font-size: 0.72rem; color: var(--dim); line-height: 1.6; margin-top: 18px; font-style: italic; }
+
+@media (max-width: 430px) {
+  .colHead { min-width: 90px; }
+  .colBtn { padding: 6px 7px; }
+  .colShort { font-size: 0.74rem; }
+  .rowLabel { font-size: 0.68rem; padding: 3px 6px; }
+  .rowLabelSub { padding-left: 14px; }
+  .cell { padding: 3px 5px; font-size: 0.64rem; }
+  .totalCell { font-size: 0.68rem; }
+  .netRow .totalCell { font-size: 0.74rem; }
+  .sectionRow td { padding: 6px 6px 2px; }
+}
