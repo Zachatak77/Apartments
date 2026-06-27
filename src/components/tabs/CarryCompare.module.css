@@ -173,6 +173,7 @@
   color: var(--text);
   padding: 3px 8px;
   white-space: nowrap;
+  width: 1px;
   position: sticky;
   left: 0;
   z-index: 1;
