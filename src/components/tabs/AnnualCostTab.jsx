@@ -13,15 +13,19 @@ export default function AnnualCostTab({ comps, onSelect }) {
   const [phase, setPhase]       = useState('select')   // 'select' | 'compare'
   const [selected, setSelected] = useState(() => new Set())
 
+  // Order properties newest -> oldest by list date (undated last)
+  const ts = c => c.list_date ? new Date(c.list_date).getTime() : -Infinity
+  const ordered = [...comps].sort((a, b) => ts(b) - ts(a))
+
   const toggle = id => setSelected(prev => {
     const next = new Set(prev)
     next.has(id) ? next.delete(id) : next.add(id)
     return next
   })
-  const selectAll = () => setSelected(new Set(comps.map(c => c.id)))
+  const selectAll = () => setSelected(new Set(ordered.map(c => c.id)))
   const clear     = () => setSelected(new Set())
 
-  const chosen = comps.filter(c => selected.has(c.id))
+  const chosen = ordered.filter(c => selected.has(c.id))
 
   if (phase === 'compare') {
     return (
@@ -56,7 +60,7 @@ export default function AnnualCostTab({ comps, onSelect }) {
       </div>
 
       <div className={styles.list}>
-        {comps.map(c => {
+        {ordered.map(c => {
           const on = selected.has(c.id)
           const status = compStatus(c)
           return (
