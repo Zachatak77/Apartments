@@ -202,7 +202,7 @@ export default function CarryCompare({ comps, onSelect, onEditSelection }) {
             {totalRow({ label: 'Gross monthly', get: r => r.grossMo,      bestVal: best.grossMo })}
             {totalRow({ label: 'Gross annual',  get: r => r.grossMo * 12, bestVal: best.grossMo == null ? null : best.grossMo * 12 })}
 
-            <tr className={styles.sectionRow}><td colSpan={rows.length + 1}>Tax Savings ({fedRate}% rate, annual)</td></tr>
+            <tr className={styles.sectionRow}><td colSpan={rows.length + 1}>Tax Savings</td></tr>
             {savRow({ label: 'Mortgage interest',  get: r => r.mortShieldAnn })}
             {savRow({ label: 'SALT — property tax', get: r => r.saltShieldAnn })}
 
