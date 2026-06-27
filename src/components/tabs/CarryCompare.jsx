@@ -12,15 +12,33 @@ export default function CarryCompare({ comps, onSelect, onEditSelection }) {
   const ms    = useMemo(() => loadModelSettings(), [])
 
   const seedFed = (prefs.taxRate === 24 || prefs.taxRate === 32) ? prefs.taxRate : 32
-  const [fedRate,  setFedRate]  = useState(seedFed)     // % (24 or 32)
-  const [mortRate, setMortRate] = useState(prefs.rate)  // %
+  const [fedRate,        setFedRate]        = useState(seedFed)
+  const [mortRate,       setMortRate]       = useState(prefs.rate)
+  const [priceOverrides, setPriceOverrides] = useState({})
+  const [editingPrice,   setEditingPrice]   = useState(null)
+  const [editVal,        setEditVal]        = useState('')
 
-  const { downPct, term }   = prefs
+  const { downPct, term } = prefs
   const insRate = ms.insuranceRate
   const saltCap = ms.saltCap ?? 40000
 
+  function commitPriceEdit(id) {
+    setEditingPrice(null)
+    const raw = editVal.replace(/[$,\s]/g, '').trim()
+    const lower = raw.toLowerCase()
+    let n
+    if (lower.endsWith('k'))      n = parseFloat(lower) * 1_000
+    else if (lower.endsWith('m')) n = parseFloat(lower) * 1_000_000
+    else                          n = parseFloat(raw)
+    if (!isNaN(n) && n > 0) {
+      setPriceOverrides(prev => ({ ...prev, [id]: Math.round(n) }))
+    } else if (raw === '') {
+      setPriceOverrides(prev => { const next = { ...prev }; delete next[id]; return next })
+    }
+  }
+
   const rows = useMemo(() => comps.map(c => {
-    const price = priceOf(c)
+    const price = priceOverrides[c.id] ?? priceOf(c)
     if (!price) return { c, price: null }
     const down  = Math.round(price * downPct / 100)
     const loan  = price - down
@@ -28,18 +46,19 @@ export default function CarryCompare({ comps, onSelect, onEditSelection }) {
     const taxMo = c.taxes ? Math.round(c.taxes / 12) : 0
     const insMo = Math.round(price * (insRate / 100) / 12)
     const grossMo = piMo + taxMo + insMo
-    const mortShieldMo = Math.round(Math.min(loan, MORTGAGE_DEDUCTION_CAP) * (mortRate / 100) * (fedRate / 100) / 12)
-    const saltShieldMo = Math.round(Math.min(c.taxes ?? 0, saltCap) * (fedRate / 100) / 12)
+    const mortShieldAnn = Math.round(Math.min(loan, MORTGAGE_DEDUCTION_CAP) * (mortRate / 100) * (fedRate / 100))
+    const saltShieldAnn = Math.round(Math.min(c.taxes ?? 0, saltCap) * (fedRate / 100))
+    const mortShieldMo  = Math.round(mortShieldAnn / 12)
+    const saltShieldMo  = Math.round(saltShieldAnn / 12)
     const netMo = grossMo - mortShieldMo - saltShieldMo
-    return { c, price, down, loan, piMo, taxMo, insMo, grossMo, mortShieldMo, saltShieldMo, netMo }
-  }), [comps, downPct, term, mortRate, insRate, saltCap, fedRate])
+    return { c, price, down, loan, piMo, taxMo, insMo, grossMo, mortShieldAnn, saltShieldAnn, mortShieldMo, saltShieldMo, netMo }
+  }), [comps, downPct, term, mortRate, insRate, saltCap, fedRate, priceOverrides])
 
   const valid = rows.filter(r => r.price != null)
   const minOf = key => valid.length ? Math.min(...valid.map(r => r[key])) : null
   const best = { piMo: minOf('piMo'), taxMo: minOf('taxMo'), grossMo: minOf('grossMo'), netMo: minOf('netMo') }
   const ranked = [...valid].sort((a, b) => a.netMo - b.netMo)
 
-  // Row renderer (plain function — not a component — to avoid per-render remounts)
   const dataRow = ({ label, sub, get, bestVal, fmtFn = fmt }) => (
     <tr className={sub ? styles.subRow : styles.row}>
       <td className={`${styles.rowLabel} ${sub ? styles.rowLabelSub : ''}`}>{label}</td>
@@ -94,7 +113,7 @@ export default function CarryCompare({ comps, onSelect, onEditSelection }) {
       </div>
       <p className={styles.sub}>
         {downPct}% down · {term}yr · ${Math.round(saltCap / 1000)}K SALT cap · $750K mortgage-interest cap ·
-        insurance {insRate}%/yr. Green = lowest in row.
+        insurance {insRate}%/yr. Green = lowest in row. Click a price to override it.
       </p>
 
       {/* Controls */}
@@ -133,7 +152,32 @@ export default function CarryCompare({ comps, onSelect, onEditSelection }) {
                   <button className={styles.colBtn} onClick={() => onSelect?.(r.c)} title="View details">
                     <span className={styles.colShort}>{shortAddr(r.c.address)}</span>
                     {r.c.town && <span className={styles.colTown}>{r.c.town}</span>}
-                    <span className={styles.colPrice}>{fmt(r.price)}</span>
+                    {editingPrice === r.c.id ? (
+                      <input
+                        className={styles.priceInput}
+                        value={editVal}
+                        autoFocus
+                        onChange={e => setEditVal(e.target.value)}
+                        onBlur={() => commitPriceEdit(r.c.id)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') commitPriceEdit(r.c.id)
+                          if (e.key === 'Escape') setEditingPrice(null)
+                        }}
+                        onClick={e => e.stopPropagation()}
+                      />
+                    ) : (
+                      <span
+                        className={`${styles.colPrice} ${priceOverrides[r.c.id] != null ? styles.colPriceEdited : ''}`}
+                        onClick={e => {
+                          e.stopPropagation()
+                          setEditingPrice(r.c.id)
+                          setEditVal(r.price != null ? String(r.price) : '')
+                        }}
+                        title="Click to edit price"
+                      >
+                        {fmt(r.price)}
+                      </span>
+                    )}
                   </button>
                 </th>
               ))}
@@ -155,14 +199,14 @@ export default function CarryCompare({ comps, onSelect, onEditSelection }) {
             {dataRow({ label: 'Property taxes', get: r => r.taxMo, bestVal: best.taxMo })}
             {dataRow({ label: 'Insurance', sub: true, get: r => r.insMo })}
 
-            {totalRow({ label: 'Gross monthly', get: r => r.grossMo, bestVal: best.grossMo })}
+            {totalRow({ label: 'Gross monthly', get: r => r.grossMo,      bestVal: best.grossMo })}
             {totalRow({ label: 'Gross annual',  get: r => r.grossMo * 12, bestVal: best.grossMo == null ? null : best.grossMo * 12 })}
 
-            <tr className={styles.sectionRow}><td colSpan={rows.length + 1}>Tax Savings ({fedRate}% rate)</td></tr>
-            {savRow({ label: 'Mortgage interest', get: r => r.mortShieldMo })}
-            {savRow({ label: 'SALT — property tax', get: r => r.saltShieldMo })}
+            <tr className={styles.sectionRow}><td colSpan={rows.length + 1}>Tax Savings ({fedRate}% rate, annual)</td></tr>
+            {savRow({ label: 'Mortgage interest',  get: r => r.mortShieldAnn })}
+            {savRow({ label: 'SALT — property tax', get: r => r.saltShieldAnn })}
 
-            {totalRow({ label: 'Net monthly', get: r => r.netMo, bestVal: best.netMo })}
+            {totalRow({ label: 'Net monthly', get: r => r.netMo,      bestVal: best.netMo })}
             {totalRow({ label: 'Net annual',  get: r => r.netMo * 12, bestVal: best.netMo == null ? null : best.netMo * 12, emphasize: true })}
           </tbody>
         </table>
